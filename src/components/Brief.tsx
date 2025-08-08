@@ -25,7 +25,7 @@ function Brief() {
         </div>
 
         <div className="w-1/2 flex flex-col gap-8 items-start">
-          <h1 className="text-white text-7xl italic">
+          <h1 className="text-white text-6xl italic">
             “Our services are designed to help you know more, and do more, so
             you can be more.”
           </h1>
