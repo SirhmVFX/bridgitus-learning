@@ -9,12 +9,12 @@ function Header() {
 
       <div>
         <ul className="flex gap-5 items-center">
-            <Link href="/about">About</Link>
-            <Link href="/projects">Projects</Link>
-            <Link href="/training">Training</Link>
-            <Link href="/community">Community</Link>
-            <Link href="/contact">Contact</Link>
-            <Button type="button">Button</Button>
+            <Link className="text-sm" href="/about">About</Link>
+            <Link className="text-sm" href="/projects">Projects</Link>
+            <Link className="text-sm" href="/training">Training</Link>
+            <Link className="text-sm" href="/community">Community</Link>
+            <Link className="text-sm" href="/contact">Contact</Link>
+            <Button type="button">Register Now</Button>
         </ul>
       </div>
     </div>
