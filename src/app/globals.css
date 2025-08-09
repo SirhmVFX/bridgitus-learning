@@ -2,7 +2,8 @@
 
 @theme inline {
   --font-montserrat: var(--font-montserrat);
-  --color-primary-color: #fff;
+  --color-primary-color: #00C1FF;
+  --color-secondary-color: #00369B;
 }
 
 body {
