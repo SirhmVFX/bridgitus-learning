@@ -16,7 +16,7 @@ function About() {
             <h1 className="text-7xl ">We support early-stage startups</h1>
             <p className="text-white/50">
               Leading tech giants to take control of their firm’s entire
-              operations through Loreon&apos;s dedicated DevOps package.
+              operations through Bridgitus&apos;s dedicated DevOps package.
             </p>
           </div>
         </div>
@@ -25,7 +25,7 @@ function About() {
       <section className="w-[1200px] mx-auto h-screen flex items-center">
         <div className="w-1/2 flex flex-col gap-4">
           <h1 className="text-5xl">
-            Loreon Is More than a Company. It&apos;s a Story
+            Bridgitus Is More than a Company. It&apos;s a Story
           </h1>
           <p className="text-sm text-black/50">
             Launching app operations and DevOps shouldn’t take time it&apos;s
@@ -40,7 +40,7 @@ function About() {
             There is No Passion To Be Found Playing Small — Nelson Mandela
           </h1>
           <p className="text-sm text-black/50">
-            Driven by this sheer passion, LOREON was created as a platform that
+            Driven by this sheer passion, Bridgitus was created as a platform that
             simplifies and automates the entire process of building, testing,
             deploying, monitoring, and securing software applications while
             providing startups and founders with the resources needed to
@@ -74,12 +74,12 @@ function About() {
             show that it will become the largest industry in the future. The
             DevOps industry market forecast suggests huge numbers in the future
             and a need for more labor force. To actualize this while stamping
-            Africa’s presence on the global DevOps map, LOREON’s vision is to be
+            Africa’s presence on the global DevOps map, Bridgitus’s vision is to be
             Africa&apos;s largest and leading DevOps service offering platform.
             ACHIEVE MUCH MORE IN LESS TIME. We provide companies with the needed
             professional help to keep up with the fast-moving pace of the global
             tech world! Actualize your deployment goals faster and stamp your
-            presence with LOREON, Africa&apos;s largest and leading DevOps and
+            presence with Bridgitus, Africa&apos;s largest and leading DevOps and
             business intelligence service offering platform.{" "}
           </p>
         </div>
@@ -95,12 +95,12 @@ function About() {
             show that it will become the largest industry in the future. The
             DevOps industry market forecast suggests huge numbers in the future
             and a need for more labor force. To actualize this while stamping
-            Africa’s presence on the global DevOps map, LOREON’s vision is to be
+            Africa’s presence on the global DevOps map, Bridgitus’s vision is to be
             Africa&apos;s largest and leading DevOps service offering platform.
             ACHIEVE MUCH MORE IN LESS TIME. We provide companies with the needed
             professional help to keep up with the fast-moving pace of the global
             tech world! Actualize your deployment goals faster and stamp your
-            presence with LOREON, Africa&apos;s largest and leading DevOps and
+            presence with Bridgitus, Africa&apos;s largest and leading DevOps and
             business intelligence service offering platform.{" "}
           </p>
         </div>
