@@ -1,0 +1,20 @@
+import Image from "next/image"
+import Button from "./Button"
+
+function Cta() {
+    return (
+        <section className="bg-black md:h-[calc(100vh-500px)] relative h-[300px] flex items-center justify-center ">
+                <Image src="/assets/line2.png" alt="cta" width={1000} height={1000} className="w-full h-full object-cover absolute top-0 left-0 bottom-0" />
+            
+
+                <div className="flex flex-col gap-5 items-center justify-center absolute md:top-1/2 md:left-1/2 md:transform md:-translate-x-1/2 md:-translate-y-1/2  left-0 top-0 bottom-0 right-0 ">
+                    <h1 className="text-2xl md:text-5xl text-white text-center">Every class is an opportunity to succeed and an experience to remember for the future. </h1>
+                    <p className="text-sm md:text-lg text-white/50">Ready to take the first step?</p>
+                    <Button type="button">Book your first session</Button>
+                </div>
+           
+        </section>
+    )
+}
+
+export default Cta
