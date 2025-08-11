@@ -9,8 +9,8 @@ function Partners() {
           <p className="md:text-sm text-xs text-black/50 md:text-center">
             Join us on a journey beyond boundaries, where innovation isn&pos;t
             just a destination – it&apos;s the very fabric of our existence. At
-            LOREON Technology, we&apos;re redefining the future by delivering
-            cutting-edge solutions faster than you can imagine.
+            Bridgitus Learning, we&apos;re redefining the future by delivering 
+            education smoother than you can imagine.
           </p>
 
           <div className="flex gap-3 md:gap-14 flex-wrap justify-center py-10">
