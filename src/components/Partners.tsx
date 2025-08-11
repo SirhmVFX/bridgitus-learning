@@ -2,10 +2,10 @@ import Image from "next/image";
 
 function Partners() {
     return (
-        <section className=" ">
-            <div className="md:w-[1200px] md:mx-auto flex flex-col gap-10 py-20 px-4 md:px-0">
-            <div className=" flex flex-col gap-4 items-center md:p-10 p-4">
-          <h1 className="md:text-5xl text-4xl ">Some partners we&apos;ve worked with</h1>
+        <section className=" md:h-[calc(100vh-200px)] flex items-center md:pb-0 p-4 h-fit ">
+            <div className="md:w-[1200px] md:mx-auto flex flex-col gap-10 md:py-20 py-10">
+            <div className=" flex flex-col gap-4 items-center md:p-10 ">
+          <h1 className="md:text-5xl text-3xl ">Some partners we&apos;ve worked with</h1>
           <p className="md:text-sm text-xs text-black/50 md:text-center">
             Join us on a journey beyond boundaries, where innovation isn&pos;t
             just a destination – it&apos;s the very fabric of our existence. At
@@ -13,7 +13,7 @@ function Partners() {
             cutting-edge solutions faster than you can imagine.
           </p>
 
-          <div className="flex gap-8 flex-wrap justify-center py-10">
+          <div className="flex gap-3 md:gap-14 flex-wrap justify-center py-10">
             {[
               {id:1, img: "/assets/dm.png"}, 
               {id:2, img: "/assets/edu.png"}, 
@@ -23,7 +23,7 @@ function Partners() {
               {id:6, img: "/assets/qz.png"}, 
               {id:7, img: "/assets/sl.jpg"}, 
             ].map((e) => (
-              <div key={e.id} className="h-10">
+              <div key={e.id} className="md:h-10 h-6 w-[150px] hover:scale-105 cursor-pointer transition-all duration-300 ">
                 <Image src={e.img} alt="logo" width={1000} height={1000} className="w-full h-full object-contain" />
                 
               </div>
