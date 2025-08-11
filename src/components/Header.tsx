@@ -7,7 +7,7 @@ function Header() {
   return (
     <header className="absolute top-0 left-0 right-0 z-50 text-white">
       <div className="hidden md:block py-3 bg-[#161616]">
-        <div className="w-[1200px] mx-auto flex items-center justify-between ">
+        <div className="md:w-[1200px] w-full mx-auto flex items-center justify-between ">
           <div className="flex items-center gap-5 ">
             <div className="flex items-center gap-2">
               <Phone />
@@ -32,7 +32,7 @@ function Header() {
 
         <div></div>
       </div>
-      <div className="w-[1200px] mx-auto flex justify-between py-5 px-4 md:px-0">
+      <div className="md:w-[1200px] mx-auto flex justify-between py-5 px-4 md:px-0">
         <div className="md:w-[350px] w-[250px]">
           <Image
             width={1000}
