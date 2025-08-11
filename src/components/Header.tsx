@@ -6,20 +6,20 @@ import { Mail, Menu, Phone, Star } from "./Icons";
 function Header() {
   return (
     <header className="absolute top-0 left-0 right-0 z-50 text-white">
-      <div className="hidden md:block py-3 bg-white/5">
+      <div className="hidden md:block py-3 bg-[#161616]">
         <div className="w-[1200px] mx-auto flex items-center justify-between ">
           <div className="flex items-center gap-5 ">
             <div className="flex items-center gap-2">
               <Phone />
-              <Link href="tel:+2348123456789" className="text-xs">
-                +234 812 345 6789
+              <Link href="tel:+0433600592" className="text-xs">
+              +0433600592
               </Link>
             </div>
 
             <div className="flex items-center gap-2">
               <Mail />
               <Link href="mailto:info@bridgitus.com" className="text-xs">
-                info@bridgitus.com
+                bridgituslearning@gmail.com
               </Link>
             </div>
            
