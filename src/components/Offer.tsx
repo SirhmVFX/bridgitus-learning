@@ -1,7 +1,7 @@
 function Offer() {
     return (
         <section>
-            <div className="md:w-[1200px] md:mx-auto flex flex-col gap-10 py-20 px-4 md:px-0">
+            <div className="md:w-[1200px] md:h-[calc(100vh-200px)] md:mx-auto flex flex-col items-center justify-center gap-10 py-20 px-4 md:px-0">
                 <h1 className="text-4xl md:text-center">Why Choose Bridgitus Learning?</h1>
                 <div className="grid md:grid-cols-3 grid-cols-2 gap-6 ">
                 {[
