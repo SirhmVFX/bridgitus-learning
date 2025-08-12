@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import {  Montserrat } from "next/font/google";
+import { Open_Sans } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-
-const montserrat = Montserrat({
-  variable: "--font-montserrat",
+const open_sans = Open_Sans({
+  variable: "--font-open-sans",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   title: "Bridgitus",
-  description: "Bridgitus is a leading online tuition platform committed to delivering personalized, high-quality education that empowers students to succeed.",
+  description:
+    "Bridgitus is a leading online tuition platform committed to delivering personalized, high-quality education that empowers students to succeed.",
 };
 
 export default function RootLayout({
@@ -22,9 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={` ${montserrat.variable} antialiased`}
-      >
+      <body className={` ${open_sans.variable} antialiased`}>
         <Header />
         {children}
         <Footer />
