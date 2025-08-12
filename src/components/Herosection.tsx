@@ -38,7 +38,7 @@ function HeroSection() {
           </div>
         </div>
 
-        {/* <div className="absolute top-0 left-0 right-0 bottom-0 flex justify-end ">
+        <div className="absolute top-0 left-0 right-0 bottom-0 flex justify-end ">
           <div className="w-[50%] h-[90%] relative">
             <div className="bg-gradient-to-r from-[#000000] to-[#16161600] absolute top-0 left-0 right-0 bottom-0"></div>
             <div className="bg-gradient-to-t from-[#000000] to-[#16161600] absolute top-[50%] left-0 right-0 bottom-0"></div>
@@ -50,7 +50,7 @@ function HeroSection() {
               className="w-full h-full object-cover rounded-3xl"
             />
           </div>
-        </div> */}
+        </div>
       </div>
     </section>
   );
