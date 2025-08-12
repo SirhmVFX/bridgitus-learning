@@ -43,7 +43,7 @@ function HeroSection() {
             <div className="bg-gradient-to-r from-[#000000] to-[#16161600] absolute top-0 left-0 right-0 bottom-0"></div>
             <div className="bg-gradient-to-t from-[#000000] to-[#16161600] absolute top-[50%] left-0 right-0 bottom-0"></div>
             <Image
-              src="/assets/i3.jpg"
+              src="/assets/i6.jpg"
               alt="hero"
               width={1000}
               height={1000}

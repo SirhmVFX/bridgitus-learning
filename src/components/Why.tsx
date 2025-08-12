@@ -23,7 +23,7 @@ function Why() {
           </p>
         </div>
 
-        <div className="bg-black text-white rounded-xl  hover:scale-105 cursor-pointer transition-all flex md:flex-row flex-col items-end gap-6">
+        <div className="bg-black text-white rounded-xl  hover:scale-105 cursor-pointer transition-all flex md:flex-row flex-col  gap-">
           <div className="flex flex-col items-start gap-4 md:w-2/3  md:p-16 p-6">
             <h1 className="md:text-2xl text-xl md:leading-none leading-6">
               Personalized{" "}
@@ -78,11 +78,11 @@ function Why() {
               ))}
             </div>
           </div>
-          <div className="md:w-1/3 p-8 pb-0">
+          <div className="md:w-1/3 px-8 ">
             <Image
               width={1000}
               height={1000}
-              src="/assets/ptp.svg"
+              src="/assets/i5.jpg"
               alt="why"
               className="w-full h-full object-cover"
             />
@@ -90,9 +90,9 @@ function Why() {
         </div>
 
         <div className="flex md:flex-row flex-col gap-10">
-          <div className="md:w-1/2 bg-blue-500 text-white rounded-xl  hover:scale-105 cursor-pointer transition-all">
-            <div className="flex flex-col items-start gap-6 md:p-16 md:pb-0 p-6">
-              <h1 className="md:text-4xl text-2xl md:leading-none leading-6">
+          <div className="md:w-1/2 bg-secondary-color text-white rounded-xl  hover:scale-105 cursor-pointer transition-all">
+            <div className="flex flex-col items-start gap-4 md:p-8 md:pb-0 p-6">
+              <h1 className="md:text-2xl text-xl md:leading-none leading-6">
                 Collaborative{" "}
                 <span className="font-bold text-yellow-400">
                   Group Learning
@@ -130,7 +130,7 @@ function Why() {
                 ].map((e) => (
                   <div key={e.id} className="flex items-center gap-2">
                     <Check />
-                    <p className="text-xs">{e.title}</p>
+                    <p className="text-base">{e.title}</p>
                   </div>
                 ))}
               </div>
@@ -146,8 +146,8 @@ function Why() {
           </div>
 
           <div className="md:w-1/2 bg-black rounded-xl  hover:scale-105 cursor-pointer transition-all text-white">
-            <div className="flex flex-col items-start gap-6 md:p-16 p-6">
-              <h1 className="md:text-4xl text-2xl md:leading-none leading-6">
+            <div className="flex flex-col items-start gap-4 md:p-8 p-6">
+              <h1 className="md:text-2xl text-xl md:leading-none leading-6">
                 <span className="font-bold text-green-500">
                   Academic Success
                 </span>{" "}
@@ -191,7 +191,7 @@ function Why() {
                 ].map((e) => (
                   <div key={e.id} className="flex items-center gap-2">
                     <Check />
-                    <p className="text-xs">{e.title}</p>
+                    <p className="text-base">{e.title}</p>
                   </div>
                 ))}
               </div>
