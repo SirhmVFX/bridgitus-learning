@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-montserrat: var(--font-montserrat);
-  --color-primary-color: #00C1FF;
-  --color-secondary-color: #00369B;
+  --font-open-sans: var(--font-open-sans);
+  --color-primary-color: #00c1ff;
+  --color-secondary-color: #00369b;
 }
 
 body {
-  font-family: var(--font-montserrat);
+  font-family: var(--font-open-sans);
 }
 
 /* .slick-slide {
