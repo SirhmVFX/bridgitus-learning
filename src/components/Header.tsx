@@ -35,8 +35,8 @@ function Header() {
         </div>
       </div>
       <div className="bg-black">
-        <div className="md:w-[1000px] mx-auto flex justify-between items-center py-5 px-4 md:px-0  text-white">
-          <div className="md:w-[160px] w-[250px]">
+        <div className="md:w-[1000px] mx-auto flex justify-between items-center py-1 px-4 md:px-0  text-white">
+          <div className="md:w-[270px] w-[250px]">
             <Image
               width={1000}
               height={1000}
