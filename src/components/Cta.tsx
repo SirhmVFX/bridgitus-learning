@@ -3,7 +3,7 @@ import Button from "./Button";
 
 function Cta() {
   return (
-    <section className="bg-black  relative py-10 flex items-center justify-center md:h-[400px] ">
+    <section className="bg-black  relative py-10 flex items-center justify-center md:h-[400px] h-[300px] ">
       <Image
         src="/assets/line2.png"
         alt="cta"
@@ -20,7 +20,9 @@ function Cta() {
         <p className="text-sm md:text-lg text-white/50">
           Ready to take the first step?
         </p>
-        <Button type="button">Book your first session</Button>
+        <Button type="link" href="register">
+          Book your first session
+        </Button>
       </div>
     </section>
   );
