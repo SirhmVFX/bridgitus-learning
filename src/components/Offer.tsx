@@ -54,7 +54,7 @@ function Offer() {
               className="bg-black/5 rounded-xl p-6  hover:scale-105 cursor-pointer transition-all"
               key={e.id}
             >
-              <h1 className="">{e.title}</h1>
+              <h1 className="md:text-base text-sm">{e.title}</h1>
             </div>
           ))}
         </div>
