@@ -8,23 +8,27 @@ function About() {
   const [open, setOpen] = useState<number | null>(null);
   return (
     <main>
-      <section className="relative">
-        <div className="absolute top-0 right-0 bottom-0 left-0 bg-gradient-to-r from-black to-black/5"></div>
-        <div className="absolute top-0 right-0 bottom-0 left-0">
+      <section className="relative h-screen">
+        <div className="absolute top-0 right-0 bottom-0 left-0 bg-gradient-to-r from-black to-black/5 z-40"></div>
+        <div className="absolute top-0 right-0 bottom-0 left-0 ">
           <Image
             width={1000}
             height={1000}
-            src="/assets/i7.jpg"
+            src="/assets/i7.avif"
             alt=""
-            className="w-full h-screen object-cover "
+            className="w-full h-full object-cover "
           />
         </div>
-        <div className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 absolute top-0 left-0 right-0 bottom-0 flex items-center">
-          <div className="md:w-1/2 flex flex-col gap-4">
-            <h1 className="md:text-6xl text-5xl text-white">
-              Where Every Learner’s Journey is Uniquely Designed for Success.
+        <div className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 absolute top-0 left-0 right-0 bottom-0 flex items-center z-50">
+          <div className="md:w-2/3 flex flex-col gap-4">
+            <h1 className="md:text-5xl text-5xl text-white font-bold">
+              Where Every{" "}
+              <span className="text-green-500">
+                Learner’s Journey is Uniquely Designed
+              </span>{" "}
+              for Success.
             </h1>
-            <p className="text-white/50">
+            <p className="text-white">
               Leading tech giants to take control of their firm’s entire
               operations through Bridgitus&apos;s dedicated DevOps package.
             </p>
@@ -34,7 +38,7 @@ function About() {
 
       <section className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 md:py-0 py-10 md:h-screen flex md:flex-row flex-col items-center md:gap-0 gap-6">
         <div className="md:w-1/2 flex flex-col gap-6">
-          <h1 className="md:text-5xl text-4xl">
+          <h1 className="md:text-3xl text-xl font-bold">
             Bridgitus Is More than a Company. It&apos;s a Story
           </h1>
           <p className="text-sm text-black/50">
@@ -51,7 +55,7 @@ function About() {
             life that is less than the one you are capable of living. - Nelson
             Mandela
           </h1>
-          <p className="text-xs text-black/50">
+          <p className="text-sm text-black/50">
             At our core, we believe every learner deserves an education tailored
             to their unique needs. Our online one-on-one tuition platform is
             dedicated to bridging learning gaps by crafting personalized
@@ -64,7 +68,7 @@ function About() {
         <div className="md:w-1/2 flex items-center justify-center relative">
           <div className="md:w-[300px] md:h-[400px] w-[250px] h-[300px]">
             <Image
-              src="/assets/nelson.jpeg"
+              src="/assets/i8.jpg"
               alt="about"
               width={1000}
               height={1000}
@@ -76,9 +80,9 @@ function About() {
         </div>
       </section>
 
-      <section className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 md:py-0 py-10 ">
+      <section className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 md:py-0 py-20 ">
         <div className="flex flex-col gap-4 md:w-3/4">
-          <h1 className="md:text-5xl text-4xl">
+          <h1 className="md:text-3xl text-xl font-bold">
             Our Approach is Different — We’re Here to Close Your Learning Gaps.
           </h1>
           <p className="text-sm text-black/50">
@@ -108,18 +112,25 @@ function About() {
         </div>
       </section>
 
-      <section className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 py-20 flex md:flex-row flex-col items-center md:h-[calc(100vh-200px)]">
-        <div className="md:w-1/3"></div>
-        <div className="md:w-2/3 flex flex-col gap-4">
-          <h1 className="md:text-6xl text-4xl">
+      <section className="md:w-[1000px] md:h-screen w-full md:mx-auto md:px-0 px-4 py-10 flex md:flex-row items-center flex-col  md:gap-10 gap-8 ">
+        <div className="md:w-1/3 h-full ">
+          <Image
+            src="/assets/i9.jpg"
+            alt="about"
+            width={1000}
+            height={1000}
+            className="w-full h-full object-cover rounded-3xl"
+          />
+        </div>
+        <div className="md:w-2/3 flex flex-col gap-6">
+          <h1 className="md:text-3xl text-xl font-bold">
             Today, Tomorrow, or the Future. We Share a Large Vision
           </h1>
-          <p className="text-sm md:text-base text-black/50">
-            . By integrating engaging word problems and real-life experiences
-            into our lessons, we make learning relevant, dynamic, and
-            meaningful. Our customized resources are designed to spark
-            curiosity, build confidence, and address individual learning gaps
-            effectively.
+          <p className="text-sm md:text-base  text-black/50">
+            By integrating engaging word problems and real-life experiences into
+            our lessons, we make learning relevant, dynamic, and meaningful. Our
+            customized resources are designed to spark curiosity, build
+            confidence, and address individual learning gaps effectively.
           </p>
 
           <p className="text-sm md:text-base text-black/50">
@@ -134,9 +145,9 @@ function About() {
         </div>
       </section>
 
-      <section className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 py-20 flex md:flex-row flex-col items-center md:h-[calc(100vh-200px)]">
-        <div className="md:w-2/3 flex flex-col gap-4">
-          <h1 className="md:text-6xl text-4xl">
+      <section className="md:w-[1000px] md:h-screen md:gap-20 gap-8 w-full md:mx-auto md:px-0 px-4 py-20 flex md:flex-row flex-col items-center ">
+        <div className="md:w-1/2 flex flex-col gap-4">
+          <h1 className="md:text-3xl text-xl font-bold">
             We Are Changing the Education Narrative: Your Success Is our
             passion!
           </h1>
@@ -154,12 +165,20 @@ function About() {
           </p>
         </div>
 
-        <div className="w-1/3"></div>
+        <div className="md:w-1/2 h-full ">
+          <Image
+            src="/assets/i11.jpg"
+            alt="about"
+            width={1000}
+            height={1000}
+            className="w-full h-full object-cover rounded-3xl"
+          />
+        </div>
       </section>
 
       <section>
-        <div className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 py-20 flex flex-col gap-4 ">
-          <h1 className="md:text-6xl text-4xl md:w-3/4">
+        <div className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 py-10 flex flex-col gap-4 ">
+          <h1 className="md:text-3xl text-xl font-bold md:w-3/4">
             At BRIDGITUS, it&apos;s all about building stories that last a
             lifetime.
           </h1>
@@ -175,7 +194,7 @@ function About() {
 
       <section className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 py-20 ">
         <div className="flex flex-col gap-4  ">
-          <h1 className="md:text-6xl text-4xl md:w-3/4">
+          <h1 className="md:text-3xl text-xl font-bold md:w-3/4">
             We know you have questions, We also have answers
           </h1>
           <p className="md:w-3/4 text-xs md:text-sm text-black/50">
@@ -220,13 +239,13 @@ function About() {
           ].map((item) => (
             <div
               key={item.id}
-              className="flex flex-col gap-2 md:p-8 p-4 border-b border-black/20 transition-all duration-300"
+              className="flex flex-col gap-2 md:p-6 p-4 border-b border-black/20 transition-all duration-300"
             >
               <div
                 className="flex items-center justify-between cursor-pointer"
                 onClick={() => setOpen(open === item.id ? null : item.id)}
               >
-                <h1 className="md:text-xl text-base text-black">
+                <h1 className="md:text-base text-base text-black">
                   {item.question}
                 </h1>
                 {open === item.id ? <ChevronUp /> : <ChevronDown />}
