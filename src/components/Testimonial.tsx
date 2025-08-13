@@ -38,28 +38,35 @@ function CenterMode() {
     <div className="slider-container px-4">
       <Slider {...settings}>
         {[
-            {id: 1, title: "Bridgitus Learning has transformed my daughter&apos;s approach to math. The personalized sessions made complex concepts so much easier to understand!", image: "/assets/test1.png", name: "- Sarah M., Parent", },
-            {id: 2, title: "Bridgitus Learning has transformed my daughter&apos;s approach to math. The personalized sessions made complex concepts so much easier to understand!", image: "/assets/test1.png", name: "- Sarah M., Parent", },
-            {id: 3, title: "Bridgitus Learning has transformed my daughter&apos;s approach to math. The personalized sessions made complex concepts so much easier to understand!", image: "/assets/test1.png", name: "- Sarah M., Parent", },
-            {id: 4, title: "Bridgitus Learning has transformed my daughter&apos;s approach to math. The personalized sessions made complex concepts so much easier to understand!", image: "/assets/test1.png", name: "- Sarah M., Parent", },
+          {
+            id: 1,
+            title:
+              "Bridgitus Learning has transformed my daughter's approach to math. The personalized sessions made complex concepts so much easier to understand!",
+            image: "/assets/test1.png",
+            name: "- Sarah M., Parent",
+          },
+          {
+            id: 2,
+            title:
+              "The tutors are incredibly engaging and patient. My son looks forward to his science lessons every week!",
+            image: "/assets/test1.png",
+            name: "- James L., Parent",
+          },
+          {
+            id: 3,
+            title:
+              "Thanks to Bridgitus, I aced my AP English exam. The one-on-one attention really helped me improve my writing skills",
+            image: "/assets/test1.png",
+            name: "- Emily R., Student",
+          },
         ].map((item, i) => (
-          <div key={i} className="px-2"> {/* gap between slides */}
+          <div key={i} className="px-2">
             <div className="bg-black md:h-[300px] h-[200px] relative rounded-lg overflow-hidden">
-              {/* Image */}
-              <div className="hidden md:block w-[220px] h-full absolute bottom-0 right-0 z-10">
-                <Image
-                  src={item.image}
-                  alt="testimonial"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              {/* Text */}
               <div className="md:p-12 p-5 z-50 w-full md:w-3/4 ">
-                <h3 className="text-white md:text-4xl text-xs">
-                  {item.title}
-                </h3>
-                <p className="text-white/50 text-xs md:text-base">{item.name}</p>
+                <h3 className="text-white md:text-4xl text-xs">{item.title}</h3>
+                <p className="text-white/50 text-xs md:text-base">
+                  {item.name}
+                </p>
               </div>
             </div>
           </div>
