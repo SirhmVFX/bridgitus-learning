@@ -1,23 +1,25 @@
-"use client"
+"use client";
 import { ChevronDown, ChevronUp } from "@/components/Icons";
 import Testimonial from "@/components/Testimonial";
 import Image from "next/image";
 import { useState } from "react";
 
-
 function About() {
-  const [open, setOpen] = useState<number | null>(null)
+  const [open, setOpen] = useState<number | null>(null);
   return (
     <main>
       <section className="relative">
-        <Image
-          width={1000}
-          height={1000}
-          src="https://res.cloudinary.com/dkeh0cumc/image/upload/v1754934552/about2_nak4t0.png"
-          alt=""
-          className="w-full h-screen object-cover"
-        />
-        <div className="md:w-[1200px] w-full md:mx-auto md:px-0 px-4 absolute top-0 left-0 right-0 bottom-0 flex items-center">
+        <div className="absolute top-0 right-0 bottom-0 left-0 bg-gradient-to-r from-black to-black/5"></div>
+        <div className="absolute top-0 right-0 bottom-0 left-0">
+          <Image
+            width={1000}
+            height={1000}
+            src="/assets/i7.jpg"
+            alt=""
+            className="w-full h-screen object-cover "
+          />
+        </div>
+        <div className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 absolute top-0 left-0 right-0 bottom-0 flex items-center">
           <div className="md:w-1/2 flex flex-col gap-4">
             <h1 className="md:text-6xl text-5xl text-white">
               Where Every Learner’s Journey is Uniquely Designed for Success.
@@ -30,7 +32,7 @@ function About() {
         </div>
       </section>
 
-      <section className="md:w-[1200px] w-full md:mx-auto md:px-0 px-4 md:py-0 py-10 md:h-screen flex md:flex-row flex-col items-center md:gap-0 gap-6">
+      <section className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 md:py-0 py-10 md:h-screen flex md:flex-row flex-col items-center md:gap-0 gap-6">
         <div className="md:w-1/2 flex flex-col gap-6">
           <h1 className="md:text-5xl text-4xl">
             Bridgitus Is More than a Company. It&apos;s a Story
@@ -74,7 +76,7 @@ function About() {
         </div>
       </section>
 
-      <section className="md:w-[1200px] w-full md:mx-auto md:px-0 px-4 md:py-0 py-10 ">
+      <section className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 md:py-0 py-10 ">
         <div className="flex flex-col gap-4 md:w-3/4">
           <h1 className="md:text-5xl text-4xl">
             Our Approach is Different — We’re Here to Close Your Learning Gaps.
@@ -106,7 +108,7 @@ function About() {
         </div>
       </section>
 
-      <section className="md:w-[1200px] w-full md:mx-auto md:px-0 px-4 py-20 flex md:flex-row flex-col items-center md:h-[calc(100vh-200px)]">
+      <section className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 py-20 flex md:flex-row flex-col items-center md:h-[calc(100vh-200px)]">
         <div className="md:w-1/3"></div>
         <div className="md:w-2/3 flex flex-col gap-4">
           <h1 className="md:text-6xl text-4xl">
@@ -132,7 +134,7 @@ function About() {
         </div>
       </section>
 
-      <section className="md:w-[1200px] w-full md:mx-auto md:px-0 px-4 py-20 flex md:flex-row flex-col items-center md:h-[calc(100vh-200px)]">
+      <section className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 py-20 flex md:flex-row flex-col items-center md:h-[calc(100vh-200px)]">
         <div className="md:w-2/3 flex flex-col gap-4">
           <h1 className="md:text-6xl text-4xl">
             We Are Changing the Education Narrative: Your Success Is our
@@ -155,66 +157,89 @@ function About() {
         <div className="w-1/3"></div>
       </section>
 
-    
       <section>
-        <div className="md:w-[1200px] w-full md:mx-auto md:px-0 px-4 py-20 flex flex-col gap-4 ">
-          <h1 className="md:text-6xl text-4xl md:w-3/4">At BRIDGITUS, it&apos;s all about building stories that last a lifetime.</h1>
-          <p className="md:w-3/4 text-xs md:text-sm text-black/50">From our clients to students, we serve as a community facilitating collaboration for people in the DevOps industry. Discover our diverse community and what our clients say about us.</p>
+        <div className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 py-20 flex flex-col gap-4 ">
+          <h1 className="md:text-6xl text-4xl md:w-3/4">
+            At BRIDGITUS, it&apos;s all about building stories that last a
+            lifetime.
+          </h1>
+          <p className="md:w-3/4 text-xs md:text-sm text-black/50">
+            From our clients to students, we serve as a community facilitating
+            collaboration for people in the DevOps industry. Discover our
+            diverse community and what our clients say about us.
+          </p>
         </div>
 
         <Testimonial />
       </section>
 
-      <section className="md:w-[1200px] w-full md:mx-auto md:px-0 px-4 py-20 ">
+      <section className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 py-20 ">
         <div className="flex flex-col gap-4  ">
-          <h1 className="md:text-6xl text-4xl md:w-3/4">We know you have questions, We also have answers</h1>
-          <p className="md:w-3/4 text-xs md:text-sm text-black/50">We are here to help you with any questions you may have. Our team of experts is always ready to assist you with any questions you may have.</p>
+          <h1 className="md:text-6xl text-4xl md:w-3/4">
+            We know you have questions, We also have answers
+          </h1>
+          <p className="md:w-3/4 text-xs md:text-sm text-black/50">
+            We are here to help you with any questions you may have. Our team of
+            experts is always ready to assist you with any questions you may
+            have.
+          </p>
         </div>
 
-       <div className="py-14 flex flex-col gap-4">
-       {[
-          {
-            id: 1, 
-            question: "What subjects do you offer tutoring in?", 
-            answer: "We offer comprehensive tutoring in core subjects including Mathematics, English, Science, and Social Studies. We also provide specialized test preparation for standardized exams like SAT, ACT, and GCSE."
-          }, 
-          {
-            id: 2, 
-            question: "How do you match students with tutors?", 
-            answer: "We carefully match students with tutors based on their learning style, academic needs, and personality. Our matching process considers subject expertise, teaching style, and student goals to ensure the best possible learning experience."
-          },
-          {
-            id: 3, 
-            question: "What technology do I need for online tutoring?", 
-            answer: "You'll need a stable internet connection, a computer or tablet with a webcam, and a quiet space for learning. We use Zoom for our virtual classrooms, which is compatible with most devices."
-          },
-          {
-            id: 4, 
-            question: "How often should my child have tutoring sessions?", 
-            answer: "Most students benefit from 1-2 sessions per week, but we can customize this based on individual needs. We'll recommend a schedule after an initial assessment of your child's learning goals."
-          },
-          {
-            id: 5, 
-            question: "What makes your teaching approach different?", 
-            answer: "Our personalized learning approach focuses on understanding each student's unique learning style. We combine traditional teaching methods with innovative techniques and real-world applications to make learning engaging and effective."
-          }
-        ].map((item) => (
-          <div key={item.id} className="flex flex-col gap-2 md:p-8 p-4 border-b border-black/20 transition-all duration-300">
-            <div 
-              className="flex items-center justify-between cursor-pointer" 
-              onClick={() => setOpen(open === item.id ? null : item.id)}
+        <div className="py-14 flex flex-col gap-4">
+          {[
+            {
+              id: 1,
+              question: "What subjects do you offer tutoring in?",
+              answer:
+                "We offer comprehensive tutoring in core subjects including Mathematics, English, Science, and Social Studies. We also provide specialized test preparation for standardized exams like SAT, ACT, and GCSE.",
+            },
+            {
+              id: 2,
+              question: "How do you match students with tutors?",
+              answer:
+                "We carefully match students with tutors based on their learning style, academic needs, and personality. Our matching process considers subject expertise, teaching style, and student goals to ensure the best possible learning experience.",
+            },
+            {
+              id: 3,
+              question: "What technology do I need for online tutoring?",
+              answer:
+                "You'll need a stable internet connection, a computer or tablet with a webcam, and a quiet space for learning. We use Zoom for our virtual classrooms, which is compatible with most devices.",
+            },
+            {
+              id: 4,
+              question: "How often should my child have tutoring sessions?",
+              answer:
+                "Most students benefit from 1-2 sessions per week, but we can customize this based on individual needs. We'll recommend a schedule after an initial assessment of your child's learning goals.",
+            },
+            {
+              id: 5,
+              question: "What makes your teaching approach different?",
+              answer:
+                "Our personalized learning approach focuses on understanding each student's unique learning style. We combine traditional teaching methods with innovative techniques and real-world applications to make learning engaging and effective.",
+            },
+          ].map((item) => (
+            <div
+              key={item.id}
+              className="flex flex-col gap-2 md:p-8 p-4 border-b border-black/20 transition-all duration-300"
             >
-              <h1 className="md:text-xl text-base text-black">{item.question}</h1>
-              {open === item.id ? <ChevronUp /> : <ChevronDown />}
+              <div
+                className="flex items-center justify-between cursor-pointer"
+                onClick={() => setOpen(open === item.id ? null : item.id)}
+              >
+                <h1 className="md:text-xl text-base text-black">
+                  {item.question}
+                </h1>
+                {open === item.id ? <ChevronUp /> : <ChevronDown />}
+              </div>
+              {open === item.id && (
+                <p className="text-black/70 text-xs md:text-sm mt-2">
+                  {item.answer}
+                </p>
+              )}
             </div>
-            {open === item.id && (
-              <p className="text-black/70 text-xs md:text-sm mt-2">{item.answer}</p>
-            )}
-          </div>
-        ))}
-       </div>
+          ))}
+        </div>
       </section>
-
     </main>
   );
 }
