@@ -7,7 +7,7 @@ function Footer() {
     <footer className="bg-secondary-color md:p-20 py-10 px-4">
       <div className="md:w-[1200px] w-full md:mx-auto md:grid md:grid-cols-4 grid grid-cols-1 gap-5">
         <div className="flex flex-col gap-3">
-          <div className="w-[250px]">
+          <div className="w-[200px]">
             <Image
               src="/assets/logof.png"
               alt="logo"
@@ -28,7 +28,7 @@ function Footer() {
               href="mailto:info@bridgitus.com"
               className="text-xs text-white/50"
             >
-              bridgituslearning@gmail.com
+              info@bridgitus.com
             </Link>
           </div>
         </div>
