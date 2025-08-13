@@ -13,7 +13,7 @@ function Why() {
     <section className=" ">
       <div className="md:w-[1000px] md:mx-auto flex flex-col gap-10 py-20 px-4 md:px-0">
         <div className="flex flex-col gap-4 items-center">
-          <h1 className="md:w-2/3 md:text-center md:text-2xl text-lg font-bold">
+          <h1 className="md:w-2/3 md:text-center md:text-2xl text-xl font-bold">
             Here&apos;s why you should choose Bridgitus Learning{" "}
           </h1>
           <p className="md:w-2/3 md:text-center md:text-sm text-xs text-black/50">
@@ -72,8 +72,8 @@ function Why() {
                 },
               ].map((e) => (
                 <div key={e.id} className="flex items-center gap-2">
-                  <Check />
-                  <p className="text-base text-white">{e.title}</p>
+                  <Check className="hidden md:block" />
+                  <p className="md:text-base text-sm  text-white">{e.title}</p>
                 </div>
               ))}
             </div>
@@ -129,8 +129,8 @@ function Why() {
                   { id: 5, title: "Weak communication and teamwork skills" },
                 ].map((e) => (
                   <div key={e.id} className="flex items-center gap-2">
-                    <Check />
-                    <p className="text-base">{e.title}</p>
+                    <Check className="hidden md:text-block" />
+                    <p className="md:text-base text-sm">{e.title}</p>
                   </div>
                 ))}
               </div>
@@ -190,8 +190,8 @@ function Why() {
                   },
                 ].map((e) => (
                   <div key={e.id} className="flex items-center gap-2">
-                    <Check />
-                    <p className="text-base">{e.title}</p>
+                    <Check className="hidden md:block" />
+                    <p className="md:text-base text-sm">{e.title}</p>
                   </div>
                 ))}
               </div>
