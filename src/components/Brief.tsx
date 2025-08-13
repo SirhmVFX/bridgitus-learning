@@ -23,7 +23,9 @@ function Brief() {
             the tools they need to thrive.
           </p>
 
-          <Button type="button">Bridge the gap</Button>
+          <Button type="link" href="/register">
+            Bridge the gap
+          </Button>
         </div>
 
         <div className="md:w-1/2 flex flex-col gap-8 items-start">
