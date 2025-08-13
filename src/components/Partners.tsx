@@ -16,7 +16,7 @@ function Partners() {
           </p>
         </div> */}
 
-        <h1 className="text-sm">Trusted by:</h1>
+        <h1 className="text-sm">Partner with:</h1>
         <div className="flex gap-2 md:gap-4  justify-between grow-1">
           {[
             { id: 1, img: "/assets/dm.png" },
