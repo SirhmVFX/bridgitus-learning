@@ -22,7 +22,7 @@ function Header() {
                 href="mailto:info@bridgitus.com"
                 className={`text-xs text-white`}
               >
-                bridgituslearning@gmail.com
+                info@bridgitus.com
               </Link>
             </div>
           </div>
@@ -36,7 +36,7 @@ function Header() {
       </div>
       <div className="bg-black">
         <div className="md:w-[1000px] mx-auto flex justify-between items-center py-1 px-4 md:px-0  text-white">
-          <div className="md:w-[270px] w-[250px]">
+          <div className="md:w-[270px] w-[200px]">
             <Image
               width={1000}
               height={1000}
@@ -69,7 +69,9 @@ function Header() {
               <Link className={`text-[11px] `} href="/contact">
                 Contact
               </Link>
-              <Button type="button">Register Now</Button>
+              <Button type="link" href="/register">
+                Register Now
+              </Button>
             </ul>
           </div>
 
