@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import Button from "./Button";
 import Image from "next/image";
@@ -62,6 +64,13 @@ function Header() {
               </Link>
               <Link className={`text-[11px] `} href="/subjects">
                 Subjects
+                {/* <div>
+                  <Link href="/subjects">Maths</Link>
+                  <Link href="/subjects">English </Link>
+                  <Link href="/subjects">Physics</Link>
+                  <Link href="/subjects">Chemistry</Link>
+                  <Link href="/subjects">Biology</Link>
+                </div> */}
               </Link>
               <Link className={`text-[11px] `} href="/testimonials">
                 Testimonials
