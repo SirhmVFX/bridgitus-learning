@@ -3,7 +3,7 @@ import Image from "next/image";
 function Partners() {
   return (
     <section className="flex items-center  ">
-      <div className="md:w-[1000px] md:mx-auto flex md:flex-row flex-col items-center justify-between md:gap-20 gap-4 py-4 px-2 md:px-0">
+      <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] md:mx-auto flex md:flex-row flex-col items-center justify-between md:gap-20 gap-4 py-4 px-2 md:px-0">
         {/* <div className=" flex flex-col gap-4 items-center md:p-10 ">
           <h1 className="md:text-5xl text-3xl ">
             Some partners we&apos;ve worked with
