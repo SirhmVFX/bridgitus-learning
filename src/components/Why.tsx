@@ -17,9 +17,9 @@ function Why() {
             Our Services
           </h1>
           <p className="md:w-2/3 md:text-center md:text-sm text-xs text-black/50">
-            These are the reasons why past sponsors have been a part of what we
-            do at Bridgitus Learning and it&apos;s and it&apos;s the reasosn why
-            they are still contributing{" "}
+            At Bridgitus Learning, we offer personalized, results-driven
+            tutoring designed to support every stage of a student&apos;s
+            academic journey.
           </p>
         </div>
 
@@ -159,8 +159,8 @@ function Why() {
               <p>From assignments to exams—your complete academic partner</p>
               <p className="text-xs text-white/70">
                 {showFullText3
-                  ? "Bridgitus Learning goes beyond lessons to provide full-spectrum academic support. From daily assignment to exam preparatory programs equip students with strategies, practice tests, and confidence-building techniques to excel in standardized tests and school assessments. Meanwhile, our homework assistance ensures students stay on track, meet deadlines, and understand the work—not just complete it. By combining subject expertise with practical skills, we help learners achieve measurable success in every area of their education journey."
-                  : "Bridgitus Learning goes beyond lessons to provide full-spectrum academic support. From daily assignment to exam preparatory programs equip students with strategies, practice tests,..."}
+                  ? "At Bridgitus Learning we offer comprehensive academic support that extends beyond traditional lessons. Our daily assignment and homework support services help students stay organized, meet academic deadlines, and develop a clear understanding of their coursework, rather than simply completing tasks. By integrating subject-matter expertise with practical academic skills we empower learners to achieve consistent, measurable progress across all aspects of their educational journey."
+                  : "At Bridgitus Learning we offer comprehensive academic support that extends beyond traditional lessons. Our daily assignment..."}
                 <button
                   onClick={() => setShowFullText3(!showFullText3)}
                   className="text-green-500 hover:underline ml-1 cursor-pointer"
@@ -210,71 +210,118 @@ function Why() {
           </div>
         </div>
 
-        <div className="bg-green-500 text-white rounded-xl  hover:scale-105 cursor-pointer transition-all flex md:flex-row flex-col  gap-">
-          <div className="flex flex-col items-start gap-4 md:w-2/3  md:p-16 p-6">
-            <h1 className="md:text-2xl text-xl md:leading-none leading-6">
-              Personalized{" "}
-              <span className="text-black font-bold">One-on-One</span> Tutoring
+        <div className="bg-green-500 text-white rounded-xl  hover:scale-105 cursor-pointer transition-all flex md:flex-col flex-col  gap-">
+          <div className="flex flex-col items-start gap-6   md:p-16 p-6 text-black">
+            <h1 className="md:text-2xl text-xl md:leading-none leading-6 font-bold">
+              Exam and Scholarship Preparatory Class ({" "}
+              <span className="text-bold text-amber-500">Edutest,</span>{" "}
+              <span className="text-bold text-amber-500">ACER,</span>{" "}
+              <span className="text-bold text-amber-500">AAS,</span>{" "}
+              <span className="text-bold text-amber-500">VCE - high ATAR</span>{" "}
+              )
             </h1>
             <p>
-              Unlock your child’s full potential with tailored learning
-              experiences
+              At Bridgitus Learning, our Exam Preparatory Classen are
+              meticulously designed to support students aiming for success in
+              high-stakes attestments, including{" "}
+              <span className="text-bold">
+                Edutest SAT , ACER scholarship tests, AAS (Academic Assessment
+                Services), and the VCE (Victorian Certificate of Education)
+              </span>
             </p>
-            <p className="text-xs text-white">
-              {showFullText
-                ? "At Bridgitus Learning, we uphold the principle that education should be responsive to the individual needs of each leamer. Our one-on-one online tutoring sessions are thoughtfully designed to provide personalized instruction, ensuring that every student receives support aligned with their unique learning style, academic level, and pace of progress. With the dedicated guidance of experienced tutors, students are equipped to overcome academic challenges, gain mastery over complex subjects, and build the confidence necessary for sustained success. Whether the objective is to enhance academic performance, develop effective study strategies, or prepare for advanced coursework, our tailored approach to online education ensures meaningful, engaging, and measurable outcomes."
-                : "At Bridgitus Learning, we uphold the principle that education should be responsive to the individual needs of each leamer. Our one-on-one online tutoring sessions are thoughtfully designed to provide personalized instruction,..."}
-              <button
-                onClick={() => setShowFullText(!showFullText)}
-                className="text-black hover:underline ml-1 cursor-pointer"
-              >
-                {showFullText ? "Read less" : "Read more"}
-              </button>
+            <p className=" text-black">
+              Each program is tailored to the specific format, content, and
+              expectation of these examinations. We focus not only on subject
+              mastery but also on buliding the strategic thinking time
+              managment, and problem solving skills esential for high
+              performance.
             </p>
 
-            <h1 className="text-lg font-bold">The problem this addresses</h1>
+            <h1 className="text-lg font-bold">Our classes include:</h1>
             <div className="grid grid-cols-2 gap-4">
               {[
                 {
                   id: 1,
                   title:
-                    "Difficulty understanding challenging subjects at school",
+                    "Comprehensive instruction aligned with each again and question style.",
                 },
                 {
                   id: 2,
                   title:
-                    "Trouble maintaining focus during online learning sessions",
+                    "2. Regular practice tests under timed conditions to simulate real exam settings.",
                 },
                 {
                   id: 3,
-                  title: "Scarcity of tailored academic resources and support",
+                  title:
+                    "Data-driven performance analysis and personalized feedback.",
                 },
                 {
                   id: 4,
                   title:
-                    "Limited one-on-one attention in conventional classrooms",
+                    "Strategy workshops focused on critical thinking, nam technique and managing exam pressure.",
                 },
                 {
                   id: 5,
                   title:
-                    "Irregular academic growth and reduced self-confidence",
+                    "5. Ongoing support with daily assignments to reinforce learning and build consistent study habits.",
                 },
               ].map((e) => (
                 <div key={e.id} className="flex items-center gap-2">
                   <Check className="hidden md:block" />
-                  <p className="md:text-base text-sm  text-white">{e.title}</p>
+                  <p className="md:text-base text-sm  text-black">{e.title}</p>
                 </div>
               ))}
             </div>
+
+            <p>
+              Led by experienced educators with a strong understanding of each
+              texting framework, our approach ensures that students are fully
+              prepared academically and mentally to achieve the best possible
+              results.
+            </p>
+            <p className=" text-black">
+              Whether you&apos;re targeting selective entry, university
+              admissions, or academic scholarships, Bridgitus Learning provides
+              the structure, support, and expertise to help you succeed.
+            </p>
           </div>
-          <div className="md:w-1/3 px-8 ">
-            <Image
-              width={1000}
-              height={1000}
-              src="/assets/i5.jpg"
-              alt="why"
-              className="w-full h-full object-cover"
-            />
+          <div className=" grid grid-cols-2 p-10 gap-6">
+            <div className="w-full h-[200px]">
+              <Image
+                width={1000}
+                height={1000}
+                src="/assets/i9.jpg"
+                alt="why"
+                className="w-full h-full object-cover rounded-3xl"
+              />
+            </div>
+            <div className="w-full h-[200px]">
+              <Image
+                width={1000}
+                height={1000}
+                src="/assets/i12.jpg"
+                alt="why"
+                className="w-full h-full object-cover rounded-3xl"
+              />
+            </div>
+            <div className="w-full h-[200px]">
+              <Image
+                width={1000}
+                height={1000}
+                src="/assets/i13.jpeg"
+                alt="why"
+                className="w-full h-full object-cover rounded-3xl"
+              />
+            </div>
+            <div className="w-full h-[200px]">
+              <Image
+                width={1000}
+                height={1000}
+                src="/assets/i14.jpeg"
+                alt="why"
+                className="w-full h-full object-cover rounded-3xl"
+              />
+            </div>
           </div>
         </div>
       </div>
