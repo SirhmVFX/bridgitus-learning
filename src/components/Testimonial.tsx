@@ -4,7 +4,7 @@ import React from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import Image from "next/image";
+import { Star2 } from "./Icons";
 
 function CenterMode() {
   const settings = {
@@ -12,14 +12,14 @@ function CenterMode() {
     infinite: true,
     centerPadding: "90px",
     centerMode: true,
-    slidesToShow: 1,
+    slidesToShow: 2,
     speed: 500,
     slidesToScroll: 1,
     responsive: [
       {
         breakpoint: 1024, // tablets and smaller laptops
         settings: {
-          slidesToShow: 2,
+          slidesToShow: 1,
           centerPadding: "0px",
         },
       },
@@ -43,31 +43,37 @@ function CenterMode() {
             title:
               "Bridgitus Learning has transformed my daughter's approach to math. The personalized sessions made complex concepts so much easier to understand!",
             image: "/assets/test1.png",
-            name: "- Sarah M., Parent",
+            name: "Sarah M., Parent",
           },
           {
             id: 2,
             title:
               "The tutors are incredibly engaging and patient. My son looks forward to his science lessons every week!",
             image: "/assets/test1.png",
-            name: "- James L., Parent",
+            name: "James L., Parent",
           },
           {
             id: 3,
             title:
               "Thanks to Bridgitus, I aced my AP English exam. The one-on-one attention really helped me improve my writing skills",
             image: "/assets/test1.png",
-            name: "- Emily R., Student",
+            name: "Emily R., Student",
           },
         ].map((item, i) => (
           <div key={i} className="px-2">
-            <div className="bg-black md:h-[300px] h-[200px] relative rounded-lg overflow-hidden">
-              <div className="md:p-12 p-5 z-50 w-full md:w-3/4 ">
-                <h3 className="text-white md:text-4xl text-xs">{item.title}</h3>
-                <p className="text-white/50 text-xs md:text-base">
-                  {item.name}
+            <div className="border border-gray-300 flex flex-col gap-2 justify-center items-center p-8 h-full rounded-lg overflow-hidden">
+              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                <p className="text-white text-xs md:text-base">
+                  {item.name.split(" ")[0].charAt(0).toUpperCase()}
                 </p>
               </div>
+              <p className=" text-xs md:text-base font-bold">{item.name}</p>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((item, i) => (
+                  <Star2 key={i} />
+                ))}
+              </div>
+              <h3 className=" text-center">{item.title}</h3>
             </div>
           </div>
         ))}
