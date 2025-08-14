@@ -11,7 +11,7 @@ function Why() {
 
   return (
     <section className=" ">
-      <div className="md:w-[1000px] md:mx-auto flex flex-col gap-10 py-20 px-4 md:px-0">
+      <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] md:mx-auto flex flex-col gap-10 py-20 px-4 md:px-0">
         <div className="flex flex-col gap-4 items-center">
           <h1 className="md:w-2/3 md:text-center md:text-2xl text-xl font-bold">
             Our Services
@@ -115,7 +115,7 @@ function Why() {
               </p>
 
               <h1 className="text-lg font-bold">The problem this addresses</h1>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid xl:grid-cols-2 gap-2">
                 {[
                   {
                     id: 1,
@@ -132,18 +132,19 @@ function Why() {
                   { id: 5, title: "Weak communication and teamwork skills" },
                 ].map((e) => (
                   <div key={e.id} className="flex items-center gap-2">
-                    <Check className="hidden md:text-block" />
+                    <Check className="hidden md:block" />
                     <p className="md:text-base text-sm">{e.title}</p>
                   </div>
                 ))}
               </div>
             </div>
-            <div>
+            <div className="p-8">
               <Image
-                src="/assets/cgl.svg"
+                src="/assets/i15.webp"
                 alt="cgl"
                 width={1000}
                 height={1000}
+                className="w-full h-full object-cover rounded-3xl"
               />
             </div>
           </div>
@@ -170,7 +171,7 @@ function Why() {
               </p>
 
               <h1 className="text-lg font-bold">The problem this addresses</h1>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid xl:grid-cols-2 gap-4">
                 {[
                   { id: 1, title: "Exam anxiety and poor test performance" },
                   {
@@ -193,32 +194,32 @@ function Why() {
                   },
                 ].map((e) => (
                   <div key={e.id} className="flex items-center gap-2">
-                    <Check className="hidden md:block" />
+                    <Check className="md:block hidden" />
                     <p className="md:text-base text-sm">{e.title}</p>
                   </div>
                 ))}
               </div>
             </div>
-            <div>
+            <div className="p-8">
               <Image
-                src="/assets/acs.svg"
+                src="/assets/i16.jpg"
                 alt="academic"
                 width={1000}
                 height={1000}
+                className="w-full h-full object-cover rounded-3xl"
               />
             </div>
           </div>
         </div>
 
-        <div className="bg-green-500 text-white rounded-xl  hover:scale-105 cursor-pointer transition-all flex md:flex-col flex-col  gap-">
+        <div className="bg-cyan-400 text-white rounded-xl  hover:scale-105 cursor-pointer transition-all flex md:flex-col flex-col  gap-">
           <div className="flex flex-col items-start gap-6   md:p-16 p-6 text-black">
-            <h1 className="md:text-2xl text-xl md:leading-none leading-6 font-bold">
+            <h1 className="md:text-2xl text-xl md:leading-none leading-6 font-semibold">
               Exam and Scholarship Preparatory Class ({" "}
-              <span className="text-bold text-amber-500">Edutest,</span>{" "}
-              <span className="text-bold text-amber-500">ACER,</span>{" "}
-              <span className="text-bold text-amber-500">AAS,</span>{" "}
-              <span className="text-bold text-amber-500">VCE - high ATAR</span>{" "}
-              )
+              <span className="text-bold text-white ">Edutest,</span>{" "}
+              <span className="text-bold text-white ">ACER,</span>{" "}
+              <span className="text-bold text-white ">AAS,</span>{" "}
+              <span className="text-bold text-white ">VCE - high ATAR</span> )
             </h1>
             <p>
               At Bridgitus Learning, our Exam Preparatory Classen are
@@ -238,7 +239,7 @@ function Why() {
             </p>
 
             <h1 className="text-lg font-bold">Our classes include:</h1>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-4">
               {[
                 {
                   id: 1,
@@ -248,7 +249,7 @@ function Why() {
                 {
                   id: 2,
                   title:
-                    "2. Regular practice tests under timed conditions to simulate real exam settings.",
+                    "Regular practice tests under timed conditions to simulate real exam settings.",
                 },
                 {
                   id: 3,
@@ -263,7 +264,7 @@ function Why() {
                 {
                   id: 5,
                   title:
-                    "5. Ongoing support with daily assignments to reinforce learning and build consistent study habits.",
+                    "Ongoing support with daily assignments to reinforce learning and build consistent study habits.",
                 },
               ].map((e) => (
                 <div key={e.id} className="flex items-center gap-2">
@@ -285,7 +286,7 @@ function Why() {
               the structure, support, and expertise to help you succeed.
             </p>
           </div>
-          <div className=" grid grid-cols-2 p-10 gap-6">
+          <div className=" grid grid-cols-2 md:p-10 p-4 md:gap-6 gap-2">
             <div className="w-full h-[200px]">
               <Image
                 width={1000}
@@ -308,7 +309,7 @@ function Why() {
               <Image
                 width={1000}
                 height={1000}
-                src="/assets/i13.jpeg"
+                src="/assets/i13.png"
                 alt="why"
                 className="w-full h-full object-cover rounded-3xl"
               />
@@ -317,7 +318,7 @@ function Why() {
               <Image
                 width={1000}
                 height={1000}
-                src="/assets/i14.jpeg"
+                src="/assets/i14.png"
                 alt="why"
                 className="w-full h-full object-cover rounded-3xl"
               />
