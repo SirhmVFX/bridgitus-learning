@@ -1,7 +1,7 @@
 function Offer() {
   return (
     <section>
-      <div className="md:w-[1000px] md:mx-auto flex flex-col items-center justify-center gap-10 py-20 px-4 md:px-0">
+      <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] md:mx-auto flex flex-col items-center justify-center gap-10 py-20 px-4 md:px-0">
         <h1 className="text-2xl font-bold md:text-center">
           Why Choose Bridgitus Learning?
         </h1>
@@ -65,14 +65,14 @@ function Offer() {
               title:
                 "Weekly sessions – your child attends on a weekly basis for maximum educational advantage",
               color: "bg-black-500/10",
-              textcolor: "text-black-500/10",
+              textcolor: "text-black/10",
             },
           ].map((e) => (
             <div
               className={`${e.color} rounded-xl p-6  hover:scale-105 cursor-pointer transition-all relative h-52 overflow-hidden`}
               key={e.id}
             >
-              <h1 className="md:text-base text-sm">{e.title}</h1>
+              <h1 className="md:text-base text-sm font-semibold">{e.title}</h1>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="120"
