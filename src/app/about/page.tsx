@@ -36,6 +36,24 @@ function About() {
         </div>
       </section>
 
+      <section className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 md:py-20 py-10  grid md:grid-cols-1 grid-cols-1 items-center md:gap-14 gap-6">
+        <div className=" flex flex-col gap-3  rounded-3xl h-fit ">
+          <h1 className="md:text-3xl text-xl font-bold">The Vision</h1>
+          <p className="md:text-3xl text-2xl italic text-black/50">
+            &quot;To inspire and equip every learner to excel and thrive&quot;
+          </p>
+        </div>
+
+        <div className=" flex flex-col gap-3">
+          <h1 className="md:text-3xl text-xl font-bold">The Mission</h1>
+          <p className="md:text-3xl text-2xl text-black/50 italic">
+            &quot;We connect students to Knowledge, skills and confidence
+            through engaging, personalized learning - bridging academic gaps and
+            paving the way to excellence&quot;
+          </p>
+        </div>
+      </section>
+
       <section className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 md:py-0 py-10 md:h-screen flex md:flex-row flex-col items-center md:gap-0 gap-6">
         <div className="md:w-1/2 flex flex-col gap-6">
           <h1 className="md:text-3xl text-xl font-bold">
@@ -173,6 +191,65 @@ function About() {
             height={1000}
             className="w-full h-full object-cover rounded-3xl"
           />
+        </div>
+      </section>
+
+      <section className="md:w-[1000px] w-full md:mx-auto md:px-0 px-4 py-10 flex flex-col gap-10  ">
+        <h1 className="text-4xl italic">From the directors corner</h1>
+        <div className="flex md:flex-row  flex-col  md:gap-10 gap-8">
+          <div className="md:w-1/3">
+            <div className="w-full h-[400px] ">
+              <Image
+                src="/assets/i.jpg"
+                alt="directors image"
+                width={1000}
+                height={1000}
+                className="w-full h-full object-cover rounded-3xl bg-green-100"
+              />
+            </div>
+
+            <div className="p-4">
+              <h1 className="text-black md:text-base text-sm">
+                Phemmie Olugbogi
+              </h1>
+              <p className="text-black/50 md:text-sm text-xs italic">
+                Founder, Bridgitus Learning
+              </p>
+            </div>
+          </div>
+          <div className="md:w-2/3 flex flex-col gap-6">
+            <h1 className="md:text-xl text-base font-bold">Director’s Note</h1>
+            <p className="text-sm md:text-base  text-black/50">
+              Bridgitus Learning is more than just an educational platform; we
+              are a dynamic bridge between potential and achievement. Founded on
+              the belief that every learner deserves a clear and guided pathway
+              to academic excellence, our mission is to empower students with
+              the tools, strategies, and confidence they need to succeed in
+              today’s competitive environment.
+            </p>
+
+            <p className="text-sm md:text-base text-black/50">
+              With a commitment to high-quality instruction, innovative learning
+              methods, and personalized support, Bridgitus Learning transforms
+              the traditional educational experience. Our expert educators and
+              carefully designed programs cater to a wide range of learners,
+              ensuring that each student’s unique strengths are nurtured while
+              challenges are addressed with precision and care.
+            </p>
+
+            <p className="text-sm md:text-base text-black/50">
+              The name Bridgitus symbolizes connection, a bridge between where a
+              student is today and where they aspire to be. Through structured
+              learning paths, skill-building courses, and academic mentoring, we
+              help students unlock their full potential.
+            </p>
+
+            <p className="text-sm md:text-base text-black/50">
+              At Bridgitus Learning, excellence is not a destination; it’s a
+              journey, and we’re honoured to walk that path with every student
+              we serve. Your success story begins here. Let us be your guide.
+            </p>
+          </div>
         </div>
       </section>
 
