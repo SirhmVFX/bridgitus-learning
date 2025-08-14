@@ -4,8 +4,8 @@ import Image from "next/image";
 
 function Footer() {
   return (
-    <footer className="bg-secondary-color md:p-20 py-10 px-4">
-      <div className="md:w-[1200px] w-full md:mx-auto md:grid md:grid-cols-4 grid grid-cols-1 gap-5">
+    <footer className="bg-secondary-color md:p-20 px-4">
+      <div className="md:w-[1000px] w-full md:mx-auto md:grid md:grid-cols-4 grid grid-cols-1 gap-5">
         <div className="flex flex-col gap-3">
           <div className="w-[200px]">
             <Image
