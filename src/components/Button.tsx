@@ -16,7 +16,7 @@ function Button({
   className = "",
 }: ButtonProps) {
   const baseStyles =
-    "px-5 py-3  font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200 text-[11px]";
+    "px-5 py-3  font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200 md:text-[8px] lg:text-[11px] xl:text-[12px]";
 
   const variantStyles = {
     filled:
