@@ -47,7 +47,7 @@ function About() {
         <div className=" flex flex-col gap-3">
           <h1 className="md:text-3xl text-xl font-bold">The Mission</h1>
           <p className="md:text-3xl text-2xl text-black/50 italic">
-            &quot;We connect students to Knowledge, skills and confidence
+            &quot;To connect students to Knowledge, skills and confidence
             through engaging, personalized learning - bridging academic gaps and
             paving the way to excellence&quot;
           </p>
@@ -116,7 +116,7 @@ function About() {
       <section className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] w-full md:mx-auto md:px-0 px-4 md:py-14 py-10 xl:h-screen flex md:flex-row flex-col items-center md:gap-0 gap-6">
         <div className="md:w-1/2 flex flex-col gap-6">
           <h1 className="md:text-3xl text-xl font-bold">
-            Bridgitus Is More than a Company. It&apos;s a Story
+            Bridgitus Is More than a Institute. It&apos;s a Story
           </h1>
           <p className="text-sm text-black/50">
             Bridgitus Learning is a premier online tuition platform dedicated to
