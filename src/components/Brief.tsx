@@ -35,15 +35,6 @@ function Brief() {
             than your excuses.”
           </h1>
           <div className="flex md:gap-5 gap-2 items-center">
-            <div className="w-12 h-14 ">
-              <Image
-                width={1000}
-                height={1000}
-                src="/assets/phemmie.png"
-                alt="founder"
-                className="w-full h-full object-cover"
-              />
-            </div>
             <div>
               <h1 className="text-white md:text-base text-sm">
                 Phemmie Olugbogi
