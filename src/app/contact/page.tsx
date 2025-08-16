@@ -1,3 +1,4 @@
+import Button from "@/components/Button";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -23,54 +24,93 @@ function Contact() {
         </div>
       </section>
 
-      <section className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] md:mx-auto flex flex-col gap-10 items-center py-20 px-4 md:px-0">
-        <div className="grid md:grid-cols-2 gap-4 w-full">
-          <div className="flex flex-col gap-1 p-6 border border-gray-200 rounded-2xl">
-            <div>
-              <h1 className="text-xs md:text-sm font-bold">Call us</h1>
-            </div>
-            <a
-              href="tel:+0433600592"
-              className="text-blue-500 text-base md:text-lg"
-            >
-              +0433600592
-            </a>
+      <div>
+        {/* <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] md:mx-auto p-4 mx-auto pt-24 md:py-32 md:flex items-center gap-4">
+          <h1 className="text-3xl md:text-5xl lg:text-7xl font-medium md:w-1/2">
+            We&apos;d Love to Hear From You
+          </h1>
+          <p className="text-gray-500 text-base md:text-lg md:w-1/2">
+            Have questions, suggestions, or want to partner with us? Reach out
+            today and let’s work together to make a difference!
+          </p>
+        </div> */}
+
+        <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] md:mx-auto mx-auto py-4 flex md:flex-row flex-col items-center gap-4">
+          <div className=" flex md:flex-row flex-col gap-8 p-6 rounded-lg w-1/2">
+            <form className="w-full flex flex-col gap-4 items-start">
+              <h1 className="text-xl font-medium">Leave us your info </h1>
+              <input
+                type="text"
+                className="w-full bg-transparent p-4 rounded-md border border-gray-300"
+                placeholder="Your Name"
+              />
+              <input
+                type="text"
+                className="w-full bg-transparent p-4 rounded-md border border-gray-300"
+                placeholder="Your Email"
+              />
+              <textarea
+                className="w-full bg-transparent p-4 rounded-md border border-gray-300"
+                placeholder="Your Message"
+                rows={5}
+              ></textarea>
+              <div>
+                <input type="checkbox" className="mr-2" />
+                <label htmlFor="">
+                  You agree to our friendly{" "}
+                  <span className="text-primarycolor">privacy policy</span>
+                </label>
+              </div>
+              <Button type="button">Send Message</Button>
+            </form>
           </div>
-          <div className="flex flex-col gap-1 p-6 border border-gray-200 rounded-2xl">
-            <div>
-              <h1 className="text-xs md:text-sm font-bold">Email us</h1>
+
+          <div className="w-1/2 flex flex-col gap-12">
+            <div className="flex flex-col gap-2">
+              <h1 className="text-xl  font-medium">Office Address</h1>
+
+              <p className="text-gray-700 text-base  lg:text-lg"></p>
             </div>
-            <a
-              href="mailto:info@bridgitus.com"
-              className="text-blue-500 text-base md:text-lg"
-            >
-              info@bridgitus.com
-            </a>
-          </div>
-          <div className="flex flex-col gap-1 p-6 border border-gray-200 rounded-2xl">
-            <div>
-              <h1 className="text-xs md:text-sm font-bold">Text Us</h1>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="flex flex-col gap-2">
+                <h1 className="text-xl  font-medium">Phone Number: </h1>
+
+                <p className="text-gray-700  text-base  lg:text-lg">
+                  +61433600592
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <h1 className="text-xl  font-medium">Email Address: </h1>
+
+                <p className="text-gray-700 text-base  lg:text-lg">
+                  info@bridgitus.com
+                </p>
+              </div>
             </div>
-            <a
-              href="tel:+0433600592"
-              className="text-blue-500 text-base md:text-lg"
-            >
-              +0433600592
-            </a>
-          </div>
-          <div className="flex flex-col gap-1 p-6 border border-gray-200 rounded-2xl">
-            <div>
-              <h1 className="text-xs md:text-sm font-bold">Follow us</h1>
-            </div>
-            <div>
-              <Link
-                href="https://www.facebook.com/bridgitus/"
-                target="_blank"
-              ></Link>
+
+            <div className="flex flex-col gap-2">
+              <h1 className="text-xl  font-medium">Social Media Links </h1>
+
+              <div className="flex gap-4">
+                <Link href={""} className="text-primarycolor">
+                  Facebook
+                </Link>
+                <Link href={""} className="text-primarycolor">
+                  Instagram{" "}
+                </Link>
+                <Link href={""} className="text-primarycolor">
+                  LinkedIn
+                </Link>
+                <Link href={""} className="text-primarycolor">
+                  Twitter/X
+                </Link>
+              </div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
     </main>
   );
 }
