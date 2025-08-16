@@ -4,8 +4,11 @@ import Link from "next/link";
 import Button from "./Button";
 import Image from "next/image";
 import { Mail, Menu, Phone, Star } from "./Icons";
+import { useState } from "react";
 
 function Header() {
+  const [open, setOpen] = useState(false);
+
   return (
     <header className={`absolute top-0 left-0 right-0 z-50 `}>
       <div className="hidden md:block py-3 bg-[#161616]">
@@ -14,10 +17,10 @@ function Header() {
             <div className="flex items-center gap-2">
               <Phone />
               <Link
-                href="tel:+0433600592"
+                href="tel:+61433600592"
                 className={`md:text-[8px] lg:text-[11px] xl:text-[12px] text-white`}
               >
-                +0433600592
+                +61433600592
               </Link>
             </div>
 
@@ -71,33 +74,88 @@ function Header() {
               >
                 Our Services
               </Link>
-              <Link
-                className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
-                href="/classes"
+              <li
+                className="relative cursor-pointer flex justify-center items-center"
+                onMouseOver={() => setOpen(true)}
+                onMouseLeave={() => setOpen(false)}
               >
-                Classes
-              </Link>
+                <Link
+                  href="/classes"
+                  className="md:text-[8px] lg:text-[11px] xl:text-[12px] cursor-pointer z-50"
+                >
+                  Classes
+                </Link>
+                {open && (
+                  <div
+                    className="absolute top-0 left-0 flex flex-col gap-4 bg-black/50 w-[200px] px-2 pb-2 pt-10 "
+                    onMouseOver={() => setOpen(true)}
+                    onMouseLeave={() => setOpen(false)}
+                  >
+                    <Link
+                      href="/subjects"
+                      className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                    >
+                      Regular Tutoring
+                    </Link>
+                    <Link
+                      href="/subjects"
+                      className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                    >
+                      Special Math Class
+                    </Link>
+                    <Link
+                      href="/subjects"
+                      className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                    >
+                      Special Science Class
+                    </Link>
+                    <Link
+                      href="/subjects"
+                      className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                    >
+                      Special English Class
+                    </Link>
+                    <Link
+                      href="/subjects"
+                      className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                    >
+                      HSC class
+                    </Link>
+                    <Link
+                      href="/subjects"
+                      className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                    >
+                      VCE class
+                    </Link>
+                    <Link
+                      href="/subjects"
+                      className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                    >
+                      Scholarship Preparatory Class{" "}
+                    </Link>
+                    <Link
+                      href="/subjects"
+                      className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                    >
+                      College Preparatory Class
+                    </Link>
+                  </div>
+                )}
+              </li>
               <Link
-                className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                className={`md:text-[8px] lg:text-[11px] xl:text-[12px] z-50`}
                 href="/pricing"
               >
                 Pricing
-                {/* <div>
-                  <Link href="/subjects">Maths</Link>
-                  <Link href="/subjects">English </Link>
-                  <Link href="/subjects">Physics</Link>
-                  <Link href="/subjects">Chemistry</Link>
-                  <Link href="/subjects">Biology</Link>
-                </div> */}
               </Link>
               <Link
-                className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                className={`md:text-[8px] lg:text-[11px] xl:text-[12px] z-50`}
                 href="/testimonials"
               >
                 Testimonials
               </Link>
               <Link
-                className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                className={`md:text-[8px] lg:text-[11px] xl:text-[12px] z-50 `}
                 href="/contact"
               >
                 Contact
