@@ -17,8 +17,8 @@ function Footer() {
           </div>
           <div className="flex items-center gap-2">
             <Phone />
-            <Link href="tel:+0433600592" className="text-xs text-white/50">
-              +0433600592
+            <Link href="tel:+61433600592" className="text-xs text-white/50">
+              +61433600592
             </Link>
           </div>
 
