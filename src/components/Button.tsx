@@ -6,6 +6,7 @@ interface ButtonProps {
   variant?: "filled" | "outline";
   href?: string;
   className?: string;
+  onClick?: () => void;
 }
 
 function Button({
@@ -14,6 +15,7 @@ function Button({
   variant = "filled",
   href = "",
   className = "",
+  onClick,
 }: ButtonProps) {
   const baseStyles =
     "px-5 py-3  font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200 md:text-[8px] lg:text-[11px] xl:text-[12px]";
@@ -28,7 +30,9 @@ function Button({
   const buttonClasses = `${baseStyles} ${variantStyles[variant]} ${className}`;
 
   return type === "button" ? (
-    <button className={buttonClasses}>{children}</button>
+    <button onClick={onClick} className={buttonClasses}>
+      {children}
+    </button>
   ) : (
     <Link href={href} className={buttonClasses}>
       {children}
