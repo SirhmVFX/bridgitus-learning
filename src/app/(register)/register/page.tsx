@@ -4,6 +4,15 @@ import Button from "@/components/Button";
 import { useState } from "react";
 
 function Register() {
+  const [registerData, setRegisterData] = useState({
+    organizingFor: "",
+    name: "",
+    email: "",
+    password: "",
+    phone: "",
+    address: "",
+  });
+
   const [step1, setStep1] = useState(true);
   const [step2, setStep2] = useState(false);
   const [step3, setStep3] = useState(false);
@@ -12,7 +21,7 @@ function Register() {
   return (
     <div>
       {step1 ? (
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-col items-center gap-10">
           <div className="flex flex-col gap-2 items-center">
             <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
               Book your first lesson with a Bridgitus tutor
@@ -88,18 +97,215 @@ function Register() {
 
           <Button
             type="button"
-            onClick={() => (setStep1(false), () => setStep2(true))}
+            onClick={() => {
+              setStep1(false);
+              setStep2(true);
+            }}
           >
             Get Started
           </Button>
         </div>
       ) : step2 ? (
-        <div>
-          <h1>Step 2</h1>
+        <div className="flex flex-col gap-10">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="" className="text-[12px]  font-medium">
+              First up, who are we organising a tutor for?
+            </label>
+            <select
+              onChange={(e) =>
+                setRegisterData({
+                  ...registerData,
+                  organizingFor: e.target.value,
+                })
+              }
+              className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
+            >
+              <option value="my-child">My Child, (I am the parent)</option>
+              <option value="me">Me, (I am the student)</option>
+              <option value="someone-else">
+                Someone else (I am a carer, teacher, organisation or a family
+                member)
+              </option>
+            </select>
+          </div>
+
+          <div>
+            {registerData.organizingFor === "me" && (
+              <div>
+                <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
+                  We love it when you take the lead in your education!
+                </h1>
+                <p className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
+                  We will still need to run your booking through a parent or
+                  carer so they are aware of the details and costs. Please enter
+                  the contact details of one of your parents on the next page
+                  and we will send them some information!
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setStep1(true);
+                setStep2(false);
+              }}
+              className="px-5 py-3  font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200 md:text-[8px] lg:text-[11px] xl:text-[12px] bg-black/5 "
+            >
+              Prev
+            </button>
+
+            <Button
+              type="button"
+              onClick={() => {
+                setStep2(false);
+                setStep3(true);
+              }}
+            >
+              Next
+            </Button>
+          </div>
         </div>
       ) : step3 ? (
-        <div>
-          <h1>Step 3</h1>
+        <div className="flex flex-col gap-10">
+          <div>
+            <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
+              Your parent or carer&apos;s details:
+            </h1>
+            <p className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
+              We will send them some details about working with us and ensure
+              they are in the loop.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-2">
+              <label htmlFor="" className="text-[12px]  font-medium">
+                First name *
+              </label>
+              <input
+                type="text"
+                placeholder="Enter your first name"
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    organizingFor: e.target.value,
+                  })
+                }
+                className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label htmlFor="" className="text-[12px]  font-medium">
+                Last name *
+              </label>
+              <input
+                type="text"
+                placeholder="Enter your last name"
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    organizingFor: e.target.value,
+                  })
+                }
+                className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label htmlFor="" className="text-[12px]  font-medium">
+                Phone Number *
+              </label>
+              <input
+                type="tel"
+                placeholder="Enter phone number"
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    organizingFor: e.target.value,
+                  })
+                }
+                className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label htmlFor="" className="text-[12px]  font-medium">
+                Email *
+              </label>
+              <input
+                type="email"
+                placeholder="Enter email"
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    organizingFor: e.target.value,
+                  })
+                }
+                className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label htmlFor="" className="text-[12px]  font-medium">
+                What is your post code *
+              </label>
+              <input
+                type="text"
+                placeholder="Enter phone number"
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    organizingFor: e.target.value,
+                  })
+                }
+                className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label htmlFor="" className="text-[12px]  font-medium">
+                If you were referred by a friend, please let us know who:
+              </label>
+              <input
+                type="text"
+                placeholder="Enter email"
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    organizingFor: e.target.value,
+                  })
+                }
+                className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setStep2(true);
+                  setStep3(false);
+                }}
+                className="px-5 py-3  font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200 md:text-[8px] lg:text-[11px] xl:text-[12px] bg-black/5 "
+              >
+                Prev
+              </button>
+
+              <Button
+                type="button"
+                onClick={() => {
+                  setStep3(false);
+                  setStep4(true);
+                }}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
         </div>
       ) : step4 ? (
         <div>
