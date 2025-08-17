@@ -12,7 +12,7 @@ function Register() {
   return (
     <div>
       {step1 ? (
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-1">
           <div className="flex flex-col gap-2 items-center">
             <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
               Book your first lesson with a Bridgitus tutor
@@ -23,7 +23,7 @@ function Register() {
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-3 gap-4">
             <div className="flex flex-col gap-2 items-center">
               <div className="w-12 h-12 flex items-center justify-center rounded-full bg-primary-color">
                 <h1 className="text-white">1</h1>
