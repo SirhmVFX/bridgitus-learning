@@ -41,16 +41,16 @@ function Contact() {
               <h1 className="text-xl font-medium">Leave us your info </h1>
               <input
                 type="text"
-                className="w-full bg-transparent p-4 rounded-md border border-gray-300"
+                className="w-full bg-transparent p-4 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
                 placeholder="Your Name"
               />
               <input
                 type="text"
-                className="w-full bg-transparent p-4 rounded-md border border-gray-300"
+                className="w-full bg-transparent p-4 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
                 placeholder="Your Email"
               />
               <textarea
-                className="w-full bg-transparent p-4 rounded-md border border-gray-300"
+                className="w-full bg-transparent p-4 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
                 placeholder="Your Message"
                 rows={5}
               ></textarea>
