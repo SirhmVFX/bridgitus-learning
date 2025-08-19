@@ -6,11 +6,13 @@ import { useState } from "react";
 function Register() {
   const [registerData, setRegisterData] = useState({
     organizingFor: "",
-    name: "",
-    email: "",
-    password: "",
-    phone: "",
-    address: "",
+    parentFirstName: "",
+    parentLastName: "",
+    parentEmail: "",
+    parentPhone: "",
+    parentPostcode: "",
+    parentReferredBy: "",
+    noOfStudents: "",
   });
 
   const [openDays, setOpenDays] = useState<Record<number, boolean>>({});
@@ -106,7 +108,7 @@ function Register() {
           </div>
 
           <Button
-            type="button"
+            style="button"
             onClick={() => {
               setStep1(false);
               setStep2(true);
@@ -116,12 +118,20 @@ function Register() {
           </Button>
         </div>
       ) : step2 ? (
-        <div className="flex flex-col gap-10">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setStep2(false);
+            setStep3(true);
+          }}
+          className="flex flex-col gap-10"
+        >
           <div className="flex flex-col gap-2">
             <label htmlFor="" className="text-[12px]  font-medium">
               First up, who are we organising a tutor for?
             </label>
             <select
+              required
               onChange={(e) =>
                 setRegisterData({
                   ...registerData,
@@ -130,6 +140,7 @@ function Register() {
               }
               className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
             >
+              <option value="">select</option>
               <option value="my-child">My Child, (I am the parent)</option>
               <option value="me">Me, (I am the student)</option>
               <option value="someone-else">
@@ -158,50 +169,61 @@ function Register() {
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => {
-                setStep1(true);
-                setStep2(false);
-              }}
               className="px-5 py-3  font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200 md:text-[8px] lg:text-[11px] xl:text-[12px] bg-black/5 "
             >
               Prev
             </button>
 
-            <Button
-              type="button"
-              onClick={() => {
-                setStep2(false);
-                setStep3(true);
-              }}
-            >
-              Next
-            </Button>
+            <Button style="button">Next</Button>
           </div>
-        </div>
+        </form>
       ) : step3 ? (
-        <div className="flex flex-col gap-10">
-          <div>
-            <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
-              Your parent or carer&apos;s details:
-            </h1>
-            <p className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
-              We will send them some details about working with us and ensure
-              they are in the loop.
-            </p>
-          </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setStep3(false);
+            setStep4(true);
+          }}
+          className="flex flex-col gap-10"
+        >
+          {registerData.organizingFor === "my-child" ||
+            (registerData.organizingFor === "someone-else" && (
+              <div>
+                <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
+                  Your details
+                </h1>
+                <p className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
+                  (This is you, the parent or carer - we will ask more about
+                  your child next)
+                </p>
+              </div>
+            ))}
+
+          {registerData.organizingFor === "me" && (
+            <div>
+              <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
+                Your parent or carer&apos;s details:
+              </h1>
+              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
+                We will send them some details about working with us and ensure
+                they are in the loop.
+              </p>
+            </div>
+          )}
 
           <div className="grid md:grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
               <label htmlFor="" className="text-[12px]  font-medium">
-                First name *
+                First name <span className="text-red-500">*</span>
               </label>
               <input
+                required
                 type="text"
-                placeholder="Enter your first name"
+                value={registerData.parentFirstName}
                 onChange={(e) =>
                   setRegisterData({
                     ...registerData,
-                    organizingFor: e.target.value,
+                    parentFirstName: e.target.value,
                   })
                 }
                 className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
@@ -210,15 +232,16 @@ function Register() {
 
             <div className="flex flex-col gap-2">
               <label htmlFor="" className="text-[12px]  font-medium">
-                Last name *
+                Last name <span className="text-red-500">*</span>
               </label>
               <input
+                required
                 type="text"
-                placeholder="Enter your last name"
+                value={registerData.parentLastName}
                 onChange={(e) =>
                   setRegisterData({
                     ...registerData,
-                    organizingFor: e.target.value,
+                    parentLastName: e.target.value,
                   })
                 }
                 className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
@@ -227,15 +250,16 @@ function Register() {
 
             <div className="flex flex-col gap-2">
               <label htmlFor="" className="text-[12px]  font-medium">
-                Phone Number *
+                Phone Number <span className="text-red-500">*</span>
               </label>
               <input
+                required
                 type="tel"
-                placeholder="Enter phone number"
+                value={registerData.parentPhone}
                 onChange={(e) =>
                   setRegisterData({
                     ...registerData,
-                    organizingFor: e.target.value,
+                    parentPhone: e.target.value,
                   })
                 }
                 className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
@@ -244,15 +268,16 @@ function Register() {
 
             <div className="flex flex-col gap-2">
               <label htmlFor="" className="text-[12px]  font-medium">
-                Email *
+                Email <span className="text-red-500">*</span>
               </label>
               <input
+                required
                 type="email"
-                placeholder="Enter email"
+                value={registerData.parentEmail}
                 onChange={(e) =>
                   setRegisterData({
                     ...registerData,
-                    organizingFor: e.target.value,
+                    parentEmail: e.target.value,
                   })
                 }
                 className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
@@ -261,15 +286,16 @@ function Register() {
 
             <div className="flex flex-col gap-2">
               <label htmlFor="" className="text-[12px]  font-medium">
-                What is your post code *
+                What is your post code <span className="text-red-500">*</span>
               </label>
               <input
+                required
                 type="text"
-                placeholder="Enter phone number"
+                value={registerData.parentPostcode}
                 onChange={(e) =>
                   setRegisterData({
                     ...registerData,
-                    organizingFor: e.target.value,
+                    parentPostcode: e.target.value,
                   })
                 }
                 className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
@@ -282,11 +308,11 @@ function Register() {
               </label>
               <input
                 type="text"
-                placeholder="Enter email"
+                value={registerData.parentReferredBy}
                 onChange={(e) =>
                   setRegisterData({
                     ...registerData,
-                    organizingFor: e.target.value,
+                    parentReferredBy: e.target.value,
                   })
                 }
                 className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
@@ -305,18 +331,10 @@ function Register() {
                 Prev
               </button>
 
-              <Button
-                type="button"
-                onClick={() => {
-                  setStep3(false);
-                  setStep4(true);
-                }}
-              >
-                Next
-              </Button>
+              <Button style="button">Next</Button>
             </div>
           </div>
-        </div>
+        </form>
       ) : step4 ? (
         <div className="flex flex-col gap-10">
           <div className="grid grid-cols-3 gap-4">
@@ -324,28 +342,60 @@ function Register() {
               <label htmlFor="" className="text-[12px]  font-medium">
                 One Student
               </label>
-              <input type="checkbox" />
+              <input
+                type="radio"
+                value="1"
+                checked={registerData.noOfStudents === "1"}
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    noOfStudents: e.target.value,
+                  })
+                }
+              />
             </div>
 
             <div>
               <label htmlFor="" className="text-[12px]  font-medium">
                 Two Students
               </label>
-              <input type="checkbox" />
+              <input
+                type="radio"
+                value="2"
+                checked={registerData.noOfStudents === "2"}
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    noOfStudents: e.target.value,
+                  })
+                }
+              />
             </div>
 
             <div>
               <label htmlFor="" className="text-[12px]  font-medium">
                 Three Students
               </label>
-              <input type="checkbox" />
+              <input
+                type="radio"
+                value="3"
+                checked={registerData.noOfStudents === "3"}
+                onChange={(e) =>
+                  setRegisterData({
+                    ...registerData,
+                    noOfStudents: e.target.value,
+                  })
+                }
+              />
             </div>
           </div>
 
           <div className="flex flex-col gap-4">
-            <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
-              First student details:
-            </h1>
+            {registerData.noOfStudents && registerData.noOfStudents !== "1" && (
+              <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
+                First student details:
+              </h1>
+            )}
 
             <div className="grid md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
@@ -597,7 +647,7 @@ function Register() {
             </button>
 
             <Button
-              type="button"
+              style="button"
               onClick={() => {
                 setStep4(false);
                 setStep5(true);
