@@ -2,7 +2,7 @@ import Link from "next/link";
 
 function RegisterLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] md:mx-auto flex flex-col justify-between gap-4 h-screen">
+    <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] md:mx-auto flex flex-col justify-between gap-4 ">
       <header className="flex items-center justify-between py-4">
         <Link
           href="/"
