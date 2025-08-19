@@ -2,7 +2,7 @@ import Link from "next/link";
 
 interface ButtonProps {
   children: React.ReactNode;
-  type: "button" | "link";
+  style: "button" | "link";
   variant?: "filled" | "outline";
   href?: string;
   className?: string;
@@ -11,7 +11,7 @@ interface ButtonProps {
 
 function Button({
   children,
-  type,
+  style,
   variant = "filled",
   href = "",
   className = "",
@@ -29,8 +29,8 @@ function Button({
 
   const buttonClasses = `${baseStyles} ${variantStyles[variant]} ${className}`;
 
-  return type === "button" ? (
-    <button onClick={onClick} className={buttonClasses}>
+  return style === "button" ? (
+    <button onClick={onClick} type="submit" className={buttonClasses}>
       {children}
     </button>
   ) : (

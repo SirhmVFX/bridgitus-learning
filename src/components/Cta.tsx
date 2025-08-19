@@ -20,7 +20,7 @@ function Cta() {
         <p className="text-sm md:text-lg text-white/50">
           Ready to take the first step?
         </p>
-        <Button type="link" href="register">
+        <Button style="link" href="register">
           Book your first session
         </Button>
       </div>
