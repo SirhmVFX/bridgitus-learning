@@ -54,7 +54,7 @@ function Register() {
             <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
               Book your first lesson with a Bridgitus tutor
             </h1>
-            <p className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
+            <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] font-bold">
               Our booking process is super easy and will just take a few
               minutes:
             </p>
@@ -65,7 +65,9 @@ function Register() {
               <div className="w-12 h-12 flex items-center justify-center rounded-full bg-primary-color">
                 <h1 className="text-white">1</h1>
               </div>
-              <h1>You book</h1>
+              <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
+                You book
+              </h1>
               <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
                 Let us know about you, your child and how we can help.
               </p>
@@ -86,19 +88,20 @@ function Register() {
               <div className="w-12 h-12 flex items-center justify-center rounded-full bg-primary-color">
                 <h1 className="text-white">2</h1>
               </div>
-              <h1>We Assess</h1>
+              <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
+                We Assess
+              </h1>
               <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
-                We talk with our team to organise a tutor that best matches your
-                child&apos;s needs.
+                We carefully assess your child to gain a clear understanding of
+                their current level, strengths, and specific learning needs.
+                Based on this, we create a tailored academic support plan
+                designed to build confidence and foster continuous growth.
               </p>
               <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
-                Once we&apos;ve confirmed the first lesson, we&apos;ll send you
-                through their profile by email and they&apos;ll give you a call
-                to introduce themselves.
-              </p>
-              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
-                We get most students paired up with a tutor within 72 hours, but
-                we&apos;ll keep you updated if there are delays.
+                Following the assessment, your child will be paired with a
+                qualified tutor who provides structured, step-by-step guidance.
+                Our tutors use engaging methods to make learning enjoyable while
+                ensuring measurable academic progress.
               </p>
             </div>
 
@@ -106,7 +109,9 @@ function Register() {
               <div className="w-12 h-12 flex items-center justify-center rounded-full bg-primary-color">
                 <h1 className="text-white">3</h1>
               </div>
-              <h1>We tutor</h1>
+              <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
+                We Tutor
+              </h1>
               <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
                 We work with your child directly, providing lessons that are
                 tailored to their unique needs and learning style.
@@ -186,6 +191,10 @@ function Register() {
 
           <div className="flex gap-2">
             <button
+              onClick={() => {
+                setStep1(true);
+                setStep2(false);
+              }}
               type="button"
               className="px-5 py-3  font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200 md:text-[8px] lg:text-[11px] xl:text-[12px] bg-black/5 "
             >
@@ -560,64 +569,94 @@ function Register() {
               >
                 <option value="">Select subject</option>
                 {/* Elementary School (Pre-K to 5) */}
-                {["Pre-K", "K", "1", "2", "3", "4", "5"].includes(
+                {["Pre-K", "K", "1", "2", "3", "4", "5", "6"].includes(
                   registerData.students[0].grade
                 ) && (
                   <>
-                    <option value="Reading">Reading</option>
-                    <option value="Phonics">Phonics</option>
-                    <option value="Early Math">Early Math</option>
-                    <option value="Science">Science</option>
-                    <option value="Social Studies">Social Studies</option>
+                    <option value="Primary School General Support">
+                      Primary School General Support
+                    </option>
+                    <option value="Primary School English">
+                      Primary School English
+                    </option>
+                    <option value="Primary School Maths">
+                      Primary School Maths
+                    </option>
+                    <option value="Oc Exam Preparation">
+                      OC Exam Preparation
+                    </option>
+                    <option value="Naplan Preparation">
+                      NAPLAN Preparation
+                    </option>
+                    <option value="Hast Preparation">HAST Preparation</option>
+                    <option value="Selective School Preparation">
+                      Selective School Preparation
+                    </option>
                   </>
                 )}
 
                 {/* Middle School (6-8) */}
-                {["6", "7", "8"].includes(registerData.students[0].grade) && (
+                {["7", "8", "9", "10"].includes(
+                  registerData.students[0].grade
+                ) && (
                   <>
-                    <option value="Math">Math</option>
-                    <option value="English">English</option>
-                    <option value="Science">Science</option>
-                    <option value="Social Studies">Social Studies</option>
-                    <option value="Algebra">Algebra</option>
-                    <option value="Geometry">Geometry</option>
+                    <option value="Yrs 7 - 10 General Support">
+                      Yrs 7 - 10 General Support
+                    </option>
+                    <option value="Yrs 7 - 10 English">
+                      Yrs 7 - 10 English
+                    </option>
+                    <option value="Yrs 7 - 10 Maths">Yrs 7 - 10 Maths</option>
+                    <option value="Yrs 7 - 10 Science">
+                      Yrs 7 - 10 Science
+                    </option>
+                    <option value="Naplan Preparation">
+                      NAPLAN Preparation
+                    </option>
+                    <option value="Selective School Preparation">
+                      Selective School Preparation
+                    </option>
                   </>
                 )}
 
                 {/* High School (9-12) */}
-                {["9", "10", "11", "12"].includes(
-                  registerData.students[0].grade
-                ) && (
+                {["11", "12"].includes(registerData.students[0].grade) && (
                   <>
-                    <option value="Algebra I">Algebra I</option>
-                    <option value="Algebra II">Algebra II</option>
-                    <option value="Geometry">Geometry</option>
-                    <option value="Pre-Calculus">Pre-Calculus</option>
-                    <option value="Calculus">Calculus</option>
-                    <option value="Biology">Biology</option>
-                    <option value="Chemistry">Chemistry</option>
-                    <option value="Physics">Physics</option>
-                    <option value="English Literature">
-                      English Literature
+                    <option value="HSC English (Standard)">
+                      HSC English (Standard)
                     </option>
-                    <option value="Writing">Writing</option>
-                    <option value="History">History</option>
-                    <option value="Government">Government</option>
-                    <option value="Economics">Economics</option>
-                    <option value="Foreign Language">Foreign Language</option>
-                    <option value="Test Prep (SAT/ACT)">
-                      Test Prep (SAT/ACT)
+                    <option value="HSC English (Advanced)">
+                      HSC English (Advanced)
                     </option>
-                  </>
-                )}
-
-                {/* Show default options if no grade is selected */}
-                {!registerData.students[0].grade && (
-                  <>
-                    <option value="Math">Math</option>
-                    <option value="English">English</option>
-                    <option value="Science">Science</option>
-                    <option value="Other">Other</option>
+                    <option value="HSC English Extension 1">
+                      HSC English Extension 1
+                    </option>
+                    <option value="HSC English Extension 2">
+                      HSC English Extension 2
+                    </option>
+                    <option value="HSC Maths (Standard)">
+                      HSC Maths (Standard)
+                    </option>
+                    <option value="HSC Maths (Advanced)">
+                      HSC Maths (Advanced)
+                    </option>
+                    <option value="HSC Maths Extension 1">
+                      HSC Maths Extension 1
+                    </option>
+                    <option value="HSC Maths Extension 2">
+                      HSC Maths Extension 2
+                    </option>
+                    <option value="HSC General Support">
+                      HSC General Support
+                    </option>
+                    <option value="HSC Chemistry">HSC Chemistry</option>
+                    <option value="HSC Biology">HSC Biology</option>
+                    <option value="HSC Physics">HSC Physics</option>
+                    <option value="HSC Business Studies">
+                      HSC Business Studies
+                    </option>
+                    <option value="HSC Legal Studies">HSC Legal Studies</option>
+                    <option value="HSC Economics">HSC Economics</option>
                   </>
                 )}
               </select>
