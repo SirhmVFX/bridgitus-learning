@@ -160,7 +160,7 @@ function Header() {
               >
                 Contact
               </Link>
-              <Button type="link" href="/register">
+              <Button style="link" href="/register">
                 Register Now
               </Button>
             </ul>

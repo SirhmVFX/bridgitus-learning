@@ -31,10 +31,10 @@ function HeroSection() {
           </p>
 
           <div className="flex gap-5">
-            <Button type="link" href="/register">
+            <Button style="link" href="/register">
               Get Started
             </Button>
-            <Button type="link" href="/about" variant="outline">
+            <Button style="link" href="/about" variant="outline">
               Learn More
             </Button>
           </div>

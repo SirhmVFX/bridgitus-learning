@@ -22,7 +22,7 @@ function Brief() {
             the tools they need to thrive.
           </p>
 
-          <Button type="link" href="/register">
+          <Button style="link" href="/register">
             Bridge the gap
           </Button>
         </div>

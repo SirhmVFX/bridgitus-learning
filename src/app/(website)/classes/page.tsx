@@ -28,7 +28,7 @@ function Classes() {
               understanding, and build the confidence needed to excel in school
               and beyond.
             </p>
-            <Button type="link" href="/about">
+            <Button style="link" href="/about">
               Learn More About
             </Button>
           </div>

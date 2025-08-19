@@ -24,7 +24,7 @@ function Pricing() {
                 <h1 className="text-4xl">$45</h1>
                 <p>Per hour lesson</p>
               </div>
-              <Button type="link" href="/register">
+              <Button style="link" href="/register">
                 Book your first lesson now
               </Button>
             </div>
@@ -38,7 +38,7 @@ function Pricing() {
                 <h1 className="text-4xl">$80</h1>
                 <p>Per hour lesson</p>
               </div>
-              <Button type="link" href="/register">
+              <Button style="link" href="/register">
                 Book your first lesson now
               </Button>
             </div>

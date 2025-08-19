@@ -61,7 +61,7 @@ function Contact() {
                   <span className="text-primarycolor">privacy policy</span>
                 </label>
               </div>
-              <Button type="button">Send Message</Button>
+              <Button style="button">Send Message</Button>
             </form>
           </div>
 
