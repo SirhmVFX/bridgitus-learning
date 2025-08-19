@@ -13,6 +13,22 @@ function Register() {
     parentPostcode: "",
     parentReferredBy: "",
     noOfStudents: "",
+    students: [
+      {
+        firstName: "",
+        lastName: "",
+        school: "",
+        grade: "",
+        subjectHelpNeeded: "",
+        expectingResult: "",
+        helpComment: "",
+        currentPerformance: "",
+        schoolAttitude: "",
+        mind: "",
+        personality: "",
+        favouriteThingsToDo: "",
+      },
+    ],
   });
 
   const [openDays, setOpenDays] = useState<Record<number, boolean>>({});
@@ -55,7 +71,7 @@ function Register() {
               </p>
               <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
                 We want to learn as much as we can about your child and what has
-                bought you to us - the more detailed you can be, the better our
+                brought you to us - the more detailed you can be, the better our
                 tutor match can be!
               </p>
               <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
@@ -70,7 +86,7 @@ function Register() {
               <div className="w-12 h-12 flex items-center justify-center rounded-full bg-primary-color">
                 <h1 className="text-white">2</h1>
               </div>
-              <h1>We teach</h1>
+              <h1>We Assess</h1>
               <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
                 We talk with our team to organise a tutor that best matches your
                 child&apos;s needs.
@@ -189,17 +205,19 @@ function Register() {
           className="flex flex-col gap-10"
         >
           {registerData.organizingFor === "my-child" ||
-            (registerData.organizingFor === "someone-else" && (
-              <div>
-                <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
-                  Your details
-                </h1>
-                <p className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
-                  (This is you, the parent or carer - we will ask more about
-                  your child next)
-                </p>
-              </div>
-            ))}
+          registerData.organizingFor === "someone-else" ? (
+            <div>
+              <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
+                Your details
+              </h1>
+              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
+                (This is you, the parent or carer - we will ask more about your
+                child next)
+              </p>
+            </div>
+          ) : (
+            ""
+          )}
 
           {registerData.organizingFor === "me" && (
             <div>
@@ -338,12 +356,16 @@ function Register() {
           </div>
         </form>
       ) : step4 ? (
-        <div className="flex flex-col gap-10">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setStep4(false);
+            setStep5(true);
+          }}
+          className="flex flex-col gap-10"
+        >
           <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label htmlFor="" className="text-[12px]  font-medium">
-                One Student
-              </label>
+            <div className="flex flex-col gap-2 items-center justify-center p-10 border border-gray-300 rounded-md">
               <input
                 type="radio"
                 value="1"
@@ -355,12 +377,12 @@ function Register() {
                   })
                 }
               />
+              <label htmlFor="" className="text-[12px]  font-medium">
+                One Student
+              </label>
             </div>
 
-            <div>
-              <label htmlFor="" className="text-[12px]  font-medium">
-                Two Students
-              </label>
+            <div className="flex flex-col gap-2 items-center justify-center p-10 border border-gray-300 rounded-md">
               <input
                 type="radio"
                 value="2"
@@ -372,12 +394,12 @@ function Register() {
                   })
                 }
               />
+              <label htmlFor="" className="text-[12px]  font-medium">
+                Two Students
+              </label>
             </div>
 
-            <div>
-              <label htmlFor="" className="text-[12px]  font-medium">
-                Three Students
-              </label>
+            <div className="flex flex-col gap-2 items-center justify-center p-10 border border-gray-300 rounded-md">
               <input
                 type="radio"
                 value="3"
@@ -389,6 +411,9 @@ function Register() {
                   })
                 }
               />
+              <label htmlFor="" className="text-[12px]  font-medium">
+                Three Students
+              </label>
             </div>
           </div>
 
@@ -402,15 +427,22 @@ function Register() {
             <div className="grid md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
                 <label htmlFor="" className="text-[12px]  font-medium">
-                  Student first name: *
+                  Student first name: <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="Enter your first name"
+                  required
+                  value={registerData.students[0].firstName}
                   onChange={(e) =>
                     setRegisterData({
                       ...registerData,
-                      organizingFor: e.target.value,
+                      students: [
+                        {
+                          ...registerData.students[0],
+                          firstName: e.target.value,
+                        },
+                        ...registerData.students.slice(1),
+                      ],
                     })
                   }
                   className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
@@ -419,15 +451,22 @@ function Register() {
 
               <div className="flex flex-col gap-2">
                 <label htmlFor="" className="text-[12px]  font-medium">
-                  Student last name: *
+                  Student last name: <span className="text-red-500">*</span>
                 </label>
                 <input
+                  required
                   type="text"
-                  placeholder="Enter your last name"
+                  value={registerData.students[0].lastName}
                   onChange={(e) =>
                     setRegisterData({
                       ...registerData,
-                      organizingFor: e.target.value,
+                      students: [
+                        {
+                          ...registerData.students[0],
+                          lastName: e.target.value,
+                        },
+                        ...registerData.students.slice(1),
+                      ],
                     })
                   }
                   className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
@@ -436,15 +475,23 @@ function Register() {
 
               <div className="flex flex-col gap-2">
                 <label htmlFor="" className="text-[12px]  font-medium">
-                  What school do they go to?
+                  What school do they go to?{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type="tel"
-                  placeholder="Enter phone number"
+                  required
+                  type="text"
+                  value={registerData.students[0].school}
                   onChange={(e) =>
                     setRegisterData({
                       ...registerData,
-                      organizingFor: e.target.value,
+                      students: [
+                        {
+                          ...registerData.students[0],
+                          school: e.target.value,
+                        },
+                        ...registerData.students.slice(1),
+                      ],
                     })
                   }
                   className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
@@ -453,68 +500,160 @@ function Register() {
 
               <div className="flex flex-col gap-2">
                 <label htmlFor="" className="text-[12px]  font-medium">
-                  What grade are they in? *
+                  What grade are they in?{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <select
+                  required
+                  value={registerData.students[0].grade}
                   onChange={(e) =>
                     setRegisterData({
                       ...registerData,
-                      organizingFor: e.target.value,
+                      students: [
+                        {
+                          ...registerData.students[0],
+                          grade: e.target.value,
+                        },
+                        ...registerData.students.slice(1),
+                      ],
                     })
                   }
                   className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
                 >
-                  <option value="">Pre-K</option>
-                  <option value="">K</option>
-                  <option value="">1</option>
-                  <option value="">2</option>
-                  <option value="">3</option>
-                  <option value="">4</option>
-                  <option value="">5</option>
-                  <option value="">6</option>
-                  <option value="">7</option>
-                  <option value="">8</option>
-                  <option value="">9</option>
-                  <option value="">10</option>
-                  <option value="">11</option>
-                  <option value="">12</option>
+                  <option value="">Select grade</option>
+                  <option value="Pre-K">Pre-K</option>
+                  <option value="K">K</option>
+                  {[...Array(12)].map((_, i) => (
+                    <option key={i + 1} value={String(i + 1)}>
+                      {i + 1}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
 
             <div className="flex flex-col gap-2">
               <label htmlFor="" className="text-[12px]  font-medium">
-                What subject do they need support in? *
+                What subject do they need support in?{" "}
+                <span className="text-red-500">*</span>
               </label>
+              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
+                Please select the subject that best describes their area of
+                need.
+              </p>
               <select
+                required
+                value={registerData.students[0].subjectHelpNeeded}
                 onChange={(e) =>
                   setRegisterData({
                     ...registerData,
-                    organizingFor: e.target.value,
+                    students: [
+                      {
+                        ...registerData.students[0],
+                        subjectHelpNeeded: e.target.value,
+                      },
+                      ...registerData.students.slice(1),
+                    ],
                   })
                 }
                 className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
               >
-                <option value="">Math</option>
+                <option value="">Select subject</option>
+                {/* Elementary School (Pre-K to 5) */}
+                {["Pre-K", "K", "1", "2", "3", "4", "5"].includes(
+                  registerData.students[0].grade
+                ) && (
+                  <>
+                    <option value="Reading">Reading</option>
+                    <option value="Phonics">Phonics</option>
+                    <option value="Early Math">Early Math</option>
+                    <option value="Science">Science</option>
+                    <option value="Social Studies">Social Studies</option>
+                  </>
+                )}
+
+                {/* Middle School (6-8) */}
+                {["6", "7", "8"].includes(registerData.students[0].grade) && (
+                  <>
+                    <option value="Math">Math</option>
+                    <option value="English">English</option>
+                    <option value="Science">Science</option>
+                    <option value="Social Studies">Social Studies</option>
+                    <option value="Algebra">Algebra</option>
+                    <option value="Geometry">Geometry</option>
+                  </>
+                )}
+
+                {/* High School (9-12) */}
+                {["9", "10", "11", "12"].includes(
+                  registerData.students[0].grade
+                ) && (
+                  <>
+                    <option value="Algebra I">Algebra I</option>
+                    <option value="Algebra II">Algebra II</option>
+                    <option value="Geometry">Geometry</option>
+                    <option value="Pre-Calculus">Pre-Calculus</option>
+                    <option value="Calculus">Calculus</option>
+                    <option value="Biology">Biology</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Physics">Physics</option>
+                    <option value="English Literature">
+                      English Literature
+                    </option>
+                    <option value="Writing">Writing</option>
+                    <option value="History">History</option>
+                    <option value="Government">Government</option>
+                    <option value="Economics">Economics</option>
+                    <option value="Foreign Language">Foreign Language</option>
+                    <option value="Test Prep (SAT/ACT)">
+                      Test Prep (SAT/ACT)
+                    </option>
+                  </>
+                )}
+
+                {/* Show default options if no grade is selected */}
+                {!registerData.students[0].grade && (
+                  <>
+                    <option value="Math">Math</option>
+                    <option value="English">English</option>
+                    <option value="Science">Science</option>
+                    <option value="Other">Other</option>
+                  </>
+                )}
               </select>
             </div>
+
             <div className="flex flex-col gap-2">
               <label htmlFor="" className="text-[12px]  font-medium">
-                What is the main result you are looking for? *
+                What is the main result you are looking for?{" "}
+                <span className="text-red-500">*</span>
               </label>
               <select
+                required
+                value={registerData.students[0].expectingResult}
                 onChange={(e) =>
                   setRegisterData({
                     ...registerData,
-                    organizingFor: e.target.value,
+                    students: [
+                      {
+                        ...registerData.students[0],
+                        expectingResult: e.target.value,
+                      },
+                      ...registerData.students.slice(1),
+                    ],
                   })
                 }
                 className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
               >
-                <option value="">Get better at school</option>
-                <option value="">Boost confidence</option>
-                <option value="">Enjoy the learning experience</option>
-                <option value="">A mix of all</option>
+                <option value="">Select expected result</option>
+                <option value="Get better at school">
+                  Get better at school
+                </option>
+                <option value="Boost confidence">Boost confidence</option>
+                <option value="Enjoy the learning experience">
+                  Enjoy the learning experience
+                </option>
+                <option value="A mix of all">A mix of all</option>
               </select>
             </div>
             <div className="flex flex-col gap-2">
@@ -528,10 +667,17 @@ function Register() {
                 them up with the right tutor.
               </p>
               <textarea
+                value={registerData.students[0].helpComment}
                 onChange={(e) =>
                   setRegisterData({
                     ...registerData,
-                    organizingFor: e.target.value,
+                    students: [
+                      {
+                        ...registerData.students[0],
+                        helpComment: e.target.value,
+                      },
+                      ...registerData.students.slice(1),
+                    ],
                   })
                 }
                 className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px h-[200px]"
@@ -545,19 +691,34 @@ function Register() {
 
             <div className="flex flex-col gap-2">
               <label htmlFor="" className="text-[12px]  font-medium">
-                How can we help?
+                How would you describe their current performance at school?
               </label>
               <div className="flex gap-2">
-                <button className="p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px] bg-black/5">
-                  Struggling at school
-                </button>
-                <button className="p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px] bg-black/5">
-                  Excelling at school
-                </button>
-
-                <button className="p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px] bg-black/5">
-                  Somewhere in between
-                </button>
+                {[
+                  "Struggling at school",
+                  "Excelling at school",
+                  "Somewhere in between",
+                ].map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    className={`p-2 cursor-pointer rounded-md border ${registerData.students[0].currentPerformance === option ? "bg-primary-color/20 border-2 border-primary-color" : "bg-black/5"} border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]`}
+                    onClick={() =>
+                      setRegisterData({
+                        ...registerData,
+                        students: [
+                          {
+                            ...registerData.students[0],
+                            currentPerformance: option,
+                          },
+                          ...registerData.students.slice(1),
+                        ],
+                      })
+                    }
+                  >
+                    {option}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -566,16 +727,31 @@ function Register() {
                 How would you describe their attitude towards school?
               </label>
               <div className="flex gap-2">
-                <button className="p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px] bg-black/5">
-                  They love school
-                </button>
-                <button className="p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px] bg-black/5">
-                  They dislike school
-                </button>
-
-                <button className="p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px] bg-black/5">
-                  Somewhere in between
-                </button>
+                {[
+                  "They love school",
+                  "They dislike school",
+                  "Somewhere in between",
+                ].map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    className={`p-2 rounded-md border ${registerData.students[0].schoolAttitude === option ? "bg-primary-color/20 border-2 border-primary-color" : "bg-black/5"} border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]`}
+                    onClick={() =>
+                      setRegisterData({
+                        ...registerData,
+                        students: [
+                          {
+                            ...registerData.students[0],
+                            schoolAttitude: option,
+                          },
+                          ...registerData.students.slice(1),
+                        ],
+                      })
+                    }
+                  >
+                    {option}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -584,16 +760,29 @@ function Register() {
                 How would you describe their mind?
               </label>
               <div className="flex gap-2">
-                <button className="p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px] bg-black/5">
-                  Creative
-                </button>
-                <button className="p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px] bg-black/5">
-                  Analytical
-                </button>
-
-                <button className="p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px] bg-black/5">
-                  Somewhere in between
-                </button>
+                {["Creative", "Analytical", "Somewhere in between"].map(
+                  (option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      className={`p-2 rounded-md border ${registerData.students[0].mind === option ? "bg-primary-color/20 border-2 border-primary-color" : "bg-black/5"} border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]`}
+                      onClick={() =>
+                        setRegisterData({
+                          ...registerData,
+                          students: [
+                            {
+                              ...registerData.students[0],
+                              mind: option,
+                            },
+                            ...registerData.students.slice(1),
+                          ],
+                        })
+                      }
+                    >
+                      {option}
+                    </button>
+                  )
+                )}
               </div>
             </div>
 
@@ -602,16 +791,27 @@ function Register() {
                 How would you describe their personality?
               </label>
               <div className="flex gap-2">
-                <button className="p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px] bg-black/5">
-                  Shy
-                </button>
-                <button className="p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px] bg-black/5">
-                  Outgoing
-                </button>
-
-                <button className="p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px] bg-black/5">
-                  Somewhere in between
-                </button>
+                {["Shy", "Outgoing", "Somewhere in between"].map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    className={`p-2 rounded-md border ${registerData.students[0].personality === option ? "bg-primary-color/20 border-2 border-primary-color" : "bg-black/5"} border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]`}
+                    onClick={() =>
+                      setRegisterData({
+                        ...registerData,
+                        students: [
+                          {
+                            ...registerData.students[0],
+                            personality: option,
+                          },
+                          ...registerData.students.slice(1),
+                        ],
+                      })
+                    }
+                  >
+                    {option}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -621,17 +821,36 @@ function Register() {
                 soccer, swimming)
               </label>
               <div className="grid md:grid-cols-3 gap-2">
-                <input
-                  type="text"
-                  placeholder="Enter your first name"
-                  onChange={(e) =>
-                    setRegisterData({
-                      ...registerData,
-                      organizingFor: e.target.value,
-                    })
-                  }
-                  className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
-                />
+                {[0, 1, 2].map((index) => (
+                  <input
+                    key={index}
+                    type="text"
+                    placeholder={`Favorite thing ${index + 1}`}
+                    value={
+                      registerData.students[0].favouriteThingsToDo.split(",")[
+                        index
+                      ] || ""
+                    }
+                    onChange={(e) => {
+                      const things =
+                        registerData.students[0].favouriteThingsToDo.split(",");
+                      things[index] = e.target.value;
+                      setRegisterData({
+                        ...registerData,
+                        students: [
+                          {
+                            ...registerData.students[0],
+                            favouriteThingsToDo: things
+                              .join(",")
+                              .replace(/^,|,$/g, ""),
+                          },
+                          ...registerData.students.slice(1),
+                        ],
+                      });
+                    }}
+                    className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]"
+                  />
+                ))}
               </div>
             </div>
           </div>
@@ -648,17 +867,9 @@ function Register() {
               Prev
             </button>
 
-            <Button
-              style="button"
-              onClick={() => {
-                setStep4(false);
-                setStep5(true);
-              }}
-            >
-              Next
-            </Button>
+            <Button style="button">Next</Button>
           </div>
-        </div>
+        </form>
       ) : step5 ? (
         <div>
           <div>
