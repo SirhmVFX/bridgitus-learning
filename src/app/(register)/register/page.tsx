@@ -45,6 +45,7 @@ function Register() {
   const [step3, setStep3] = useState(false);
   const [step4, setStep4] = useState(false);
   const [step5, setStep5] = useState(false);
+  const [step6, setStep7] = useState(false);
 
   return (
     <div>
@@ -151,7 +152,7 @@ function Register() {
         >
           <div className="flex flex-col gap-2">
             <label htmlFor="" className="text-[12px]  font-medium">
-              First up, who are we organising a tutor for?
+              First up, who are we organising a tution for?
             </label>
             <select
               required
@@ -541,126 +542,227 @@ function Register() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label htmlFor="" className="text-[12px]  font-medium">
-                What subject do they need support in?{" "}
-                <span className="text-red-500">*</span>
-              </label>
-              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
-                Please select the subject that best describes their area of
-                need.
-              </p>
-              <select
-                required
-                value={registerData.students[0].subjectHelpNeeded}
-                onChange={(e) =>
-                  setRegisterData({
-                    ...registerData,
-                    students: [
-                      {
-                        ...registerData.students[0],
-                        subjectHelpNeeded: e.target.value,
-                      },
-                      ...registerData.students.slice(1),
-                    ],
-                  })
-                }
-                className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
-              >
-                <option value="">Select subject</option>
-                {/* Elementary School (Pre-K to 5) */}
-                {["Pre-K", "K", "1", "2", "3", "4", "5", "6"].includes(
-                  registerData.students[0].grade
-                ) && (
-                  <>
-                    <option value="Primary School General Support">
-                      Primary School General Support
-                    </option>
-                    <option value="Primary School English">
-                      Primary School English
-                    </option>
-                    <option value="Primary School Maths">
-                      Primary School Maths
-                    </option>
-                    <option value="Oc Exam Preparation">
-                      OC Exam Preparation
-                    </option>
-                    <option value="Naplan Preparation">
-                      NAPLAN Preparation
-                    </option>
-                    <option value="Hast Preparation">HAST Preparation</option>
-                    <option value="Selective School Preparation">
-                      Selective School Preparation
-                    </option>
-                  </>
-                )}
+            {registerData.students[0].grade && (
+              <div className="flex flex-col gap-2">
+                <label htmlFor="" className="text-[12px]  font-medium">
+                  What subject do they need support in?{" "}
+                  <span className="text-red-500">*</span>
+                </label>
+                <p className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
+                  Please select the subject(s) that best describes their area of
+                  need.
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-2">
+                  {/* Elementary School (Pre-K to 6) */}
+                  {["Pre-K", "K", "1", "2", "3", "4", "5", "6"].includes(
+                    registerData.students[0].grade
+                  ) && (
+                    <>
+                      {[
+                        "Primary School General Support",
+                        "Primary School English",
+                        "Primary School Maths",
+                        "OC Exam Preparation",
+                        "NAPLAN Preparation",
+                        "HAST Preparation",
+                        "Selective School Preparation",
+                      ].map((subject) => (
+                        <label
+                          key={subject}
+                          className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
+                            registerData.students[0].subjectHelpNeeded?.includes(
+                              subject
+                            )
+                              ? "bg-primary-color/20 border-primary-color"
+                              : "border-gray-300 hover:border-primary-color/50"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            className="rounded border-gray-300 text-primary-color focus:ring-primary-color mr-2"
+                            checked={
+                              registerData.students[0].subjectHelpNeeded?.includes(
+                                subject
+                              ) || false
+                            }
+                            onChange={(e) => {
+                              const currentSubjects =
+                                registerData.students[0].subjectHelpNeeded
+                                  ?.split(",")
+                                  .filter(Boolean) || [];
+                              let newSubjects;
 
-                {/* Middle School (6-8) */}
-                {["7", "8", "9", "10"].includes(
-                  registerData.students[0].grade
-                ) && (
-                  <>
-                    <option value="Yrs 7 - 10 General Support">
-                      Yrs 7 - 10 General Support
-                    </option>
-                    <option value="Yrs 7 - 10 English">
-                      Yrs 7 - 10 English
-                    </option>
-                    <option value="Yrs 7 - 10 Maths">Yrs 7 - 10 Maths</option>
-                    <option value="Yrs 7 - 10 Science">
-                      Yrs 7 - 10 Science
-                    </option>
-                    <option value="Naplan Preparation">
-                      NAPLAN Preparation
-                    </option>
-                    <option value="Selective School Preparation">
-                      Selective School Preparation
-                    </option>
-                  </>
-                )}
+                              if (e.target.checked) {
+                                newSubjects = [
+                                  ...new Set([...currentSubjects, subject]),
+                                ];
+                              } else {
+                                newSubjects = currentSubjects.filter(
+                                  (s) => s !== subject
+                                );
+                              }
 
-                {/* High School (9-12) */}
-                {["11", "12"].includes(registerData.students[0].grade) && (
-                  <>
-                    <option value="HSC English (Standard)">
-                      HSC English (Standard)
-                    </option>
-                    <option value="HSC English (Advanced)">
-                      HSC English (Advanced)
-                    </option>
-                    <option value="HSC English Extension 1">
-                      HSC English Extension 1
-                    </option>
-                    <option value="HSC English Extension 2">
-                      HSC English Extension 2
-                    </option>
-                    <option value="HSC Maths (Standard)">
-                      HSC Maths (Standard)
-                    </option>
-                    <option value="HSC Maths (Advanced)">
-                      HSC Maths (Advanced)
-                    </option>
-                    <option value="HSC Maths Extension 1">
-                      HSC Maths Extension 1
-                    </option>
-                    <option value="HSC Maths Extension 2">
-                      HSC Maths Extension 2
-                    </option>
-                    <option value="HSC General Support">
-                      HSC General Support
-                    </option>
-                    <option value="HSC Chemistry">HSC Chemistry</option>
-                    <option value="HSC Biology">HSC Biology</option>
-                    <option value="HSC Physics">HSC Physics</option>
-                    <option value="HSC Business Studies">
-                      HSC Business Studies
-                    </option>
-                    <option value="HSC Legal Studies">HSC Legal Studies</option>
-                    <option value="HSC Economics">HSC Economics</option>
-                  </>
-                )}
-              </select>
-            </div>
+                              setRegisterData({
+                                ...registerData,
+                                students: [
+                                  {
+                                    ...registerData.students[0],
+                                    subjectHelpNeeded: newSubjects.join(","),
+                                  },
+                                  ...registerData.students.slice(1),
+                                ],
+                              });
+                            }}
+                          />
+                          <span className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
+                            {subject}
+                          </span>
+                        </label>
+                      ))}
+                    </>
+                  )}
+
+                  {/* Middle School (7-10) */}
+                  {["7", "8", "9", "10"].includes(
+                    registerData.students[0].grade
+                  ) && (
+                    <>
+                      {[
+                        "Yrs 7 - 10 General Support",
+                        "Yrs 7 - 10 English",
+                        "Yrs 7 - 10 Maths",
+                        "Yrs 7 - 10 Science",
+                        "NAPLAN Preparation",
+                        "Selective School Preparation",
+                      ].map((subject) => (
+                        <label
+                          key={subject}
+                          className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
+                            registerData.students[0].subjectHelpNeeded?.includes(
+                              subject
+                            )
+                              ? "bg-primary-color/20 border-primary-color"
+                              : "border-gray-300 hover:border-primary-color/50"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            className="rounded border-gray-300 text-primary-color focus:ring-primary-color mr-2"
+                            checked={
+                              registerData.students[0].subjectHelpNeeded?.includes(
+                                subject
+                              ) || false
+                            }
+                            onChange={(e) => {
+                              const currentSubjects =
+                                registerData.students[0].subjectHelpNeeded
+                                  ?.split(",")
+                                  .filter(Boolean) || [];
+                              let newSubjects;
+
+                              if (e.target.checked) {
+                                newSubjects = [
+                                  ...new Set([...currentSubjects, subject]),
+                                ];
+                              } else {
+                                newSubjects = currentSubjects.filter(
+                                  (s) => s !== subject
+                                );
+                              }
+
+                              setRegisterData({
+                                ...registerData,
+                                students: [
+                                  {
+                                    ...registerData.students[0],
+                                    subjectHelpNeeded: newSubjects.join(","),
+                                  },
+                                  ...registerData.students.slice(1),
+                                ],
+                              });
+                            }}
+                          />
+                          <span className="text-sm">{subject}</span>
+                        </label>
+                      ))}
+                    </>
+                  )}
+
+                  {/* High School (11-12) */}
+                  {["11", "12"].includes(registerData.students[0].grade) && (
+                    <>
+                      {[
+                        "HSC or VCE English (Standard)",
+                        "HSC or VCE English (Advanced)",
+                        "HSC or VCE English Extension 1",
+                        "HSC or VCE English Extension 2",
+                        "HSC Maths (Standard)",
+                        "HSC Maths (Advanced)",
+                        "HSC Maths Extension 1",
+                        "HSC Maths Extension 2",
+                        "HSC General Support",
+                        "HSC Chemistry",
+                        "HSC Biology",
+                        "HSC Physics",
+                        "HSC Business Studies",
+                        "HSC Legal Studies",
+                        "HSC Economics",
+                      ].map((subject) => (
+                        <label
+                          key={subject}
+                          className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
+                            registerData.students[0].subjectHelpNeeded?.includes(
+                              subject
+                            )
+                              ? "bg-primary-color/20 border-primary-color"
+                              : "border-gray-300 hover:border-primary-color/50"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            className="rounded border-gray-300 text-primary-color focus:ring-primary-color mr-2"
+                            checked={
+                              registerData.students[0].subjectHelpNeeded?.includes(
+                                subject
+                              ) || false
+                            }
+                            onChange={(e) => {
+                              const currentSubjects =
+                                registerData.students[0].subjectHelpNeeded
+                                  ?.split(",")
+                                  .filter(Boolean) || [];
+                              let newSubjects;
+
+                              if (e.target.checked) {
+                                newSubjects = [
+                                  ...new Set([...currentSubjects, subject]),
+                                ];
+                              } else {
+                                newSubjects = currentSubjects.filter(
+                                  (s) => s !== subject
+                                );
+                              }
+
+                              setRegisterData({
+                                ...registerData,
+                                students: [
+                                  {
+                                    ...registerData.students[0],
+                                    subjectHelpNeeded: newSubjects.join(","),
+                                  },
+                                  ...registerData.students.slice(1),
+                                ],
+                              });
+                            }}
+                          />
+                          <span className="text-sm">{subject}</span>
+                        </label>
+                      ))}
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="flex flex-col gap-2">
               <label htmlFor="" className="text-[12px]  font-medium">
@@ -918,55 +1020,482 @@ function Register() {
             <p className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
               Please select all the days and times that could work for lessons.
               The more options you provide, the faster we will be able to
-              organise the right tutor for you!
+              organise the right class for you!
             </p>
           </div>
 
-          {[
-            {
-              id: 1,
-              day: "Monday - Click to view times",
-              times: [
-                { id: 1, time1: "Monday 07:00 AM", time2: "Monday 07:00" },
-                { id: 2, time1: "Monday 07:30 AM", time2: "Monday 07:30" },
-              ],
-            },
-            {
-              id: 2,
-              day: "Tuesday - Click to view times",
-              times: [
-                { id: 1, time1: "Tuesday 07:00 AM", time2: "Tuesday 07:00" },
-                { id: 2, time1: "Tuesday 07:30 AM", time2: "Tuesday 07:30" },
-              ],
-            },
-          ].map((item) => (
-            <div
-              key={item.id}
-              onClick={() => toggleDay(item.id)}
-              className="flex flex-col gap-2"
-            >
-              <h1>{item.day}</h1>
-              {openDays[item.id] && (
-                <div className="mt-2 pl-4 space-y-2">
-                  {item.times.map((time) => (
-                    <div key={time.id} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id={`time-${item.id}-${time.id}`}
-                        className="rounded border-gray-300"
-                      />
-                      <label
-                        htmlFor={`time-${item.id}-${time.id}`}
-                        className="text-sm"
-                      >
-                        {time.time1}
-                      </label>
-                    </div>
-                  ))}
+          <div className="flex flex-col gap-4 py-6">
+            {[
+              {
+                id: 1,
+                day: "Monday - Click to view times",
+                times: [
+                  { id: 1, time1: "Monday 07:00 AM", time2: "Monday 07:00" },
+                  { id: 2, time1: "Monday 07:30 AM", time2: "Monday 07:30" },
+                  { id: 3, time1: "Monday 02:00 PM", time2: "Monday 14:00" },
+                  { id: 4, time1: "Monday 02:30 PM", time2: "Monday 14:30" },
+                  { id: 5, time1: "Monday 03:00 PM", time2: "Monday 15:00" },
+                  { id: 6, time1: "Monday 03:30 PM", time2: "Monday 15:30" },
+                  { id: 7, time1: "Monday 04:00 PM", time2: "Monday 16:00" },
+                  { id: 8, time1: "Monday 04:30 PM", time2: "Monday 16:30" },
+                  { id: 9, time1: "Monday 05:00 PM", time2: "Monday 17:00" },
+                  { id: 10, time1: "Monday 05:30 PM", time2: "Monday 17:30" },
+                  { id: 11, time1: "Monday 06:00 PM", time2: "Monday 18:00" },
+                  { id: 12, time1: "Monday 06:30 PM", time2: "Monday 18:30" },
+                  { id: 13, time1: "Monday 07:00 PM", time2: "Monday 19:00" },
+                  { id: 14, time1: "Monday 07:30 PM", time2: "Monday 19:30" },
+                ],
+              },
+              {
+                id: 2,
+                day: "Tuesday - Click to view times",
+                times: [
+                  { id: 1, time1: "Tuesday 07:00 AM", time2: "Tuesday 07:00" },
+                  { id: 2, time1: "Tuesday 07:30 AM", time2: "Tuesday 07:30" },
+                  { id: 3, time1: "Tuesday 02:00 PM", time2: "Tuesday 14:00" },
+                  { id: 4, time1: "Tuesday 02:30 PM", time2: "Tuesday 14:30" },
+                  { id: 5, time1: "Tuesday 03:00 PM", time2: "Tuesday 15:00" },
+                  { id: 6, time1: "Tuesday 03:30 PM", time2: "Tuesday 15:30" },
+                  { id: 7, time1: "Tuesday 04:00 PM", time2: "Tuesday 16:00" },
+                  { id: 8, time1: "Tuesday 04:30 PM", time2: "Tuesday 16:30" },
+                  { id: 9, time1: "Tuesday 05:00 PM", time2: "Tuesday 17:00" },
+                  { id: 10, time1: "Tuesday 05:30 PM", time2: "Tuesday 17:30" },
+                  { id: 11, time1: "Tuesday 06:00 PM", time2: "Tuesday 18:00" },
+                  { id: 12, time1: "Tuesday 06:30 PM", time2: "Tuesday 18:30" },
+                  { id: 13, time1: "Tuesday 07:00 PM", time2: "Tuesday 19:00" },
+                  { id: 14, time1: "Tuesday 07:30 PM", time2: "Tuesday 19:30" },
+                ],
+              },
+              {
+                id: 3,
+                day: "Wednessday - Click to view times",
+                times: [
+                  {
+                    id: 1,
+                    time1: "Wednessday 07:00 AM",
+                    time2: "Wednessday 07:00",
+                  },
+                  {
+                    id: 2,
+                    time1: "Wednessday 07:30 AM",
+                    time2: "Wednessday 07:30",
+                  },
+                  {
+                    id: 3,
+                    time1: "Wednesday 02:00 PM",
+                    time2: "Wednesday 14:00",
+                  },
+                  {
+                    id: 4,
+                    time1: "Wednesday 02:30 PM",
+                    time2: "Wednesday 14:30",
+                  },
+                  {
+                    id: 5,
+                    time1: "Wednesday 03:00 PM",
+                    time2: "Wednesday 15:00",
+                  },
+                  {
+                    id: 6,
+                    time1: "Wednesday 03:30 PM",
+                    time2: "Wednesday 15:30",
+                  },
+                  {
+                    id: 7,
+                    time1: "Wednesday 04:00 PM",
+                    time2: "Wednesday 16:00",
+                  },
+                  {
+                    id: 8,
+                    time1: "Wednesday 04:30 PM",
+                    time2: "Wednesday 16:30",
+                  },
+                  {
+                    id: 9,
+                    time1: "Wednesday 05:00 PM",
+                    time2: "Wednesday 17:00",
+                  },
+                  {
+                    id: 10,
+                    time1: "Wednesday 05:30 PM",
+                    time2: "Wednesday 17:30",
+                  },
+                  {
+                    id: 11,
+                    time1: "Wednesday 06:00 PM",
+                    time2: "Wednesday 18:00",
+                  },
+                  {
+                    id: 12,
+                    time1: "Wednesday 06:30 PM",
+                    time2: "Wednesday 18:30",
+                  },
+                  {
+                    id: 13,
+                    time1: "Wednesday 07:00 PM",
+                    time2: "Wednesday 19:00",
+                  },
+                  {
+                    id: 14,
+                    time1: "Wednesday 07:30 PM",
+                    time2: "Wednesday 19:30",
+                  },
+                ],
+              },
+              {
+                id: 4,
+                day: "Thursday - Click to view times",
+                times: [
+                  {
+                    id: 1,
+                    time1: "Thursday 07:00 AM",
+                    time2: "Thursday 07:00",
+                  },
+                  {
+                    id: 2,
+                    time1: "Thursday 07:30 AM",
+                    time2: "Thursday 07:30",
+                  },
+                  {
+                    id: 3,
+                    time1: "Thursday 02:00 PM",
+                    time2: "Thursday 14:00",
+                  },
+                  {
+                    id: 4,
+                    time1: "Thursday 02:30 PM",
+                    time2: "Thursday 14:30",
+                  },
+                  {
+                    id: 5,
+                    time1: "Thursday 03:00 PM",
+                    time2: "Thursday 15:00",
+                  },
+                  {
+                    id: 6,
+                    time1: "Thursday 03:30 PM",
+                    time2: "Thursday 15:30",
+                  },
+                  {
+                    id: 7,
+                    time1: "Thursday 04:00 PM",
+                    time2: "Thursday 16:00",
+                  },
+                  {
+                    id: 8,
+                    time1: "Thursday 04:30 PM",
+                    time2: "Thursday 16:30",
+                  },
+                  {
+                    id: 9,
+                    time1: "Thursday 05:00 PM",
+                    time2: "Thursday 17:00",
+                  },
+                  {
+                    id: 10,
+                    time1: "Thursday 05:30 PM",
+                    time2: "Thursday 17:30",
+                  },
+                  {
+                    id: 11,
+                    time1: "Thursday 06:00 PM",
+                    time2: "Thursday 18:00",
+                  },
+                  {
+                    id: 12,
+                    time1: "Thursday 06:30 PM",
+                    time2: "Thursday 18:30",
+                  },
+                  {
+                    id: 13,
+                    time1: "Thursday 07:00 PM",
+                    time2: "Thursday 19:00",
+                  },
+                  {
+                    id: 14,
+                    time1: "Thursday 07:30 PM",
+                    time2: "Thursday 19:30",
+                  },
+                ],
+              },
+              {
+                id: 5,
+                day: "Friday - Click to view times",
+                times: [
+                  { id: 1, time1: "Friday 07:00 AM", time2: "Friday 07:00" },
+                  { id: 2, time1: "Friday 07:30 AM", time2: "Friday 07:30" },
+                  {
+                    id: 3,
+                    time1: "Friday 02:00 PM",
+                    time2: "Friday 14:00",
+                  },
+                  {
+                    id: 4,
+                    time1: "Friday 02:30 PM",
+                    time2: "Friday 14:30",
+                  },
+                  {
+                    id: 5,
+                    time1: "Friday 03:00 PM",
+                    time2: "Friday 15:00",
+                  },
+                  {
+                    id: 6,
+                    time1: "Friday 03:30 PM",
+                    time2: "Friday 15:30",
+                  },
+                  {
+                    id: 7,
+                    time1: "Friday 04:00 PM",
+                    time2: "Friday 16:00",
+                  },
+                  {
+                    id: 8,
+                    time1: "Friday 04:30 PM",
+                    time2: "Friday 16:30",
+                  },
+                  {
+                    id: 9,
+                    time1: "Friday 05:00 PM",
+                    time2: "Friday 17:00",
+                  },
+                  {
+                    id: 10,
+                    time1: "Friday 05:30 PM",
+                    time2: "Friday 17:30",
+                  },
+                  {
+                    id: 11,
+                    time1: "Friday 06:00 PM",
+                    time2: "Friday 18:00",
+                  },
+                  {
+                    id: 12,
+                    time1: "Friday 06:30 PM",
+                    time2: "Friday 18:30",
+                  },
+                  {
+                    id: 13,
+                    time1: "Friday 07:00 PM",
+                    time2: "Friday 19:00",
+                  },
+                  {
+                    id: 14,
+                    time1: "Friday 07:30 PM",
+                    time2: "Friday 19:30",
+                  },
+                ],
+              },
+              {
+                id: 6,
+                day: "Saturday - Click to view times",
+                times: [
+                  {
+                    id: 1,
+                    time1: "Saturday 07:30 AM",
+                    time2: "Saturday 07:30",
+                  },
+                  {
+                    id: 2,
+                    time1: "Saturday 09:00 AM",
+                    time2: "Saturday 09:00",
+                  },
+                  {
+                    id: 3,
+                    time1: "Saturday 10:30 AM",
+                    time2: "Saturday 10:30",
+                  },
+                  {
+                    id: 4,
+                    time1: "Saturday 12:00 PM",
+                    time2: "Saturday 12:00",
+                  },
+                  {
+                    id: 5,
+                    time1: "Saturday 01:15 PM",
+                    time2: "Saturday 13:15",
+                  },
+                  {
+                    id: 6,
+                    time1: "Saturday 02:30 PM",
+                    time2: "Saturday 14:30",
+                  },
+                  {
+                    id: 7,
+                    time1: "Saturday 03:50 PM",
+                    time2: "Saturday 15:50",
+                  },
+                  {
+                    id: 8,
+                    time1: "Saturday 05:10 PM",
+                    time2: "Saturday 17:10",
+                  },
+                  {
+                    id: 9,
+                    time1: "Saturday 06:30 PM",
+                    time2: "Saturday 18:30",
+                  },
+                  {
+                    id: 10,
+                    time1: "Saturday 07:45 PM",
+                    time2: "Saturday 19:45",
+                  },
+                ],
+              },
+              {
+                id: 7,
+                day: "Sunday - Click to view times",
+                times: [
+                  {
+                    id: 1,
+                    time1: "Sunday 07:30 AM",
+                    time2: "Sunday 07:30",
+                  },
+                  {
+                    id: 2,
+                    time1: "Sunday 09:00 AM",
+                    time2: "Sunday 09:00",
+                  },
+                  {
+                    id: 3,
+                    time1: "Sunday 10:30 AM",
+                    time2: "Sunday 10:30",
+                  },
+                  {
+                    id: 4,
+                    time1: "Sunday 12:00 PM",
+                    time2: "Sunday 12:00",
+                  },
+                  {
+                    id: 5,
+                    time1: "Sunday 01:15 PM",
+                    time2: "Sunday 13:15",
+                  },
+                  {
+                    id: 6,
+                    time1: "Sunday 02:30 PM",
+                    time2: "Sunday 14:30",
+                  },
+                  {
+                    id: 7,
+                    time1: "Sunday 03:50 PM",
+                    time2: "Sunday 15:50",
+                  },
+                  {
+                    id: 8,
+                    time1: "Sunday 05:10 PM",
+                    time2: "Sunday 17:10",
+                  },
+                  {
+                    id: 9,
+                    time1: "Sunday 06:30 PM",
+                    time2: "Sunday 18:30",
+                  },
+                  {
+                    id: 10,
+                    time1: "Sunday 07:45 PM",
+                    time2: "Sunday 19:45",
+                  },
+                ],
+              },
+            ].map((item) => (
+              <div key={item.id}>
+                <div
+                  onClick={() => toggleDay(item.id)}
+                  className="flex flex-col gap-2 cursor-pointer border border-gray-300 p-2 transition-all duration-200"
+                >
+                  <h1 className="md:text-[11px] lg:text-[13px] xl:text-[14px]">
+                    {item.day}
+                  </h1>
                 </div>
-              )}
-            </div>
-          ))}
+                {openDays[item.id] && (
+                  <div className="mt-2 pl-4 space-y-2 flex flex-wrap justify-center gap-2">
+                    {item.times.map((time) => (
+                      <div
+                        key={time.id}
+                        className="w-[150px] h-[100px] border border-gray-300 p-1 flex flex-col"
+                      >
+                        <div className="flex flex-col items-center justify-center gap-1 bg-black/5 grow-1 ">
+                          <input
+                            type="radio"
+                            id={`time-${item.id}-${time.id}`}
+                            className="rounded border-gray-300 "
+                          />
+                          <label
+                            htmlFor={`time-${item.id}-${time.id}`}
+                            className="md:text-[10px] lg:text-[12px] xl:text-[13px] font-bold"
+                          >
+                            {time.time1}
+                          </label>
+                        </div>
+                        <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] p-2 text-center">
+                          {time.time2}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label htmlFor="" className="text-[12px]  font-medium">
+              When would you like to start?{" "}
+              <span className="text-red-500">*</span>
+            </label>
+            <select
+              required
+              value={registerData.parentFirstName}
+              onChange={(e) =>
+                setRegisterData({
+                  ...registerData,
+                  parentFirstName: e.target.value,
+                })
+              }
+              className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
+            >
+              <option value="">Select</option>
+              <option value="">As soon as possible</option>
+              <option value="">At a later date</option>
+            </select>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setStep2(true);
+                setStep3(false);
+              }}
+              className="px-5 py-3  font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200 md:text-[8px] lg:text-[11px] xl:text-[12px] bg-black/5 "
+            >
+              Prev
+            </button>
+
+            <Button style="button">Next</Button>
+          </div>
+        </div>
+      ) : step6 ? (
+        <div>
+          <h1>How would you like to have the lessons? *</h1>
+          <p>face to face </p>
+          <p>Online</p>
+        </div>
+      ) : step7 ? (
+        <div>
+          <h1>
+            Our commitment to you: We know this is the start of something
+            amazing for both you and your child. Greater confidence, focus,
+            enthusiasm – and of course, academic success, are all just around
+            the corner. We are 100% committed to bringing out the best in your
+            child and helping them perform at their full potential. Once you hit
+            the button below we will review your details and begin working with
+            our team of incredible tutors to pair up the perfect mentor for your
+            child. We know that one day you’ll look back on this moment right
+            here and be so glad you made this choice.
+          </h1>
+          <button>Let's do this </button>
         </div>
       ) : (
         <div>
