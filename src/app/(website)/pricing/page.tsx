@@ -23,6 +23,7 @@ function Pricing() {
               <div className="flex flex-col gap-1 items-center">
                 <h1 className="text-4xl">$45</h1>
                 <p>Per hour lesson</p>
+                <p>$1 per km applies after the initial free 60km</p>
               </div>
               <Button style="link" href="/register">
                 Book your first lesson now
