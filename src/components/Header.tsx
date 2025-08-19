@@ -92,49 +92,49 @@ function Header() {
                     onMouseLeave={() => setOpen(false)}
                   >
                     <Link
-                      href="/subjects"
+                      href="/classes/#regular"
                       className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
                     >
                       Regular Tutoring
                     </Link>
                     <Link
-                      href="/subjects"
+                      href="/classes/#special-math"
                       className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
                     >
                       Special Math Class
                     </Link>
                     <Link
-                      href="/subjects"
+                      href="/classes/#special-science"
                       className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
                     >
                       Special Science Class
                     </Link>
                     <Link
-                      href="/subjects"
+                      href="/classes/#english"
                       className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
                     >
                       Special English Class
                     </Link>
                     <Link
-                      href="/subjects"
+                      href="/classes/#hsc"
                       className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
                     >
                       HSC class
                     </Link>
                     <Link
-                      href="/subjects"
+                      href="/classes/#vce"
                       className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
                     >
                       VCE class
                     </Link>
                     <Link
-                      href="/subjects"
+                      href="/classes/#scholarship"
                       className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
                     >
                       Scholarship Preparatory Class{" "}
                     </Link>
                     <Link
-                      href="/subjects"
+                      href="/classes/#college"
                       className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
                     >
                       College Preparatory Class
