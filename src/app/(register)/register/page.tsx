@@ -70,7 +70,7 @@ function Register() {
               <div className="w-12 h-12 flex items-center justify-center rounded-full bg-primary-color">
                 <h1 className="text-white">2</h1>
               </div>
-              <h1>We match</h1>
+              <h1>We teach</h1>
               <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
                 We talk with our team to organise a tutor that best matches your
                 child&apos;s needs.
@@ -90,19 +90,21 @@ function Register() {
               <div className="w-12 h-12 flex items-center justify-center rounded-full bg-primary-color">
                 <h1 className="text-white">3</h1>
               </div>
-              <h1>The magic happens.</h1>
+              <h1>We tutor</h1>
               <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
-                The first lesson arrives!
+                We work with your child directly, providing lessons that are
+                tailored to their unique needs and learning style.
               </p>
               <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
-                This lesson is designed for your tutor to see how your child is
-                currently doing - so they&apos;ll come prepared with our first
-                session assessment to go through.
+                From the very first session, our focus is on building
+                confidence, improving understanding, making learning enjoyable
+                and bridging learning gaps.
               </p>
               <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
-                We&apos;ll check in with you after the session - you can
-                schedule in your next lesson and submit payment information
-                easily from there.
+                Most students begin to see positive changes within the first 5
+                sessions—whether that’s better grades, stronger skills, or a
+                renewed love for learning. And we’ll keep you updated every step
+                of the way.
               </p>
             </div>
           </div>
