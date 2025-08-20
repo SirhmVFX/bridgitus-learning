@@ -35,10 +35,18 @@ function Footer() {
         <div className="flex flex-col gap-4">
           <h1 className="text-sm text-white">Legal</h1>
           {[
-            { id: 1, title: "Terms & Conditions", url: "#" },
-            { id: 2, title: "Code of Conduct", url: "#" },
-            { id: 3, title: "Privacy & Data Protection", url: "#" },
-            { id: 4, title: "Privacy Policy", url: "#" },
+            {
+              id: 1,
+              title: "Terms & Conditions",
+              url: "/terms-and-conditions",
+            },
+            { id: 2, title: "Code of Conduct", url: "/code-of-conduct" },
+            {
+              id: 3,
+              title: "Privacy & Data Protection",
+              url: "/privacy-and-data-protection",
+            },
+            { id: 4, title: "Privacy Policy", url: "/privacy-policy" },
           ].map((e) => (
             <Link className="text-xs text-white/50" key={e.id} href={e.url}>
               {e.title}
