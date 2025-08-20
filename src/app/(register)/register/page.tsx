@@ -31,6 +31,9 @@ function Register() {
         favouriteThingsToDo: "",
         lessonType: "",
         location: "",
+        startPreference: "",
+        startDate: "",
+        selectedTimes: [],
       },
     ],
   });
@@ -104,6 +107,9 @@ function Register() {
           favouriteThingsToDo: "",
           lessonType: "",
           location: "",
+          startPreference: "",
+          startDate: "",
+          selectedTimes: [],
         });
       }
       setRegisterData((prev) => ({
@@ -126,11 +132,29 @@ function Register() {
       return;
     }
 
+    // Move to availability for current student
+    setStep4(false);
+    setStep5(true);
+  };
+
+  const handleNextAvailability = () => {
+    const hasSelectedTimes = Object.values(selectedTimes).some(Boolean);
+    if (!hasSelectedTimes) {
+      alert("Please select at least one available time slot");
+      return;
+    }
+
+    // Check if there are more students to process
     if (currentStudentIndex < registerData.students.length - 1) {
-      setCurrentStudentIndex(currentStudentIndex + 1);
+      // Move to next student's info
+      setCurrentStudentIndex((prev) => prev + 1);
+      setSelectedTimes({}); // Reset selected times for next student
+      setStep5(false);
+      setStep4(true);
     } else {
-      setStep4(false);
-      setStep5(true);
+      // All students processed, move to next step
+      setStep5(false);
+      setStep6(true);
     }
   };
 
@@ -456,8 +480,7 @@ function Register() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            setStep4(false);
-            setStep5(true);
+            handleNextStudent();
           }}
           className="flex flex-col gap-10"
         >
@@ -637,6 +660,137 @@ function Register() {
                       "NAPLAN Preparation",
                       "HAST Preparation",
                       "Selective School Preparation",
+                    ].map((subject) => (
+                      <label
+                        key={subject}
+                        className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
+                          registerData.students[
+                            currentStudentIndex
+                          ].subjectHelpNeeded?.includes(subject)
+                            ? "bg-primary-color/20 border-primary-color"
+                            : "border-gray-300 hover:border-primary-color/50"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="rounded border-gray-300 text-primary-color focus:ring-primary-color mr-2"
+                          checked={
+                            registerData.students[
+                              currentStudentIndex
+                            ].subjectHelpNeeded?.includes(subject) || false
+                          }
+                          onChange={(e) => {
+                            const currentSubjects =
+                              registerData.students[
+                                currentStudentIndex
+                              ].subjectHelpNeeded
+                                ?.split(",")
+                                .filter(Boolean) || [];
+                            let newSubjects;
+
+                            if (e.target.checked) {
+                              newSubjects = [
+                                ...new Set([...currentSubjects, subject]),
+                              ];
+                            } else {
+                              newSubjects = currentSubjects.filter(
+                                (s) => s !== subject
+                              );
+                            }
+
+                            handleStudentChange(
+                              currentStudentIndex,
+                              "subjectHelpNeeded",
+                              newSubjects.join(",")
+                            );
+                          }}
+                        />
+                        <span className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
+                          {subject}
+                        </span>
+                      </label>
+                    ))}
+
+                  {["7", "8", "9", "10"].includes(
+                    registerData.students[currentStudentIndex].grade
+                  ) &&
+                    [
+                      "Yrs 7 - 10 General Support",
+                      "Yrs 7- 10 English",
+                      "Yrs 7- 10 Maths",
+                      "Yrs 7- 10 Science",
+                      "NAPLAN Preparation",
+                      "Selective School Preparation",
+                    ].map((subject) => (
+                      <label
+                        key={subject}
+                        className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
+                          registerData.students[
+                            currentStudentIndex
+                          ].subjectHelpNeeded?.includes(subject)
+                            ? "bg-primary-color/20 border-primary-color"
+                            : "border-gray-300 hover:border-primary-color/50"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="rounded border-gray-300 text-primary-color focus:ring-primary-color mr-2"
+                          checked={
+                            registerData.students[
+                              currentStudentIndex
+                            ].subjectHelpNeeded?.includes(subject) || false
+                          }
+                          onChange={(e) => {
+                            const currentSubjects =
+                              registerData.students[
+                                currentStudentIndex
+                              ].subjectHelpNeeded
+                                ?.split(",")
+                                .filter(Boolean) || [];
+                            let newSubjects;
+
+                            if (e.target.checked) {
+                              newSubjects = [
+                                ...new Set([...currentSubjects, subject]),
+                              ];
+                            } else {
+                              newSubjects = currentSubjects.filter(
+                                (s) => s !== subject
+                              );
+                            }
+
+                            handleStudentChange(
+                              currentStudentIndex,
+                              "subjectHelpNeeded",
+                              newSubjects.join(",")
+                            );
+                          }}
+                        />
+                        <span className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
+                          {subject}
+                        </span>
+                      </label>
+                    ))}
+
+                  {["11", "12"].includes(
+                    registerData.students[currentStudentIndex].grade
+                  ) &&
+                    [
+                      "HSC & VCE English (Standard)",
+                      "HSC & VCE English (Advanced)",
+                      "HSC & VCE English Extension",
+                      "HSC & VCE English Extension 2",
+                      "HSC & VCE Maths (Standard)",
+                      "HSC & VCE Maths (Advanced)",
+                      "HSC & VCE Maths Extension",
+                      "HSC & VCE Maths Extension 2",
+                      "HSC General Support",
+                      "HSC Chemistry",
+                      "HSC Physics",
+                      "HSC Biology",
+                      "HSC Business Studies",
+                      "HSC Legal Studies",
+                      "HSC Economics",
                     ].map((subject) => (
                       <label
                         key={subject}
@@ -899,13 +1053,10 @@ function Register() {
             </button>
 
             <button
-              type="button"
-              onClick={handleNextStudent}
+              type="submit"
               className="px-5 py-3 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer bg-secondary-color text-white md:text-[8px] lg:text-[11px] xl:text-[12px]"
             >
-              {currentStudentIndex < registerData.students.length - 1
-                ? "Next Student"
-                : "Continue"}
+              Next
             </button>
           </div>
         </form>
@@ -913,24 +1064,17 @@ function Register() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            const hasSelectedTimes = Object.values(selectedTimes).some(Boolean);
-            if (!hasSelectedTimes) {
-              alert("Please select at least one available time slot");
-              return;
-            }
-            setStep5(false);
-            setStep6(true);
+            handleNextAvailability();
           }}
           className="flex flex-col gap-10"
         >
           <div>
             <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
-              First student availabilities:
+              {registerData.students[currentStudentIndex].firstName}&apos;s
+              Availability:
             </h1>
             <p className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
               Please select all the days and times that could work for lessons.
-              The more options you provide, the faster we will be able to
-              organise the right class for you!
             </p>
           </div>
 
@@ -962,18 +1106,66 @@ function Register() {
                 times: [
                   { id: 1, time1: "Tuesday 07:00 AM", time2: "Tuesday 07:00" },
                   { id: 2, time1: "Tuesday 07:30 AM", time2: "Tuesday 07:30" },
-                  { id: 3, time1: "Tuesday 02:00 PM", time2: "Tuesday 14:00" },
-                  { id: 4, time1: "Tuesday 02:30 PM", time2: "Tuesday 14:30" },
-                  { id: 5, time1: "Tuesday 03:00 PM", time2: "Tuesday 15:00" },
-                  { id: 6, time1: "Tuesday 03:30 PM", time2: "Tuesday 15:30" },
-                  { id: 7, time1: "Tuesday 04:00 PM", time2: "Tuesday 16:00" },
-                  { id: 8, time1: "Tuesday 04:30 PM", time2: "Tuesday 16:30" },
-                  { id: 9, time1: "Tuesday 05:00 PM", time2: "Tuesday 17:00" },
-                  { id: 10, time1: "Tuesday 05:30 PM", time2: "Tuesday 17:30" },
-                  { id: 11, time1: "Tuesday 06:00 PM", time2: "Tuesday 18:00" },
-                  { id: 12, time1: "Tuesday 06:30 PM", time2: "Tuesday 18:30" },
-                  { id: 13, time1: "Tuesday 07:00 PM", time2: "Tuesday 19:00" },
-                  { id: 14, time1: "Tuesday 07:30 PM", time2: "Tuesday 19:30" },
+                  {
+                    id: 3,
+                    time1: "Tuesday 02:00 PM",
+                    time2: "Tuesday 14:00",
+                  },
+                  {
+                    id: 4,
+                    time1: "Tuesday 02:30 PM",
+                    time2: "Tuesday 14:30",
+                  },
+                  {
+                    id: 5,
+                    time1: "Tuesday 03:00 PM",
+                    time2: "Tuesday 15:00",
+                  },
+                  {
+                    id: 6,
+                    time1: "Tuesday 03:30 PM",
+                    time2: "Tuesday 15:30",
+                  },
+                  {
+                    id: 7,
+                    time1: "Tuesday 04:00 PM",
+                    time2: "Tuesday 16:00",
+                  },
+                  {
+                    id: 8,
+                    time1: "Tuesday 04:30 PM",
+                    time2: "Tuesday 16:30",
+                  },
+                  {
+                    id: 9,
+                    time1: "Tuesday 05:00 PM",
+                    time2: "Tuesday 17:00",
+                  },
+                  {
+                    id: 10,
+                    time1: "Tuesday 05:30 PM",
+                    time2: "Tuesday 17:30",
+                  },
+                  {
+                    id: 11,
+                    time1: "Tuesday 06:00 PM",
+                    time2: "Tuesday 18:00",
+                  },
+                  {
+                    id: 12,
+                    time1: "Tuesday 06:30 PM",
+                    time2: "Tuesday 18:30",
+                  },
+                  {
+                    id: 13,
+                    time1: "Tuesday 07:00 PM",
+                    time2: "Tuesday 19:00",
+                  },
+                  {
+                    id: 14,
+                    time1: "Tuesday 07:30 PM",
+                    time2: "Tuesday 19:30",
+                  },
                 ],
               },
               {
@@ -1362,21 +1554,24 @@ function Register() {
 
           <div className="flex flex-col gap-2">
             <label
-              htmlFor="startPreference"
+              htmlFor={`startPreference-${currentStudentIndex}`}
               className="text-[12px] font-medium"
             >
               When would you like to start?{" "}
               <span className="text-red-500">*</span>
             </label>
             <select
-              id="startPreference"
+              id={`startPreference-${currentStudentIndex}`}
               required
-              value={registerData.startPreference}
+              value={
+                registerData.students[currentStudentIndex].startPreference || ""
+              }
               onChange={(e) =>
-                setRegisterData({
-                  ...registerData,
-                  startPreference: e.target.value,
-                })
+                handleStudentChange(
+                  currentStudentIndex,
+                  "startPreference",
+                  e.target.value
+                )
               }
               className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]"
             >
@@ -1384,24 +1579,28 @@ function Register() {
               <option value="asap">As soon as possible</option>
               <option value="later">At a later date</option>
             </select>
-            {registerData.startPreference === "later" && (
+            {registerData.students[currentStudentIndex].startPreference ===
+              "later" && (
               <div className="mt-2">
                 <label
-                  htmlFor="startDate"
+                  htmlFor={`startDate-${currentStudentIndex}`}
                   className="text-[12px] font-medium block mb-1"
                 >
                   Select start date <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="date"
-                  id="startDate"
+                  id={`startDate-${currentStudentIndex}`}
                   required
-                  value={registerData.startDate}
+                  value={
+                    registerData.students[currentStudentIndex].startDate || ""
+                  }
                   onChange={(e) =>
-                    setRegisterData({
-                      ...registerData,
-                      startDate: e.target.value,
-                    })
+                    handleStudentChange(
+                      currentStudentIndex,
+                      "startDate",
+                      e.target.value
+                    )
                   }
                   min={new Date().toISOString().split("T")[0]}
                   className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]"
@@ -1419,10 +1618,17 @@ function Register() {
               }}
               className="px-5 py-3  font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200 md:text-[8px] lg:text-[11px] xl:text-[12px] bg-black/5 "
             >
-              Prev
+              Back to Student Info
             </button>
 
-            <Button style="button">Next</Button>
+            <button
+              type="submit"
+              className="px-5 py-3 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer bg-secondary-color text-white md:text-[8px] lg:text-[11px] xl:text-[12px]"
+            >
+              {currentStudentIndex < registerData.students.length - 1
+                ? "Save & Add Next Student"
+                : "Continue"}
+            </button>
           </div>
         </form>
       ) : step6 ? (
@@ -1453,6 +1659,7 @@ function Register() {
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
                   handleStudentChange(
                     currentStudentIndex,
                     "lessonType",
@@ -1464,19 +1671,22 @@ function Register() {
             >
               <div className="flex items-center">
                 <div className="p-2 rounded-full bg-primary-color/20 mr-4">
-                  <svg
-                    className="w-6 h-6 text-primary-color"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M15 10l4 4L19 7"
-                    />
-                  </svg>
+                  {registerData.students[currentStudentIndex].lessonType ===
+                    "online" && (
+                    <svg
+                      className="w-6 h-6 text-primary-color"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  )}
                 </div>
                 <div>
                   <h3 className="md:text-[12px] lg:text-[14px] xl:text-[16px] font-medium">
@@ -1496,17 +1706,18 @@ function Register() {
                   ? "border-primary-color bg-primary-color/10"
                   : "border-gray-200 hover:border-primary-color/50"
               }`}
-              onClick={() =>
+              onClick={() => {
                 handleStudentChange(
                   currentStudentIndex,
                   "lessonType",
                   "in-person"
-                )
-              }
+                );
+              }}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
                   handleStudentChange(
                     currentStudentIndex,
                     "lessonType",
@@ -1517,25 +1728,22 @@ function Register() {
             >
               <div className="flex items-center">
                 <div className="p-2 rounded-full bg-primary-color/20 mr-4">
-                  <svg
-                    className="w-6 h-6 text-primary-color"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
+                  {registerData.students[currentStudentIndex].lessonType ===
+                    "in-person" && (
+                    <svg
+                      className="w-6 h-6 text-primary-color"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  )}
                 </div>
                 <div>
                   <h3 className="md:text-[12px] lg:text-[14px] xl:text-[16px] font-medium">
@@ -1720,79 +1928,150 @@ function Register() {
                   Students Information
                 </h2>
                 <div className="space-y-6">
-                  {registerData.students.map((student, index) => (
-                    <div
-                      key={index}
-                      className="bg-white p-4 rounded-lg border border-gray-200 md:text-[12px] lg:text-[14px] xl:text-[16px]"
-                    >
-                      <h3 className="font-medium text-gray-900 mb-3 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                        Student {index + 1}
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                            Name
-                          </h4>
-                          <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                            {student.firstName} {student.lastName}
-                          </p>
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                            School & Grade
-                          </h4>
-                          <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                            {student.school || "Not specified"}
-                            {student.grade && `, Grade ${student.grade}`}
-                          </p>
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                            Subject Help Needed
-                          </h4>
-                          <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                            {student.subjectHelpNeeded || "Not specified"}
-                          </p>
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                            Current Performance
-                          </h4>
-                          <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                            {student.currentPerformance || "Not specified"}
-                          </p>
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                            Lesson Type
-                          </h4>
-                          <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                            {student.lessonType === "online"
-                              ? "Online"
-                              : `In-Person at ${student.location}`}
-                          </p>
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                            Expecting Result
-                          </h4>
-                          <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                            {student.expectingResult || "Not specified"}
-                          </p>
-                        </div>
-                        {student.helpComment && (
-                          <div className="md:col-span-2">
+                  {registerData.students.map((student, index) => {
+                    // Get selected times for this student
+                    const studentTimes = student.selectedTimes || [];
+
+                    return (
+                      <div
+                        key={index}
+                        className="bg-white p-4 rounded-lg border border-gray-200 md:text-[12px] lg:text-[14px] xl:text-[16px]"
+                      >
+                        <h3 className="font-medium text-gray-900 mb-3 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                          Student {index + 1}
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
                             <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                              Additional Comments
+                              Name
                             </h4>
                             <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                              {student.helpComment}
+                              {student.firstName} {student.lastName}
                             </p>
                           </div>
-                        )}
+
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                              School & Grade
+                            </h4>
+                            <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                              {student.school || "Not specified"}
+                              {student.grade && `, Grade ${student.grade}`}
+                            </p>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                              Subject Help Needed
+                            </h4>
+                            <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                              {student.subjectHelpNeeded || "Not specified"}
+                            </p>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                              Current Performance
+                            </h4>
+                            <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                              {student.currentPerformance || "Not specified"}
+                            </p>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                              Lesson Type
+                            </h4>
+                            <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                              {student.lessonType === "online"
+                                ? "Online"
+                                : `In-Person at ${student.location || "Not specified"}`}
+                            </p>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                              Start Preference
+                            </h4>
+                            <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                              {student.startPreference === "asap"
+                                ? "As soon as possible"
+                                : student.startDate
+                                  ? `On ${new Date(student.startDate).toLocaleDateString()}`
+                                  : "Not specified"}
+                            </p>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                              Favourite Things
+                            </h4>
+                            <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                              {student.favouriteThingsToDo || "Not specified"}
+                            </p>
+                          </div>
+                          <div className="md:col-span-2">
+                            <h4 className="text-sm font-medium text-gray-500 mb-2 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                              Selected Availability
+                            </h4>
+                            {studentTimes.length > 0 ? (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {studentTimes?.map((timeSlot: string, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="bg-gray-50 p-2 rounded border border-gray-200"
+                                  >
+                                    <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                                      {timeSlot
+                                        ?.replace(
+                                          "Monday - Click to view times-",
+                                          "Mon, "
+                                        )
+                                        .replace(
+                                          "Tuesday - Click to view times-",
+                                          "Tue, "
+                                        )
+                                        .replace(
+                                          "Wednesday - Click to view times-",
+                                          "Wed, "
+                                        )
+                                        .replace(
+                                          "Thursday - Click to view times-",
+                                          "Thu, "
+                                        )
+                                        .replace(
+                                          "Friday - Click to view times-",
+                                          "Fri, "
+                                        )
+                                        .replace(
+                                          "Saturday - Click to view times-",
+                                          "Sat, "
+                                        )
+                                        .replace(
+                                          "Sunday - Click to view times-",
+                                          "Sun, "
+                                        )
+                                        .replace("AM", "am")
+                                        .replace("PM", "pm")}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-gray-500 italic md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                                No time slots selected
+                              </p>
+                            )}
+                          </div>
+                          {student.helpComment && (
+                            <div className="md:col-span-2">
+                              <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                                Additional Comments
+                              </h4>
+                              <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                                {student.helpComment}
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
