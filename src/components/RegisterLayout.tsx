@@ -20,8 +20,10 @@ function RegisterLayout({ children }: { children: React.ReactNode }) {
       </header>
       <div className="h-full">{children}</div>
 
-      <footer>
-        <h1>Footer</h1>
+      <footer className="py-4">
+        <h1 className="text-[10px] lg:text-[12px] xl:text-[13px] text-center">
+          Copyright © Bridgitus
+        </h1>
       </footer>
     </div>
   );
