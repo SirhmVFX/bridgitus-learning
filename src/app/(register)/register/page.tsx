@@ -1,7 +1,7 @@
 "use client";
 
 import Button from "@/components/Button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function Register() {
   const [registerData, setRegisterData] = useState({
@@ -12,7 +12,9 @@ function Register() {
     parentPhone: "",
     parentPostcode: "",
     parentReferredBy: "",
-    noOfStudents: "",
+    noOfStudents: "1",
+    startPreference: "",
+    startDate: "",
     students: [
       {
         firstName: "",
@@ -27,11 +29,26 @@ function Register() {
         mind: "",
         personality: "",
         favouriteThingsToDo: "",
+        lessonType: "",
+        location: "",
       },
     ],
   });
 
   const [openDays, setOpenDays] = useState<Record<number, boolean>>({});
+  const [selectedTimes, setSelectedTimes] = useState<Record<string, boolean>>(
+    {}
+  );
+
+  const [step1, setStep1] = useState(true);
+  const [step2, setStep2] = useState(false);
+  const [step3, setStep3] = useState(false);
+  const [step4, setStep4] = useState(false);
+  const [step5, setStep5] = useState(false);
+  const [step6, setStep6] = useState(false);
+  const [step7, setStep7] = useState(false);
+
+  const [currentStudentIndex, setCurrentStudentIndex] = useState(0);
 
   const toggleDay = (id: number) => {
     setOpenDays((prev) => ({
@@ -40,12 +57,82 @@ function Register() {
     }));
   };
 
-  const [step1, setStep1] = useState(true);
-  const [step2, setStep2] = useState(false);
-  const [step3, setStep3] = useState(false);
-  const [step4, setStep4] = useState(false);
-  const [step5, setStep5] = useState(false);
-  const [step6, setStep7] = useState(false);
+  const handleTimeSelect = (
+    day: string,
+    time1: string,
+    time2: string,
+    isChecked: boolean
+  ) => {
+    const timeKey = `${day}-${time1}`;
+    setSelectedTimes((prev) => ({
+      ...prev,
+      [timeKey]: isChecked,
+    }));
+  };
+
+  const handleStudentChange = (index: number, field: string, value: string) => {
+    const updatedStudents = [...registerData.students];
+    updatedStudents[index] = {
+      ...updatedStudents[index],
+      [field]: value,
+    };
+    setRegisterData((prev) => ({
+      ...prev,
+      students: updatedStudents,
+    }));
+  };
+
+  useEffect(() => {
+    if (
+      registerData.noOfStudents &&
+      registerData.students.length < parseInt(registerData.noOfStudents)
+    ) {
+      const newStudents = [...registerData.students];
+      while (newStudents.length < parseInt(registerData.noOfStudents)) {
+        newStudents.push({
+          firstName: "",
+          lastName: "",
+          school: "",
+          grade: "",
+          subjectHelpNeeded: "",
+          expectingResult: "",
+          helpComment: "",
+          currentPerformance: "",
+          schoolAttitude: "",
+          mind: "",
+          personality: "",
+          favouriteThingsToDo: "",
+          lessonType: "",
+          location: "",
+        });
+      }
+      setRegisterData((prev) => ({
+        ...prev,
+        students: newStudents,
+      }));
+    }
+  }, [registerData.noOfStudents]);
+
+  const handleNextStudent = () => {
+    const currentStudent = registerData.students[currentStudentIndex];
+
+    if (
+      !currentStudent.firstName ||
+      !currentStudent.lastName ||
+      !currentStudent.school ||
+      !currentStudent.grade
+    ) {
+      alert("Please fill in all required fields for this student");
+      return;
+    }
+
+    if (currentStudentIndex < registerData.students.length - 1) {
+      setCurrentStudentIndex(currentStudentIndex + 1);
+    } else {
+      setStep4(false);
+      setStep5(true);
+    }
+  };
 
   return (
     <div>
@@ -428,9 +515,14 @@ function Register() {
           </div>
 
           <div className="flex flex-col gap-4">
-            {registerData.noOfStudents && registerData.noOfStudents !== "1" && (
+            {registerData.noOfStudents !== "1" && (
               <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
-                First student details:
+                {currentStudentIndex === 0
+                  ? "First"
+                  : currentStudentIndex === 1
+                    ? "Second"
+                    : "Third"}{" "}
+                student details:
               </h1>
             )}
 
@@ -442,18 +534,13 @@ function Register() {
                 <input
                   type="text"
                   required
-                  value={registerData.students[0].firstName}
+                  value={registerData.students[currentStudentIndex].firstName}
                   onChange={(e) =>
-                    setRegisterData({
-                      ...registerData,
-                      students: [
-                        {
-                          ...registerData.students[0],
-                          firstName: e.target.value,
-                        },
-                        ...registerData.students.slice(1),
-                      ],
-                    })
+                    handleStudentChange(
+                      currentStudentIndex,
+                      "firstName",
+                      e.target.value
+                    )
                   }
                   className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
                 />
@@ -466,18 +553,13 @@ function Register() {
                 <input
                   required
                   type="text"
-                  value={registerData.students[0].lastName}
+                  value={registerData.students[currentStudentIndex].lastName}
                   onChange={(e) =>
-                    setRegisterData({
-                      ...registerData,
-                      students: [
-                        {
-                          ...registerData.students[0],
-                          lastName: e.target.value,
-                        },
-                        ...registerData.students.slice(1),
-                      ],
-                    })
+                    handleStudentChange(
+                      currentStudentIndex,
+                      "lastName",
+                      e.target.value
+                    )
                   }
                   className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
                 />
@@ -491,18 +573,13 @@ function Register() {
                 <input
                   required
                   type="text"
-                  value={registerData.students[0].school}
+                  value={registerData.students[currentStudentIndex].school}
                   onChange={(e) =>
-                    setRegisterData({
-                      ...registerData,
-                      students: [
-                        {
-                          ...registerData.students[0],
-                          school: e.target.value,
-                        },
-                        ...registerData.students.slice(1),
-                      ],
-                    })
+                    handleStudentChange(
+                      currentStudentIndex,
+                      "school",
+                      e.target.value
+                    )
                   }
                   className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
                 />
@@ -515,18 +592,13 @@ function Register() {
                 </label>
                 <select
                   required
-                  value={registerData.students[0].grade}
+                  value={registerData.students[currentStudentIndex].grade}
                   onChange={(e) =>
-                    setRegisterData({
-                      ...registerData,
-                      students: [
-                        {
-                          ...registerData.students[0],
-                          grade: e.target.value,
-                        },
-                        ...registerData.students.slice(1),
-                      ],
-                    })
+                    handleStudentChange(
+                      currentStudentIndex,
+                      "grade",
+                      e.target.value
+                    )
                   }
                   className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
                 >
@@ -542,7 +614,7 @@ function Register() {
               </div>
             </div>
 
-            {registerData.students[0].grade && (
+            {registerData.students[currentStudentIndex].grade && (
               <div className="flex flex-col gap-2">
                 <label htmlFor="" className="text-[12px]  font-medium">
                   What subject do they need support in?{" "}
@@ -555,211 +627,66 @@ function Register() {
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-2">
                   {/* Elementary School (Pre-K to 6) */}
                   {["Pre-K", "K", "1", "2", "3", "4", "5", "6"].includes(
-                    registerData.students[0].grade
-                  ) && (
-                    <>
-                      {[
-                        "Primary School General Support",
-                        "Primary School English",
-                        "Primary School Maths",
-                        "OC Exam Preparation",
-                        "NAPLAN Preparation",
-                        "HAST Preparation",
-                        "Selective School Preparation",
-                      ].map((subject) => (
-                        <label
-                          key={subject}
-                          className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
-                            registerData.students[0].subjectHelpNeeded?.includes(
-                              subject
-                            )
-                              ? "bg-primary-color/20 border-primary-color"
-                              : "border-gray-300 hover:border-primary-color/50"
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            className="rounded border-gray-300 text-primary-color focus:ring-primary-color mr-2"
-                            checked={
-                              registerData.students[0].subjectHelpNeeded?.includes(
-                                subject
-                              ) || false
+                    registerData.students[currentStudentIndex].grade
+                  ) &&
+                    [
+                      "Primary School General Support",
+                      "Primary School English",
+                      "Primary School Maths",
+                      "OC Exam Preparation",
+                      "NAPLAN Preparation",
+                      "HAST Preparation",
+                      "Selective School Preparation",
+                    ].map((subject) => (
+                      <label
+                        key={subject}
+                        className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
+                          registerData.students[
+                            currentStudentIndex
+                          ].subjectHelpNeeded?.includes(subject)
+                            ? "bg-primary-color/20 border-primary-color"
+                            : "border-gray-300 hover:border-primary-color/50"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="rounded border-gray-300 text-primary-color focus:ring-primary-color mr-2"
+                          checked={
+                            registerData.students[
+                              currentStudentIndex
+                            ].subjectHelpNeeded?.includes(subject) || false
+                          }
+                          onChange={(e) => {
+                            const currentSubjects =
+                              registerData.students[
+                                currentStudentIndex
+                              ].subjectHelpNeeded
+                                ?.split(",")
+                                .filter(Boolean) || [];
+                            let newSubjects;
+
+                            if (e.target.checked) {
+                              newSubjects = [
+                                ...new Set([...currentSubjects, subject]),
+                              ];
+                            } else {
+                              newSubjects = currentSubjects.filter(
+                                (s) => s !== subject
+                              );
                             }
-                            onChange={(e) => {
-                              const currentSubjects =
-                                registerData.students[0].subjectHelpNeeded
-                                  ?.split(",")
-                                  .filter(Boolean) || [];
-                              let newSubjects;
 
-                              if (e.target.checked) {
-                                newSubjects = [
-                                  ...new Set([...currentSubjects, subject]),
-                                ];
-                              } else {
-                                newSubjects = currentSubjects.filter(
-                                  (s) => s !== subject
-                                );
-                              }
-
-                              setRegisterData({
-                                ...registerData,
-                                students: [
-                                  {
-                                    ...registerData.students[0],
-                                    subjectHelpNeeded: newSubjects.join(","),
-                                  },
-                                  ...registerData.students.slice(1),
-                                ],
-                              });
-                            }}
-                          />
-                          <span className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
-                            {subject}
-                          </span>
-                        </label>
-                      ))}
-                    </>
-                  )}
-
-                  {/* Middle School (7-10) */}
-                  {["7", "8", "9", "10"].includes(
-                    registerData.students[0].grade
-                  ) && (
-                    <>
-                      {[
-                        "Yrs 7 - 10 General Support",
-                        "Yrs 7 - 10 English",
-                        "Yrs 7 - 10 Maths",
-                        "Yrs 7 - 10 Science",
-                        "NAPLAN Preparation",
-                        "Selective School Preparation",
-                      ].map((subject) => (
-                        <label
-                          key={subject}
-                          className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
-                            registerData.students[0].subjectHelpNeeded?.includes(
-                              subject
-                            )
-                              ? "bg-primary-color/20 border-primary-color"
-                              : "border-gray-300 hover:border-primary-color/50"
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            className="rounded border-gray-300 text-primary-color focus:ring-primary-color mr-2"
-                            checked={
-                              registerData.students[0].subjectHelpNeeded?.includes(
-                                subject
-                              ) || false
-                            }
-                            onChange={(e) => {
-                              const currentSubjects =
-                                registerData.students[0].subjectHelpNeeded
-                                  ?.split(",")
-                                  .filter(Boolean) || [];
-                              let newSubjects;
-
-                              if (e.target.checked) {
-                                newSubjects = [
-                                  ...new Set([...currentSubjects, subject]),
-                                ];
-                              } else {
-                                newSubjects = currentSubjects.filter(
-                                  (s) => s !== subject
-                                );
-                              }
-
-                              setRegisterData({
-                                ...registerData,
-                                students: [
-                                  {
-                                    ...registerData.students[0],
-                                    subjectHelpNeeded: newSubjects.join(","),
-                                  },
-                                  ...registerData.students.slice(1),
-                                ],
-                              });
-                            }}
-                          />
-                          <span className="text-sm">{subject}</span>
-                        </label>
-                      ))}
-                    </>
-                  )}
-
-                  {/* High School (11-12) */}
-                  {["11", "12"].includes(registerData.students[0].grade) && (
-                    <>
-                      {[
-                        "HSC or VCE English (Standard)",
-                        "HSC or VCE English (Advanced)",
-                        "HSC or VCE English Extension 1",
-                        "HSC or VCE English Extension 2",
-                        "HSC Maths (Standard)",
-                        "HSC Maths (Advanced)",
-                        "HSC Maths Extension 1",
-                        "HSC Maths Extension 2",
-                        "HSC General Support",
-                        "HSC Chemistry",
-                        "HSC Biology",
-                        "HSC Physics",
-                        "HSC Business Studies",
-                        "HSC Legal Studies",
-                        "HSC Economics",
-                      ].map((subject) => (
-                        <label
-                          key={subject}
-                          className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
-                            registerData.students[0].subjectHelpNeeded?.includes(
-                              subject
-                            )
-                              ? "bg-primary-color/20 border-primary-color"
-                              : "border-gray-300 hover:border-primary-color/50"
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            className="rounded border-gray-300 text-primary-color focus:ring-primary-color mr-2"
-                            checked={
-                              registerData.students[0].subjectHelpNeeded?.includes(
-                                subject
-                              ) || false
-                            }
-                            onChange={(e) => {
-                              const currentSubjects =
-                                registerData.students[0].subjectHelpNeeded
-                                  ?.split(",")
-                                  .filter(Boolean) || [];
-                              let newSubjects;
-
-                              if (e.target.checked) {
-                                newSubjects = [
-                                  ...new Set([...currentSubjects, subject]),
-                                ];
-                              } else {
-                                newSubjects = currentSubjects.filter(
-                                  (s) => s !== subject
-                                );
-                              }
-
-                              setRegisterData({
-                                ...registerData,
-                                students: [
-                                  {
-                                    ...registerData.students[0],
-                                    subjectHelpNeeded: newSubjects.join(","),
-                                  },
-                                  ...registerData.students.slice(1),
-                                ],
-                              });
-                            }}
-                          />
-                          <span className="text-sm">{subject}</span>
-                        </label>
-                      ))}
-                    </>
-                  )}
+                            handleStudentChange(
+                              currentStudentIndex,
+                              "subjectHelpNeeded",
+                              newSubjects.join(",")
+                            );
+                          }}
+                        />
+                        <span className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
+                          {subject}
+                        </span>
+                      </label>
+                    ))}
                 </div>
               </div>
             )}
@@ -771,18 +698,15 @@ function Register() {
               </label>
               <select
                 required
-                value={registerData.students[0].expectingResult}
+                value={
+                  registerData.students[currentStudentIndex].expectingResult
+                }
                 onChange={(e) =>
-                  setRegisterData({
-                    ...registerData,
-                    students: [
-                      {
-                        ...registerData.students[0],
-                        expectingResult: e.target.value,
-                      },
-                      ...registerData.students.slice(1),
-                    ],
-                  })
+                  handleStudentChange(
+                    currentStudentIndex,
+                    "expectingResult",
+                    e.target.value
+                  )
                 }
                 className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
               >
@@ -808,18 +732,13 @@ function Register() {
                 them up with the right tutor.
               </p>
               <textarea
-                value={registerData.students[0].helpComment}
+                value={registerData.students[currentStudentIndex].helpComment}
                 onChange={(e) =>
-                  setRegisterData({
-                    ...registerData,
-                    students: [
-                      {
-                        ...registerData.students[0],
-                        helpComment: e.target.value,
-                      },
-                      ...registerData.students.slice(1),
-                    ],
-                  })
+                  handleStudentChange(
+                    currentStudentIndex,
+                    "helpComment",
+                    e.target.value
+                  )
                 }
                 className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px h-[200px]"
               ></textarea>
@@ -843,18 +762,13 @@ function Register() {
                   <button
                     key={option}
                     type="button"
-                    className={`p-2 cursor-pointer rounded-md border ${registerData.students[0].currentPerformance === option ? "bg-primary-color/20 border-2 border-primary-color" : "bg-black/5"} border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]`}
+                    className={`p-2 cursor-pointer rounded-md border ${registerData.students[currentStudentIndex].currentPerformance === option ? "bg-primary-color/20 border-2 border-primary-color" : "bg-black/5"} border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]`}
                     onClick={() =>
-                      setRegisterData({
-                        ...registerData,
-                        students: [
-                          {
-                            ...registerData.students[0],
-                            currentPerformance: option,
-                          },
-                          ...registerData.students.slice(1),
-                        ],
-                      })
+                      handleStudentChange(
+                        currentStudentIndex,
+                        "currentPerformance",
+                        option
+                      )
                     }
                   >
                     {option}
@@ -876,18 +790,13 @@ function Register() {
                   <button
                     key={option}
                     type="button"
-                    className={`p-2 rounded-md border ${registerData.students[0].schoolAttitude === option ? "bg-primary-color/20 border-2 border-primary-color" : "bg-black/5"} border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]`}
+                    className={`p-2 rounded-md cursor-pointer border ${registerData.students[currentStudentIndex].schoolAttitude === option ? "bg-primary-color/20 border-2 border-primary-color" : "bg-black/5"} border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]`}
                     onClick={() =>
-                      setRegisterData({
-                        ...registerData,
-                        students: [
-                          {
-                            ...registerData.students[0],
-                            schoolAttitude: option,
-                          },
-                          ...registerData.students.slice(1),
-                        ],
-                      })
+                      handleStudentChange(
+                        currentStudentIndex,
+                        "schoolAttitude",
+                        option
+                      )
                     }
                   >
                     {option}
@@ -906,18 +815,9 @@ function Register() {
                     <button
                       key={option}
                       type="button"
-                      className={`p-2 rounded-md border ${registerData.students[0].mind === option ? "bg-primary-color/20 border-2 border-primary-color" : "bg-black/5"} border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]`}
+                      className={`p-2 cursor-pointer rounded-md border ${registerData.students[currentStudentIndex].mind === option ? "bg-primary-color/20 border-2 border-primary-color" : "bg-black/5"} border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]`}
                       onClick={() =>
-                        setRegisterData({
-                          ...registerData,
-                          students: [
-                            {
-                              ...registerData.students[0],
-                              mind: option,
-                            },
-                            ...registerData.students.slice(1),
-                          ],
-                        })
+                        handleStudentChange(currentStudentIndex, "mind", option)
                       }
                     >
                       {option}
@@ -936,18 +836,13 @@ function Register() {
                   <button
                     key={option}
                     type="button"
-                    className={`p-2 rounded-md border ${registerData.students[0].personality === option ? "bg-primary-color/20 border-2 border-primary-color" : "bg-black/5"} border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]`}
+                    className={`p-2 cursor-pointer rounded-md border ${registerData.students[currentStudentIndex].personality === option ? "bg-primary-color/20 border-2 border-primary-color" : "bg-black/5"} border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]`}
                     onClick={() =>
-                      setRegisterData({
-                        ...registerData,
-                        students: [
-                          {
-                            ...registerData.students[0],
-                            personality: option,
-                          },
-                          ...registerData.students.slice(1),
-                        ],
-                      })
+                      handleStudentChange(
+                        currentStudentIndex,
+                        "personality",
+                        option
+                      )
                     }
                   >
                     {option}
@@ -968,26 +863,21 @@ function Register() {
                     type="text"
                     placeholder={`Favorite thing ${index + 1}`}
                     value={
-                      registerData.students[0].favouriteThingsToDo.split(",")[
-                        index
-                      ] || ""
+                      registerData.students[
+                        currentStudentIndex
+                      ].favouriteThingsToDo.split(",")[index] || ""
                     }
                     onChange={(e) => {
                       const things =
-                        registerData.students[0].favouriteThingsToDo.split(",");
+                        registerData.students[
+                          currentStudentIndex
+                        ].favouriteThingsToDo.split(",");
                       things[index] = e.target.value;
-                      setRegisterData({
-                        ...registerData,
-                        students: [
-                          {
-                            ...registerData.students[0],
-                            favouriteThingsToDo: things
-                              .join(",")
-                              .replace(/^,|,$/g, ""),
-                          },
-                          ...registerData.students.slice(1),
-                        ],
-                      });
+                      handleStudentChange(
+                        currentStudentIndex,
+                        "favouriteThingsToDo",
+                        things.join(",")
+                      );
                     }}
                     className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]"
                   />
@@ -1008,11 +898,31 @@ function Register() {
               Prev
             </button>
 
-            <Button style="button">Next</Button>
+            <button
+              type="button"
+              onClick={handleNextStudent}
+              className="px-5 py-3 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer bg-secondary-color text-white md:text-[8px] lg:text-[11px] xl:text-[12px]"
+            >
+              {currentStudentIndex < registerData.students.length - 1
+                ? "Next Student"
+                : "Continue"}
+            </button>
           </div>
         </form>
       ) : step5 ? (
-        <div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const hasSelectedTimes = Object.values(selectedTimes).some(Boolean);
+            if (!hasSelectedTimes) {
+              alert("Please select at least one available time slot");
+              return;
+            }
+            setStep5(false);
+            setStep6(true);
+          }}
+          className="flex flex-col gap-10"
+        >
           <div>
             <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
               First student availabilities:
@@ -1417,9 +1327,20 @@ function Register() {
                       >
                         <div className="flex flex-col items-center justify-center gap-1 bg-black/5 grow-1 ">
                           <input
-                            type="radio"
+                            type="checkbox"
                             id={`time-${item.id}-${time.id}`}
                             className="rounded border-gray-300 "
+                            checked={
+                              !!selectedTimes[`${item.day}-${time.time1}`]
+                            }
+                            onChange={(e) =>
+                              handleTimeSelect(
+                                item.day,
+                                time.time1,
+                                time.time2,
+                                e.target.checked
+                              )
+                            }
                           />
                           <label
                             htmlFor={`time-${item.id}-${time.id}`}
@@ -1440,33 +1361,61 @@ function Register() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="" className="text-[12px]  font-medium">
+            <label
+              htmlFor="startPreference"
+              className="text-[12px] font-medium"
+            >
               When would you like to start?{" "}
               <span className="text-red-500">*</span>
             </label>
             <select
+              id="startPreference"
               required
-              value={registerData.parentFirstName}
+              value={registerData.startPreference}
               onChange={(e) =>
                 setRegisterData({
                   ...registerData,
-                  parentFirstName: e.target.value,
+                  startPreference: e.target.value,
                 })
               }
-              className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
+              className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]"
             >
               <option value="">Select</option>
-              <option value="">As soon as possible</option>
-              <option value="">At a later date</option>
+              <option value="asap">As soon as possible</option>
+              <option value="later">At a later date</option>
             </select>
+            {registerData.startPreference === "later" && (
+              <div className="mt-2">
+                <label
+                  htmlFor="startDate"
+                  className="text-[12px] font-medium block mb-1"
+                >
+                  Select start date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  id="startDate"
+                  required
+                  value={registerData.startDate}
+                  onChange={(e) =>
+                    setRegisterData({
+                      ...registerData,
+                      startDate: e.target.value,
+                    })
+                  }
+                  min={new Date().toISOString().split("T")[0]}
+                  className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]"
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => {
-                setStep2(true);
-                setStep3(false);
+                setStep4(true);
+                setStep5(false);
               }}
               className="px-5 py-3  font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200 md:text-[8px] lg:text-[11px] xl:text-[12px] bg-black/5 "
             >
@@ -1475,33 +1424,448 @@ function Register() {
 
             <Button style="button">Next</Button>
           </div>
-        </div>
+        </form>
       ) : step6 ? (
-        <div>
-          <h1>How would you like to have the lessons? *</h1>
-          <p>face to face </p>
-          <p>Online</p>
+        <div className="space-y-8">
+          <h1 className="md:text-[12px] lg:text-[14px] xl:text-[16px] font-bold">
+            How would you like to have the lessons?{" "}
+            <span className="text-red-500">*</span>
+          </h1>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div
+              className={`p-6 border-2 rounded-lg cursor-pointer transition-colors ${
+                registerData.students[currentStudentIndex].lessonType ===
+                "online"
+                  ? "border-primary-color bg-primary-color/10"
+                  : "border-gray-200 hover:border-primary-color/50"
+              }`}
+              onClick={() => {
+                handleStudentChange(
+                  currentStudentIndex,
+                  "lessonType",
+                  "online"
+                );
+                // Clear location when switching to online
+                handleStudentChange(currentStudentIndex, "location", "");
+              }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  handleStudentChange(
+                    currentStudentIndex,
+                    "lessonType",
+                    "online"
+                  );
+                  handleStudentChange(currentStudentIndex, "location", "");
+                }
+              }}
+            >
+              <div className="flex items-center">
+                <div className="p-2 rounded-full bg-primary-color/20 mr-4">
+                  <svg
+                    className="w-6 h-6 text-primary-color"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M15 10l4 4L19 7"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="md:text-[12px] lg:text-[14px] xl:text-[16px] font-medium">
+                    Online
+                  </h3>
+                  <p className="md:text-[12px] lg:text-[14px] xl:text-[16px] text-gray-600">
+                    Live, one-on-one lessons from anywhere
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div
+              className={`p-6 border-2 rounded-lg cursor-pointer transition-colors ${
+                registerData.students[currentStudentIndex].lessonType ===
+                "in-person"
+                  ? "border-primary-color bg-primary-color/10"
+                  : "border-gray-200 hover:border-primary-color/50"
+              }`}
+              onClick={() =>
+                handleStudentChange(
+                  currentStudentIndex,
+                  "lessonType",
+                  "in-person"
+                )
+              }
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  handleStudentChange(
+                    currentStudentIndex,
+                    "lessonType",
+                    "in-person"
+                  );
+                }
+              }}
+            >
+              <div className="flex items-center">
+                <div className="p-2 rounded-full bg-primary-color/20 mr-4">
+                  <svg
+                    className="w-6 h-6 text-primary-color"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="md:text-[12px] lg:text-[14px] xl:text-[16px] font-medium">
+                    In-Person
+                  </h3>
+                  <p className="md:text-[12px] lg:text-[14px] xl:text-[16px] text-gray-600">
+                    Face-to-face lessons at your preferred location
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {registerData.students[currentStudentIndex].lessonType ===
+            "in-person" && (
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Preferred Location <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-color"
+                placeholder="Enter your preferred location (e.g., home, library, etc.)"
+                value={
+                  registerData.students[currentStudentIndex].location || ""
+                }
+                onChange={(e) =>
+                  handleStudentChange(
+                    currentStudentIndex,
+                    "location",
+                    e.target.value.trim()
+                  )
+                }
+              />
+              {!registerData.students[
+                currentStudentIndex
+              ]?.location?.trim() && (
+                <p className="mt-1 text-sm text-red-600">
+                  Location is required for in-person lessons
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="flex gap-2 pt-6">
+            <button
+              type="button"
+              onClick={() => {
+                setStep5(true);
+                setStep6(false);
+              }}
+              className="px-5 py-3  font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200 md:text-[8px] lg:text-[11px] xl:text-[12px] bg-black/5 "
+            >
+              Prev
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                const currentStudent =
+                  registerData.students[currentStudentIndex];
+
+                // Validate lesson type is selected
+                if (!currentStudent.lessonType) {
+                  alert("Please select a lesson type");
+                  return;
+                }
+
+                // Validate location if in-person is selected
+                if (
+                  currentStudent.lessonType === "in-person" &&
+                  !currentStudent.location?.trim()
+                ) {
+                  alert("Please enter a preferred location");
+                  return;
+                }
+
+                // Proceed to next step if validation passes
+                if (currentStudentIndex < registerData.students.length - 1) {
+                  setCurrentStudentIndex(currentStudentIndex + 1);
+                } else {
+                  setStep6(false);
+                  setStep7(true);
+                }
+              }}
+              className="px-5 py-3  font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer bg-secondary-color text-white md:text-[8px] lg:text-[11px] xl:text-[12px]"
+            >
+              {currentStudentIndex < registerData.students.length - 1
+                ? "Next Student"
+                : "Continue"}
+            </button>
+          </div>
         </div>
       ) : step7 ? (
-        <div>
-          <h1>
-            Our commitment to you: We know this is the start of something
-            amazing for both you and your child. Greater confidence, focus,
-            enthusiasm – and of course, academic success, are all just around
-            the corner. We are 100% committed to bringing out the best in your
-            child and helping them perform at their full potential. Once you hit
-            the button below we will review your details and begin working with
-            our team of incredible tutors to pair up the perfect mentor for your
-            child. We know that one day you’ll look back on this moment right
-            here and be so glad you made this choice.
-          </h1>
-          <button>Let's do this </button>
+        <div className="max-w-3xl mx-auto py-12 px-4">
+          <div className="bg-white p-8 rounded-xl shadow-lg text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg
+                className="w-8 h-8 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold">Review Your Registration</h1>
+            <p className="text-gray-600 mb-8">
+              Please review your information before submitting.
+            </p>
+
+            <div className="bg-gray-50 p-6 rounded-lg text-left mb-8 space-y-6">
+              <div>
+                <h2 className="md:text-[14px] lg:text-[16px] xl:text-[18px] font-medium text-gray-900 border-b pb-2 mb-4">
+                  Parent/Guardian Information
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                      Name
+                    </h3>
+                    <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                      {registerData.parentFirstName}{" "}
+                      {registerData.parentLastName}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                      Email
+                    </h3>
+                    <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                      {registerData.parentEmail}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                      Phone
+                    </h3>
+                    <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                      {registerData.parentPhone}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                      Postcode
+                    </h3>
+                    <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                      {registerData.parentPostcode}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                      Referred By
+                    </h3>
+                    <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                      {registerData.parentReferredBy || "Not specified"}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                      Start Preference
+                    </h3>
+                    <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                      {registerData.startPreference === "asap"
+                        ? "As soon as possible"
+                        : registerData.startDate
+                          ? `On ${new Date(registerData.startDate).toLocaleDateString()}`
+                          : "Not specified"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-lg font-medium text-gray-900 border-b pb-2 mb-4 md:text-[14px] lg:text-[16px] xl:text-[18px] ">
+                  Students Information
+                </h2>
+                <div className="space-y-6">
+                  {registerData.students.map((student, index) => (
+                    <div
+                      key={index}
+                      className="bg-white p-4 rounded-lg border border-gray-200 md:text-[12px] lg:text-[14px] xl:text-[16px]"
+                    >
+                      <h3 className="font-medium text-gray-900 mb-3 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                        Student {index + 1}
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                            Name
+                          </h4>
+                          <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                            {student.firstName} {student.lastName}
+                          </p>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                            School & Grade
+                          </h4>
+                          <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                            {student.school || "Not specified"}
+                            {student.grade && `, Grade ${student.grade}`}
+                          </p>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                            Subject Help Needed
+                          </h4>
+                          <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                            {student.subjectHelpNeeded || "Not specified"}
+                          </p>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                            Current Performance
+                          </h4>
+                          <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                            {student.currentPerformance || "Not specified"}
+                          </p>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                            Lesson Type
+                          </h4>
+                          <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                            {student.lessonType === "online"
+                              ? "Online"
+                              : `In-Person at ${student.location}`}
+                          </p>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                            Expecting Result
+                          </h4>
+                          <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                            {student.expectingResult || "Not specified"}
+                          </p>
+                        </div>
+                        {student.helpComment && (
+                          <div className="md:col-span-2">
+                            <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                              Additional Comments
+                            </h4>
+                            <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                              {student.helpComment}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-lg font-medium text-gray-900 border-b pb-2 mb-4">
+                  Selected Time Slots
+                </h2>
+                {Object.entries(selectedTimes).filter(
+                  ([_, isSelected]) => isSelected
+                ).length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                    {Object.entries(selectedTimes)
+                      .filter(([_, isSelected]) => isSelected)
+                      .map(([timeSlot]) => {
+                        // Format the time slot for better readability
+                        const formattedTime = timeSlot
+                          .replace("Monday - Click to view times-", "Mon, ")
+                          .replace("Tuesday - Click to view times-", "Tue, ")
+                          .replace("Wednessday - Click to view times-", "Wed, ")
+                          .replace("Thursday - Click to view times-", "Thu, ")
+                          .replace("Friday - Click to view times-", "Fri, ")
+                          .replace("Saturday - Click to view times-", "Sat, ")
+                          .replace("Sunday - Click to view times-", "Sun, ")
+                          .replace("AM", "am")
+                          .replace("PM", "pm");
+
+                        return (
+                          <div
+                            key={timeSlot}
+                            className="bg-white p-3 rounded border border-gray-200 hover:bg-gray-50 transition-colors"
+                          >
+                            <p className="text-sm font-medium text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                              {formattedTime}
+                            </p>
+                          </div>
+                        );
+                      })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px] italic">
+                    No time slots selected
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setStep7(false);
+                  setStep6(true);
+                }}
+                className="px-6 py-3 border border-gray-300 shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 md:text-[12px] lg:text-[14px] xl:text-[16px]"
+              >
+                Back to Edit
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  console.log("Form submitted:", registerData);
+                  console.log("Selected times:", selectedTimes);
+                  // Here you would typically submit to your backend
+                  alert("Thank you! Your registration has been submitted.");
+                }}
+                className="md:text-[12px] lg:text-[14px] xl:text-[16px] px-6 py-3 border border-transparent shadow-sm text-base font-medium text-white bg-primary-color hover:bg-primary-color/90"
+              >
+                Submit Registration
+              </button>
+            </div>
+          </div>
         </div>
-      ) : (
-        <div>
-          <h1>stepppp</h1>
-        </div>
-      )}
+      ) : null}
     </div>
   );
 }
