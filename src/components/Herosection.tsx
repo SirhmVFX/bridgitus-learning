@@ -21,7 +21,7 @@ function HeroSection() {
             <ArrowRightIcon />
           </div> */}
 
-          <h1 className="text-white md:text-5xl text-5xl font-bold pt-14">
+          <h1 className="text-white md:text-[50px] lg:text-[60px] xl:text-[70px] text-5xl font-bold pt-14">
             Bridging Curiosity and Confidence —{" "}
             <span className="text-yellow-400">One Student at a Time</span>
           </h1>
