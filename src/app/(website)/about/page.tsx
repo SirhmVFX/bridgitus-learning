@@ -102,7 +102,9 @@ function About() {
       </section>
 
       <section className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] w-full md:mx-auto md:px-0 px-4 py-10 flex flex-col gap-10  ">
-        <h1 className="text-4xl italic">From the directors corner</h1>
+        <h1 className="text-3xl md:text-5xl font-bold ">
+          From the directors desk
+        </h1>
         <div className="flex md:flex-row  flex-col  md:gap-10 gap-8">
           <div className="md:w-1/3">
             <div className="w-full h-[400px] ">
@@ -125,8 +127,8 @@ function About() {
             </div>
           </div>
           <div className="md:w-2/3 flex flex-col gap-6">
-            <h1 className="md:text-xl text-base font-bold">Director’s Note</h1>
-            <p className="text-sm md:text-base  text-black/50">
+            {/* <h1 className="text-xl md:text-2xl font-bold">Director’s Note</h1> */}
+            <p className="text-lg text-black/70 leading-relaxed">
               Bridgitus Learning is more than just an educational platform; we
               are a dynamic bridge between potential and achievement. Founded on
               the belief that every learner deserves a clear and guided pathway
@@ -135,7 +137,7 @@ function About() {
               today’s competitive environment.
             </p>
 
-            <p className="text-sm md:text-base text-black/50">
+            <p className="text-lg text-black/70 leading-relaxed">
               With a commitment to high-quality instruction, innovative learning
               methods, and personalized support, Bridgitus Learning transforms
               the traditional educational experience. Our expert educators and
@@ -144,14 +146,14 @@ function About() {
               challenges are addressed with precision and care.
             </p>
 
-            <p className="text-sm md:text-base text-black/50">
+            <p className="text-lg text-black/70 leading-relaxed">
               The name Bridgitus symbolizes connection, a bridge between where a
               student is today and where they aspire to be. Through structured
               learning paths, skill-building courses, and academic mentoring, we
               help students unlock their full potential.
             </p>
 
-            <p className="text-sm md:text-base text-black/50">
+            <p className="text-lg text-black/70 leading-relaxed">
               At Bridgitus Learning, excellence is not a destination; it’s a
               journey, and we’re honoured to walk that path with every student
               we serve. Your success story begins here. Let us be your guide.
@@ -162,10 +164,10 @@ function About() {
 
       <section className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] w-full md:mx-auto md:px-0 px-4 md:py-14 py-10 xl:h-screen flex md:flex-row flex-col items-center md:gap-0 gap-6">
         <div className="md:w-1/2 flex flex-col gap-6">
-          <h1 className="md:text-3xl text-xl font-bold">
+          <h1 className="text-3xl md:text-5xl font-bold">
             Bridgitus Is More than a Institute. It&apos;s a Story
           </h1>
-          <p className="text-sm text-black/50">
+          <p className="text-lg text-black/70 leading-relaxed">
             Bridgitus Learning is a premier online tuition platform dedicated to
             empowering students with personalized, high-quality education.
             Founded by a team of passionate educators, we aim to bridge the gap
@@ -178,7 +180,7 @@ function About() {
             &quot;Education is the passport to the future, for tomorrow belongs
             to those who prepare for it today&quot; - Malcolm X.
           </h1>
-          <p className="text-sm text-black/50">
+          <p className="text-lg text-black/70 leading-relaxed">
             At our core, we believe every learner deserves an education tailored
             to their unique needs. Our online one-on-one tuition platform is
             dedicated to bridging learning gaps by crafting personalized
@@ -205,10 +207,10 @@ function About() {
 
       <section className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] w-full md:mx-auto md:px-0 px-4 md:py-14 py-20 ">
         <div className="flex flex-col gap-4 md:w-3/4">
-          <h1 className="md:text-3xl text-xl font-bold">
+          <h1 className="text-3xl md:text-5xl font-bold">
             Our Approach is Different — We’re Here to Close Your Learning Gaps.
           </h1>
-          <p className="text-sm text-black/50">
+          <p className="text-lg text-black/70 leading-relaxed">
             With our four-step process — assessing, personalizing, teaching, and
             tracking — we give students the fastest path to academic success.
           </p>
@@ -246,17 +248,17 @@ function About() {
           />
         </div>
         <div className="md:w-2/3 flex flex-col gap-6">
-          <h1 className="md:text-3xl text-xl font-bold">
+          <h1 className="text-3xl md:text-5xl font-bold">
             Today, Tomorrow, or the Future. We Share a Large Vision
           </h1>
-          <p className="text-sm md:text-base  text-black/50">
+          <p className="text-lg text-black/70 leading-relaxed">
             By integrating engaging word problems and real-life experiences into
             our lessons, we make learning relevant, dynamic, and meaningful. Our
             customized resources are designed to spark curiosity, build
             confidence, and address individual learning gaps effectively.
           </p>
 
-          <p className="text-sm md:text-base text-black/50">
+          <p className="text-lg text-black/70 leading-relaxed">
             Whether it’s mastering complex concepts, reinforcing foundational
             skills, or accelerating toward academic goals, we’re committed to
             guiding every student with tailored support. Our passionate team
@@ -270,11 +272,11 @@ function About() {
 
       <section className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] md:h-screen md:gap-20 gap-8 w-full md:mx-auto md:px-0 px-4 py-20 flex md:flex-row flex-col items-center ">
         <div className="md:w-1/2 flex flex-col gap-4">
-          <h1 className="md:text-3xl text-xl font-bold">
+          <h1 className="text-3xl md:text-5xl font-bold">
             We Are Changing the Education Narrative: Your Success Is our
             passion!
           </h1>
-          <p className="text-sm md:text-base text-black/50">
+          <p className="text-lg text-black/70 leading-relaxed">
             At Bridgitus Learning, we believe education should be more than
             memorizing facts — it should inspire curiosity, spark confidence,
             and unlock potential. We’re redefining the way students learn by
@@ -321,7 +323,7 @@ function About() {
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
               What Our Students Say About Us
             </h2>
-            <p className="text-lg text-black/70">
+            <p className="text-lg text-black/70 leading-relaxed">
               Real testimonials from our satisfied students and parents
             </p>
           </div>
@@ -399,19 +401,19 @@ function About() {
                   <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
                 </svg>
               </div>
-              <p className="text-black/70 mb-6 leading-relaxed">
+              <p className="text-black/70 mb-6 leading-relaxed italic">
                 &quot;Bridgitus Learning has transformed my daughter&apos;s
                 approach to math. The personalized sessions made complex
                 concepts so much easier to understand!&quot;
               </p>
               <div className="flex items-center">
-                <Image
+                {/* <Image
                   width={1000}
                   height={1000}
                   src="/assets/parent-1-BVyu6EHF.jpg"
                   alt="Sarah M."
                   className="w-12 h-12 rounded-full object-cover mr-4"
-                />
+                /> */}
                 <div>
                   <h4 className="font-semibold text-foreground">Sarah M.</h4>
                   <p className="text-sm text-black/70">Parent</p>
@@ -491,19 +493,19 @@ function About() {
                   <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
                 </svg>
               </div>
-              <p className="text-black/70 mb-6 leading-relaxed">
+              <p className="text-black/70 mb-6 leading-relaxed italic">
                 &quot;Thanks to Bridgitus, I aced my AP English exam. The
                 one-on-one attention really helped me improve my writing
                 skills.&quot;
               </p>
               <div className="flex items-center">
-                <Image
+                {/* <Image
                   width={1000}
                   height={1000}
                   src="/assets/student-1-Dq3VaENS.jpg"
                   alt="Emily R."
                   className="w-12 h-12 rounded-full object-cover mr-4"
-                />
+                /> */}
                 <div>
                   <h4 className="font-semibold text-foreground">Emily R.</h4>
                   <p className="text-sm text-black/70">Student</p>
@@ -583,18 +585,18 @@ function About() {
                   <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
                 </svg>
               </div>
-              <p className="text-black/70 mb-6 leading-relaxed">
+              <p className="text-black/70 mb-6 leading-relaxed italic">
                 &quot;The tutors are incredibly engaging and patient. My son
                 looks forward to his science lessons every week!&quot;
               </p>
               <div className="flex items-center">
-                <Image
+                {/* <Image
                   width={1000}
                   height={1000}
                   src="/assets/tutor-1-DYVtSi2S.jpg"
                   alt="James L."
                   className="w-12 h-12 rounded-full object-cover mr-4"
-                />
+                /> */}
                 <div>
                   <h4 className="font-semibold text-foreground">James L.</h4>
                   <p className="text-sm text-black/70">Parent</p>
@@ -658,13 +660,13 @@ function About() {
                 className="flex items-center justify-between cursor-pointer"
                 onClick={() => setOpen(open === item.id ? null : item.id)}
               >
-                <h1 className="md:text-base text-base text-black">
+                <h1 className="text-lg font-bold leading-relaxed text-black">
                   {item.question}
                 </h1>
                 {open === item.id ? <ChevronUp /> : <ChevronDown />}
               </div>
               {open === item.id && (
-                <p className="text-black/70 text-xs md:text-sm mt-2">
+                <p className="text-lg text-black/70 leading-relaxed mt-2  mb-6 italic">
                   {item.answer}
                 </p>
               )}
