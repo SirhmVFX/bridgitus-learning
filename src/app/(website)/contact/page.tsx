@@ -1,11 +1,9 @@
 import Button from "@/components/Button";
-import Image from "next/image";
-import Link from "next/link";
 
 function Contact() {
   return (
     <main>
-      <section className="bg-black  relative  flex items-center justify-center md:h-[250px] lg:h-[300px] xl:h-[400px] h-[300px] ">
+      {/* <section className="  relative  flex items-center justify-center md:h-[250px] lg:h-[300px] xl:h-[400px] h-[300px] ">
         <Image
           src="/assets/line2.png"
           alt="cta"
@@ -22,21 +20,53 @@ function Contact() {
             Let&apos;s build success together
           </p>
         </div>
-      </section>
+      </section> */}
 
-      <div>
-        {/* <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] md:mx-auto p-4 mx-auto pt-24 md:py-32 md:flex items-center gap-4">
-          <h1 className="text-3xl md:text-5xl lg:text-7xl font-medium md:w-1/2">
-            We&apos;d Love to Hear From You
-          </h1>
-          <p className="text-gray-500 text-base md:text-lg md:w-1/2">
-            Have questions, suggestions, or want to partner with us? Reach out
-            today and let’s work together to make a difference!
-          </p>
-        </div> */}
+      <section
+        id="contact"
+        className="md:pt-32 lg:pt:40 xl:pt-52 bg-background"
+      >
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center flex flex-col gap-4">
+            <div>
+              <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
+                📞 Contact Us
+              </h2>
+              <p className="text-lg text-black/70 mb-12">
+                Ready to start your learning journey? Reach out to us for more
+                information or to schedule a session!
+              </p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="p-6 rounded-2xl bg-card border border-black/10 hover:shadow-elegant transition-all duration-300">
+                <div className="text-3xl mb-4">📧</div>
+                <h3 className="font-semibold text-foreground mb-2">Email</h3>
+                <p className="text-black/70">bridgituslearning@gmail.com</p>
+              </div>
+              <div className="p-6 rounded-2xl bg-card border border-black/10 hover:shadow-elegant transition-all duration-300">
+                <div className="text-3xl mb-4">📱</div>
+                <h3 className="font-semibold text-foreground mb-2">Phone</h3>
+                <a
+                  href="tel:+61433600592"
+                  className="text-black/70 hover:text-primary transition-colors cursor-pointer"
+                >
+                  +61 433 600 592
+                </a>
+              </div>
+              <div className="p-6 rounded-2xl bg-card border border-black/10 hover:shadow-elegant transition-all duration-300">
+                <div className="text-3xl mb-4">☎️</div>
+                <h3 className="font-semibold text-foreground mb-2">
+                  Alternate Phone
+                </h3>
+                <a
+                  href="tel:+61402173788"
+                  className="text-black/70 hover:text-primary transition-colors cursor-pointer"
+                >
+                  +61 402 173 788
+                </a>
+              </div>
+            </div>
 
-        <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] md:mx-auto mx-auto py-4 flex md:flex-row flex-col items-center gap-4">
-          <div className=" flex md:flex-row flex-col gap-8 p-6 rounded-lg w-1/2">
             <form className="w-full flex flex-col gap-4 items-start">
               <h1 className="text-xl font-medium">Leave us your info </h1>
               <input
@@ -64,51 +94,22 @@ function Contact() {
               <Button style="button">Send Message</Button>
             </form>
           </div>
+        </div>
+      </section>
 
-          <div className="w-1/2 flex flex-col gap-12">
-            <div className="flex flex-col gap-2">
-              <h1 className="text-xl  font-medium">Office Address</h1>
+      <div>
+        {/* <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] md:mx-auto p-4 mx-auto pt-24 md:py-32 md:flex items-center gap-4">
+          <h1 className="text-3xl md:text-5xl lg:text-7xl font-medium md:w-1/2">
+            We&apos;d Love to Hear From You
+          </h1>
+          <p className="text-gray-500 text-base md:text-lg md:w-1/2">
+            Have questions, suggestions, or want to partner with us? Reach out
+            today and let’s work together to make a difference!
+          </p>
+        </div> */}
 
-              <p className="text-gray-700 text-base  lg:text-lg"></p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="flex flex-col gap-2">
-                <h1 className="text-xl  font-medium">Phone Number: </h1>
-
-                <p className="text-gray-700  text-base  lg:text-lg">
-                  +61433600592
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <h1 className="text-xl  font-medium">Email Address: </h1>
-
-                <p className="text-gray-700 text-base  lg:text-lg">
-                  info@bridgitus.com
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <h1 className="text-xl  font-medium">Social Media Links </h1>
-
-              <div className="flex gap-4">
-                <Link href={""} className="text-primarycolor">
-                  Facebook
-                </Link>
-                <Link href={""} className="text-primarycolor">
-                  Instagram{" "}
-                </Link>
-                <Link href={""} className="text-primarycolor">
-                  LinkedIn
-                </Link>
-                <Link href={""} className="text-primarycolor">
-                  Twitter/X
-                </Link>
-              </div>
-            </div>
-          </div>
+        <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] md:mx-auto mx-auto py-4  items-center gap-4">
+          <div className=" flex md:flex-row flex-col gap-8 p-6 rounded-lg w-full md:w-2/3 mx-auto"></div>
         </div>
       </div>
     </main>
