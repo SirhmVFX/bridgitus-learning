@@ -24,7 +24,7 @@ function Button({
     filled:
       "bg-secondary-color text-white hover:bg-blue-700 hover:scale-110 hover:shadow-2xl hover:shadow-blue-500 transition-all duration-200",
     outline:
-      "border border-white/50 text-white/50 bg-transparent hover:bg-white/10 hover:scale-110 hover:shadow-2xl hover:shadow-white/20 transition-all duration-200",
+      "border border-black/50 text-black/50 bg-transparent hover:bg-white/10 hover:scale-110 hover:shadow-2xl hover:shadow-white/20 transition-all duration-200",
   };
 
   const buttonClasses = `${baseStyles} ${variantStyles[variant]} ${className}`;

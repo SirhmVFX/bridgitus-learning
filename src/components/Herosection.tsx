@@ -3,29 +3,21 @@ import Button from "./Button";
 
 function HeroSection() {
   return (
-    <section className="bg-black h-screen relative">
+    <section className="flex justify-center items-center h-screen relative">
       <Image
-        src="https://res.cloudinary.com/dkeh0cumc/image/upload/v1754926933/Line_rjqzxi.png"
+        src="https://res.cloudinary.com/dkeh0cumc/image/upload/v1755773371/Line2222_deiq0p.png"
         alt="hero"
         width={1000}
         height={1000}
-        className="w-full h-full object-cover absolute top-0 left-0 z-0"
+        className="w-full h-full object-cover absolute top-0 left-0 z-0 opacity-20"
       />
-      <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] md:mx-auto flex justify-between md:items-center py-20 md:py-0 px-4 md:px-0 h-full relative">
-        <div className="md:w-2/3 flex flex-col gap-5 z-10 py-16 md:py-0">
-          {/* <div className="p-1 bg-white/30 flex items-center gap-2 w-fit rounded-full border border-white/20 animate-pulse hover:animate-none hover:border-white/40 transition-all duration-300">
-            <div className="bg-white/30 rounded-full px-2 py-1">
-              <p className="text-[8px] md:text-xs text-white">🎉 New</p>
-            </div>
-            <h1 className="text-white md:text-sm text-[8px]">Bridgiton is tailoring tutoring for students who are ready to thrive. 🔥</h1>
-            <ArrowRightIcon />
-          </div> */}
-
-          <h1 className="text-white md:text-[50px] lg:text-[60px] xl:text-[70px] text-5xl font-bold pt-14">
+      <div className=" md:w-[800px] lg:w-[1000px] xl:w-[1250px] md:mx-auto flex md:flex-row flex-col md:items-center py-20 md:py-0 px-4 md:px-0 h-full relative gap-10 ">
+        <div className="w-full md:w-1/2 flex flex-col gap-5 z-10 py-16 md:py-0">
+          <h1 className=" md:text-4xl lg:text-6xl xl:text-7xl  font-bold pt-14">
             Bridging Curiosity and Confidence —{" "}
-            <span className="text-yellow-400">One Student at a Time</span>
+            <span className="text-blue-400">One Student at a Time</span>
           </h1>
-          <p className="text-white/50 text-lg">
+          <p className="text-black/50 text-lg">
             Personalized online tutoring designed to unlock every learner’s
             potential.
           </p>
@@ -40,18 +32,14 @@ function HeroSection() {
           </div>
         </div>
 
-        <div className=" absolute top-0 left-0 right-0 bottom-0 flex justify-end ">
-          <div className="w-[50%] h-[90%] relative">
-            <div className="bg-gradient-to-r from-[#000000] to-[#16161600] absolute top-0 left-0 right-0 bottom-0"></div>
-            <div className="bg-gradient-to-t from-[#000000] to-[#16161600] absolute top-[50%] left-0 right-0 bottom-0"></div>
-            <Image
-              src="/assets/i6.jpg"
-              alt="hero"
-              width={1000}
-              height={1000}
-              className="w-full h-full object-cover rounded-3xl"
-            />
-          </div>
+        <div className="w-full  md:w-1/2 ">
+          <Image
+            src="/assets/i6.jpg"
+            alt="hero"
+            width={1000}
+            height={1000}
+            className="w-full h-full object-cover rounded-3xl"
+          />
         </div>
       </div>
     </section>
