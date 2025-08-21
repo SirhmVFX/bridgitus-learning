@@ -1,3 +1,5 @@
+import React from "react";
+
 function Offer() {
   const features = [
     {
@@ -145,7 +147,7 @@ function Offer() {
     },
   ];
 
-  const renderIcon = (icon: JSX.Element | JSX.Element[]) => (
+  const renderIcon = (icon: React.ReactNode) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="24"
@@ -171,7 +173,7 @@ function Offer() {
               <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
                 🌟 Why Choose Bridgitus Learning?
               </h2>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-lg text-black/50">
                 Experience the difference with our comprehensive online tutoring
                 platform
               </p>
@@ -191,7 +193,7 @@ function Offer() {
                       <h3 className="font-semibold text-foreground mb-2">
                         {feature.title}
                       </h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
+                      <p className="text-sm text-black/50 leading-relaxed">
                         {feature.description}
                       </p>
                     </div>
@@ -218,9 +220,7 @@ function Offer() {
                     <p className="font-semibold text-foreground mb-1">
                       {item.title}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      {item.description}
-                    </p>
+                    <p className="text-xs text-black/50">{item.description}</p>
                   </div>
                 ))}
               </div>
@@ -240,7 +240,7 @@ function Offer() {
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
               Benefits of Online Tutoring
             </h2>
-            <p className="text-lg text-muted-foreground mb-8">
+            <p className="text-lg text-black/50 mb-8">
               Services at{" "}
               <span className="font-semibold text-primary">
                 Bridgitus Learning
@@ -269,7 +269,7 @@ function Offer() {
               <h3 className="text-xl font-bold text-foreground mb-4">
                 One-On-One Teaching
               </h3>
-              <p className="text-muted-foreground">
+              <p className="text-black/50">
                 Personalized sessions tailored to individual learning needs,
                 ensuring focused attention and customized lesson plans.
               </p>
@@ -297,7 +297,7 @@ function Offer() {
               <h3 className="text-xl font-bold text-foreground mb-4">
                 24/7 Tutor Availability
               </h3>
-              <p className="text-muted-foreground">
+              <p className="text-black/50">
                 Interactive small-group sessions that foster collaboration and
                 peer learning in a supportive environment.
               </p>
@@ -323,7 +323,7 @@ function Offer() {
               <h3 className="text-xl font-bold text-foreground mb-4">
                 Interactive Whiteboard
               </h3>
-              <p className="text-muted-foreground">
+              <p className="text-black/50">
                 Specialized coaching for standardized tests and school exams,
                 including practice tests and study strategies.
               </p>
@@ -350,7 +350,7 @@ function Offer() {
               <h3 className="text-xl font-bold text-foreground mb-4">
                 Affordable Prices
               </h3>
-              <p className="text-muted-foreground">
+              <p className="text-black/50">
                 Guided assistance with assignments and projects to help students
                 stay on track and excel academically.
               </p>
