@@ -609,7 +609,7 @@ function About() {
 
       <section className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] w-full md:mx-auto md:px-0 px-4 py-20 ">
         <div className="flex flex-col gap-4  ">
-          <h1 className="md:text-3xl text-xl font-bold md:w-3/4">
+          <h1 className="text-3xl md:text-5xl font-bold md:w-3/4">
             We know you have questions, We also have answers
           </h1>
           <p className="md:w-3/4 text-xs md:text-sm text-black/50">
