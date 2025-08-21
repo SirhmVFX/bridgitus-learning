@@ -2,6 +2,13 @@
 
 import Button from "@/components/Button";
 import { useState, useEffect } from "react";
+import { format, isSameDay } from "date-fns";
+import CalendarSelector from "@/components/CalendarSelector";
+
+type SelectedSlot = {
+  date: Date;
+  time: string;
+};
 
 function Register() {
   const [registerData, setRegisterData] = useState({
@@ -33,7 +40,7 @@ function Register() {
         location: "",
         startPreference: "",
         startDate: "",
-        selectedTimes: [],
+        selectedTimeSlots: [] as SelectedSlot[],
       },
     ],
   });
@@ -113,7 +120,7 @@ function Register() {
           location: "",
           startPreference: "",
           startDate: "",
-          selectedTimes: [],
+          selectedTimeSlots: [] as SelectedSlot[],
         });
       }
       setRegisterData((prev) => ({
@@ -1083,7 +1090,23 @@ function Register() {
           </div>
 
           <div className="flex flex-col gap-4 py-6">
-            {[
+            <CalendarSelector
+              selectedSlots={
+                registerData.students[currentStudentIndex].selectedTimeSlots
+              }
+              onSlotToggle={(date, time) => {
+                const updatedStudents = [...registerData.students];
+                updatedStudents[currentStudentIndex].selectedTimeSlots = [
+                  ...updatedStudents[currentStudentIndex].selectedTimeSlots,
+                  { date, time },
+                ];
+                setRegisterData({
+                  ...registerData,
+                  students: updatedStudents,
+                });
+              }}
+            />
+            {/* {[
               {
                 id: 1,
                 day: "Monday - Click to view times",
@@ -1553,7 +1576,7 @@ function Register() {
                   </div>
                 )}
               </div>
-            ))}
+            ))} */}
           </div>
 
           <div className="flex flex-col gap-2">
@@ -1928,13 +1951,13 @@ function Register() {
               </div>
 
               <div>
-                <h2 className="text-lg font-medium text-gray-900 border-b pb-2 mb-4 md:text-[14px] lg:text-[16px] xl:text-[18px] ">
+                <h2 className="text-lg font-medium text-gray-900 border-b pb-2 mb-4">
                   Students Information
                 </h2>
                 <div className="space-y-6">
                   {registerData.students.map((student, index) => {
                     // Get selected times for this student
-                    const studentTimes = student.selectedTimes || [];
+                    const studentTimes = student.selectedTimeSlots || [];
 
                     return (
                       <div
@@ -2015,49 +2038,25 @@ function Register() {
                             </h4>
                             {studentTimes.length > 0 ? (
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                {studentTimes?.map((timeSlot: string, idx) => (
-                                  <div
-                                    key={idx}
-                                    className="bg-gray-50 p-2 rounded border border-gray-200"
-                                  >
-                                    <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                                      {timeSlot
-                                        ?.replace(
-                                          "Monday - Click to view times-",
-                                          "Mon, "
-                                        )
-                                        .replace(
-                                          "Tuesday - Click to view times-",
-                                          "Tue, "
-                                        )
-                                        .replace(
-                                          "Wednesday - Click to view times-",
-                                          "Wed, "
-                                        )
-                                        .replace(
-                                          "Thursday - Click to view times-",
-                                          "Thu, "
-                                        )
-                                        .replace(
-                                          "Friday - Click to view times-",
-                                          "Fri, "
-                                        )
-                                        .replace(
-                                          "Saturday - Click to view times-",
-                                          "Sat, "
-                                        )
-                                        .replace(
-                                          "Sunday - Click to view times-",
-                                          "Sun, "
-                                        )
-                                        .replace("AM", "am")
-                                        .replace("PM", "pm")}
-                                    </p>
-                                  </div>
-                                ))}
+                                {studentTimes?.map(
+                                  (timeSlot: SelectedSlot, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="bg-gray-50 p-2 rounded border border-gray-200"
+                                    >
+                                      <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                                        {format(
+                                          timeSlot.date,
+                                          "EEEE, MMMM d, yyyy"
+                                        )}{" "}
+                                        {timeSlot.time}
+                                      </p>
+                                    </div>
+                                  )
+                                )}
                               </div>
                             ) : (
-                              <p className="text-sm text-gray-500 italic md:text-[12px] lg:text-[14px] xl:text-[16px]">
+                              <p className="text-sm text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px] italic">
                                 No time slots selected
                               </p>
                             )}
