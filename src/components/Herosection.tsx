@@ -13,7 +13,7 @@ function HeroSection() {
       />
       <div className=" md:w-[800px] lg:w-[1000px] xl:w-[1250px] md:mx-auto flex md:flex-row flex-col md:items-center py-20 md:py-0 px-4 md:px-0 h-full relative gap-10 ">
         <div className="w-full md:w-1/2 flex flex-col gap-5 z-10 py-16 md:py-0">
-          <h1 className=" md:text-4xl lg:text-6xl xl:text-7xl  font-bold pt-14">
+          <h1 className=" md:text-4xl lg:text-5xl xl:text-6xl  font-bold pt-14">
             Bridging Curiosity and Confidence —{" "}
             <span className="text-blue-400">One Student at a Time</span>
           </h1>
