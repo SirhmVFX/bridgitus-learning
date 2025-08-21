@@ -10,7 +10,7 @@ function Header() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className={`absolute top-0 left-0 right-0 z-50 `}>
+    <header className={`absolute top-0 left-0 right-0 z-[9999999] `}>
       <div className="hidden md:block py-3 bg-[#161616]">
         <div className=" md:w-[800px] lg:w-[1000px] xl:w-[1250px] w-full mx-auto flex items-center justify-between ">
           <div className="flex items-center gap-5 ">
@@ -43,12 +43,12 @@ function Header() {
         </div>
       </div>
       <div className="border bg-white border-b-black/10 ">
-        <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] w-full mx-auto flex justify-between items-center py-1 px-4 md:px-0 ">
-          <div className="md:w-[170px] lg:w-[200px] xl:w-[250px] w-[200px]">
+        <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] w-full mx-auto flex justify-between items-center py-1  px-4 md:px-0 ">
+          <div className="md:w-[70px] lg:w-[150px] xl:w-[170px] w-[180px]">
             <Image
               width={1000}
               height={1000}
-              src="/assets/logof.png"
+              src="/assets/FullLogo.png"
               alt="logo"
               className="w-full h-full object-contain"
             />
