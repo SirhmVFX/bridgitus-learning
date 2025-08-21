@@ -47,19 +47,20 @@ function About() {
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  className="lucide lucide-heart w-6 h-6 text-yellow-500"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-6 h-6 text-yellow-500"
                 >
-                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
+                  <path d="M2 12s3-7.5 10-7.5 10 7.5 10 7.5-3 7.5-10 7.5S2 12 2 12z" />
+                  <circle cx="12" cy="12" r="3" />
                 </svg>
               </div>
               <div>
-                <h3 className="text-xl font-bold text-foreground mb-3">
+                <h3 className="text-xl md:text-2xl font-bold text-foreground mb-3">
                   The Vision
                 </h3>
-                <p className="text-black/70 leading-relaxed text-lg mb-4">
+                <p className="text-black/70 leading-relaxed text-lg md:text-2xl mb-4">
                   &quot;To inspire and equip every learner to excel and
                   thrive&quot;
                 </p>
@@ -76,19 +77,20 @@ function About() {
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  className="lucide lucide-zap w-6 h-6 text-yellow-500"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-6 h-6 text-yellow-500"
                 >
-                  <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  <path d="m9 12 2 2 4-4" />
                 </svg>
               </div>
               <div>
-                <h3 className="text-xl font-bold text-foreground mb-3">
+                <h3 className="text-xl md:text-2xl font-bold text-foreground mb-3">
                   The Mission
                 </h3>
-                <p className="text-black/70 leading-relaxed text-lg mb-4">
+                <p className="text-black/70 leading-relaxed text-lg md:text-2xl mb-4">
                   &quot;To connect students to Knowledge, skills and confidence
                   through engaging, personalized learning - bridging academic
                   gaps and paving the way to excellence&quot;
