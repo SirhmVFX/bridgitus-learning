@@ -57,9 +57,10 @@ function Footer() {
         <div className="flex flex-col gap-4">
           <h1 className="text-sm text-white">Company</h1>
           {[
-            { id: 1, title: "About Us", url: "#" },
-            { id: 2, title: "Contact", url: "#" },
-            { id: 3, title: "Academy", url: "#" },
+            { id: 1, title: "About Us", url: "/about" },
+            { id: 2, title: "Contact", url: "/contact" },
+            { id: 3, title: "Classes", url: "/classes" },
+            { id: 4, title: "Services", url: "/services" },
           ].map((e) => (
             <Link className="text-xs text-white/50" key={e.id} href={e.url}>
               {e.title}
