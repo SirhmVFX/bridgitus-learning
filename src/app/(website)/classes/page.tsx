@@ -1,14 +1,3 @@
-import Button from "@/components/Button";
-import {
-  Activity,
-  Box,
-  Boxes,
-  Chrome,
-  Codesandbox,
-  Cookie,
-  Dribble,
-  Ico,
-} from "@/components/Icons";
 import Link from "next/link";
 
 function Classes() {
@@ -19,7 +8,7 @@ function Classes() {
           id="classes"
           className="py-20 bg-background md:pt-32 lg:pt-40 xl:pt-52"
         >
-          <div className="container mx-auto px-4">
+          <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] mx-auto px-4">
             <div className="text-center mb-16">
               <div className="inline-flex items-center px-4 py-2 bg-yellow-500/10 rounded-full border border-yellow-500/20 mb-6">
                 <span className="text-sm font-medium text-yellow-500-foreground">
@@ -126,7 +115,7 @@ function Classes() {
               </div>
             </div> */}
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 py-12">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 py-12">
               {[
                 {
                   id: 1,
@@ -610,6 +599,163 @@ function Classes() {
             </div>
           </div>
         </section>
+      </section>
+
+      <section className="py-20 bg-gray-100/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
+                📘 Our Curriculum Standards
+              </h2>
+              <p className="text-lg text-black/50 max-w-3xl mx-auto">
+                We specialize in delivering high-quality education aligned with
+                globally recognized curricula, ensuring students are
+                well-prepared for their academic journeys.
+              </p>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+              <div className="group p-6 rounded-2xl bg-white cursor-pointer border border-black/10 hover:shadow-elegant transition-all duration-300 transform hover:-translate-y-2">
+                <div className="w-14 h-14 bg-pink-500 text-white rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    className="lucide lucide-flag w-7 h-7"
+                  >
+                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                    <line x1="4" x2="4" y1="22" y2="15"></line>
+                  </svg>
+                </div>
+                <h3 className="font-bold text-foreground mb-2 text-sm">
+                  Australian Curriculum (ACARA)
+                </h3>
+                <p className="text-black/50 text-xs">
+                  Assessment and Reporting Authority standards
+                </p>
+              </div>
+              <div className="group p-6 rounded-2xl bg-white cursor-pointer border border-black/10 hover:shadow-elegant transition-all duration-300 transform hover:-translate-y-2">
+                <div className="w-14 h-14 bg-blue-500 text-white rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    className="lucide lucide-globe w-7 h-7"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+                    <path d="M2 12h20"></path>
+                  </svg>
+                </div>
+                <h3 className="font-bold text-foreground mb-2 text-sm">
+                  Common Core State Standards
+                </h3>
+                <p className="text-black/50 text-xs">
+                  American Curriculum standards
+                </p>
+              </div>
+              <div className="group p-6 rounded-2xl bg-white cursor-pointer border border-black/10 hover:shadow-elegant transition-all duration-300 transform hover:-translate-y-2">
+                <div className="w-14 h-14 bg-green-500 text-white rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    className="lucide lucide-award w-7 h-7"
+                  >
+                    <path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"></path>
+                    <circle cx="12" cy="8" r="6"></circle>
+                  </svg>
+                </div>
+                <h3 className="font-bold text-foreground mb-2 text-sm">
+                  International GCSE (IGCSE)
+                </h3>
+                <p className="text-black/50 text-xs">
+                  Global secondary education certification
+                </p>
+              </div>
+              <div className="group p-6 rounded-2xl bg-white cursor-pointer border border-black/10 hover:shadow-elegant transition-all duration-300 transform hover:-translate-y-2">
+                <div className="w-14 h-14 bg-orange-500 text-white rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    className="lucide lucide-book-text w-7 h-7"
+                  >
+                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"></path>
+                    <path d="M8 11h8"></path>
+                    <path d="M8 7h6"></path>
+                  </svg>
+                </div>
+                <h3 className="font-bold text-foreground mb-2 text-sm">
+                  British Curriculum
+                </h3>
+                <p className="text-black/50 text-xs">
+                  UK national curriculum standards
+                </p>
+              </div>
+            </div>
+            <div className="bg-white rounded-2xl p-8 border border-black/10">
+              <h3 className="text-2xl font-bold text-foreground mb-8 text-center">
+                🧠 Key Learning Areas
+              </h3>
+              <div className="grid md:grid-cols-3 gap-8">
+                <div className="text-center space-y-4">
+                  <div className="text-4xl mb-4">📚</div>
+                  <h4 className="text-xl font-semibold text-foreground">
+                    English
+                  </h4>
+                  <p className="text-black/50 leading-relaxed">
+                    Literacy development, comprehension, and creation of various
+                    texts.
+                  </p>
+                </div>
+                <div className="text-center space-y-4">
+                  <div className="text-4xl mb-4">🔢</div>
+                  <h4 className="text-xl font-semibold text-foreground">
+                    Mathematics
+                  </h4>
+                  <p className="text-black/50 leading-relaxed">
+                    Number and algebra, measurement and geometry, statistics and
+                    probability.
+                  </p>
+                </div>
+                <div className="text-center space-y-4">
+                  <div className="text-4xl mb-4">🔬</div>
+                  <h4 className="text-xl font-semibold text-foreground">
+                    Science
+                  </h4>
+                  <p className="text-black/50 leading-relaxed">
+                    Inquiry and investigation into the natural world.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
     </main>
   );
