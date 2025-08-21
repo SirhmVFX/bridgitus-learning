@@ -18,7 +18,7 @@ function Why() {
               <div className="text-center mb-16">
                 <div className="inline-flex items-center px-4 py-2 bg-yellow-500/10 rounded-full border border-yellow-500/20 mb-6">
                   <span className="text-sm font-medium text-yellow-500-foreground">
-                    📘 ABOUT BRIDGITUS LEARNING
+                    📘 BRIDGITUS LEARNING SERVICES
                   </span>
                 </div>
                 <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
