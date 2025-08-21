@@ -7,7 +7,7 @@ function TrustedBy() {
         <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-white rounded-full"></div>
       </div>
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] mx-auto px-4 relative z-10">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Trusted by Thousands Worldwide
