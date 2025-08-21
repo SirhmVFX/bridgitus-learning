@@ -87,7 +87,7 @@ function Header() {
                 </Link>
                 {open && (
                   <div
-                    className="absolute top-0 left-0 flex flex-col gap-4 bg-black/50 w-[200px] px-2 pb-2 pt-10 "
+                    className="absolute top-5 left-0 flex flex-col gap-4 bg-white/50 w-[200px] px-2 pb-2 pt-10 backdrop-blur-md "
                     onMouseOver={() => setOpen(true)}
                     onMouseLeave={() => setOpen(false)}
                   >

@@ -74,15 +74,19 @@ function Register() {
   };
 
   const handleStudentChange = (index: number, field: string, value: string) => {
-    const updatedStudents = [...registerData.students];
-    updatedStudents[index] = {
-      ...updatedStudents[index],
-      [field]: value,
-    };
-    setRegisterData((prev) => ({
-      ...prev,
-      students: updatedStudents,
-    }));
+    console.log(`Updating student ${index} field ${field} to`, value);
+    setRegisterData((prev) => {
+      const updatedStudents = [...prev.students];
+      updatedStudents[index] = {
+        ...updatedStudents[index],
+        [field]: value,
+      };
+      console.log("Updated students:", updatedStudents);
+      return {
+        ...prev,
+        students: updatedStudents,
+      };
+    });
   };
 
   useEffect(() => {
