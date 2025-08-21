@@ -1,7 +1,7 @@
 import Brief from "@/components/Brief";
-import Cta from "@/components/Cta";
 import HeroSection from "@/components/Herosection";
 import Partners from "@/components/Partners";
+import TrustedBy from "@/components/TrustedBy";
 
 export default function Home() {
   return (
@@ -9,7 +9,7 @@ export default function Home() {
       <HeroSection />
       <Brief />
       <Partners />
-      <Cta />
+      <TrustedBy />
     </div>
   );
 }
