@@ -103,7 +103,7 @@ function About() {
 
       <section className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] w-full md:mx-auto md:px-0 px-4 py-10 flex flex-col gap-10  ">
         <h1 className="text-3xl md:text-5xl font-bold ">
-          From the directors desk
+          From the director&apos;s desk
         </h1>
         <div className="flex md:flex-row  flex-col  md:gap-10 gap-8">
           <div className="md:w-1/3">
