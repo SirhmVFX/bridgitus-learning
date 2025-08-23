@@ -4,11 +4,7 @@ import Button from "@/components/Button";
 import { useState, useEffect } from "react";
 import { format, isSameDay } from "date-fns";
 import CalendarSelector from "@/components/CalendarSelector";
-
-type SelectedSlot = {
-  date: Date;
-  time: string;
-};
+import { SelectedSlot } from "@/types/calendar";
 
 function Register() {
   const [registerData, setRegisterData] = useState({
@@ -1090,10 +1086,28 @@ function Register() {
               }
               onSlotToggle={(date, time) => {
                 const updatedStudents = [...registerData.students];
-                updatedStudents[currentStudentIndex].selectedTimeSlots = [
+                const currentSlots = [
                   ...updatedStudents[currentStudentIndex].selectedTimeSlots,
-                  { date, time },
                 ];
+
+                const dateString = date.toISOString();
+
+                // Check if this slot is already selected
+                const existingIndex = currentSlots.findIndex(
+                  (slot) =>
+                    isSameDay(new Date(slot.date), date) && slot.time === time
+                );
+
+                if (existingIndex >= 0) {
+                  // Remove the slot if it exists
+                  currentSlots.splice(existingIndex, 1);
+                } else {
+                  // Add the slot if it doesn't exist
+                  currentSlots.push({ date: dateString, time });
+                }
+
+                updatedStudents[currentStudentIndex].selectedTimeSlots =
+                  currentSlots;
                 setRegisterData({
                   ...registerData,
                   students: updatedStudents,
@@ -2048,7 +2062,7 @@ function Register() {
                                     >
                                       <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
                                         {format(
-                                          timeSlot.date,
+                                          new Date(timeSlot.date),
                                           "EEEE, MMMM d, yyyy"
                                         )}{" "}
                                         {timeSlot.time}
