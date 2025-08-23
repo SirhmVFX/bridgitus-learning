@@ -1072,13 +1072,7 @@ function Register() {
           </div>
         </form>
       ) : step5 ? (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleNextAvailability();
-          }}
-          className="flex flex-col gap-10"
-        >
+        <div>
           <div>
             <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
               {registerData.students[currentStudentIndex].firstName}&apos;s
@@ -1107,557 +1101,565 @@ function Register() {
               }}
             />
             {/* {[
-              {
-                id: 1,
-                day: "Monday - Click to view times",
-                times: [
-                  { id: 1, time1: "Monday 07:00 AM", time2: "Monday 07:00" },
-                  { id: 2, time1: "Monday 07:30 AM", time2: "Monday 07:30" },
-                  { id: 3, time1: "Monday 02:00 PM", time2: "Monday 14:00" },
-                  { id: 4, time1: "Monday 02:30 PM", time2: "Monday 14:30" },
-                  { id: 5, time1: "Monday 03:00 PM", time2: "Monday 15:00" },
-                  { id: 6, time1: "Monday 03:30 PM", time2: "Monday 15:30" },
-                  { id: 7, time1: "Monday 04:00 PM", time2: "Monday 16:00" },
-                  { id: 8, time1: "Monday 04:30 PM", time2: "Monday 16:30" },
-                  { id: 9, time1: "Monday 05:00 PM", time2: "Monday 17:00" },
-                  { id: 10, time1: "Monday 05:30 PM", time2: "Monday 17:30" },
-                  { id: 11, time1: "Monday 06:00 PM", time2: "Monday 18:00" },
-                  { id: 12, time1: "Monday 06:30 PM", time2: "Monday 18:30" },
-                  { id: 13, time1: "Monday 07:00 PM", time2: "Monday 19:00" },
-                  { id: 14, time1: "Monday 07:30 PM", time2: "Monday 19:30" },
-                ],
-              },
-              {
-                id: 2,
-                day: "Tuesday - Click to view times",
-                times: [
-                  { id: 1, time1: "Tuesday 07:00 AM", time2: "Tuesday 07:00" },
-                  { id: 2, time1: "Tuesday 07:30 AM", time2: "Tuesday 07:30" },
-                  {
-                    id: 3,
-                    time1: "Tuesday 02:00 PM",
-                    time2: "Tuesday 14:00",
-                  },
-                  {
-                    id: 4,
-                    time1: "Tuesday 02:30 PM",
-                    time2: "Tuesday 14:30",
-                  },
-                  {
-                    id: 5,
-                    time1: "Tuesday 03:00 PM",
-                    time2: "Tuesday 15:00",
-                  },
-                  {
-                    id: 6,
-                    time1: "Tuesday 03:30 PM",
-                    time2: "Tuesday 15:30",
-                  },
-                  {
-                    id: 7,
-                    time1: "Tuesday 04:00 PM",
-                    time2: "Tuesday 16:00",
-                  },
-                  {
-                    id: 8,
-                    time1: "Tuesday 04:30 PM",
-                    time2: "Tuesday 16:30",
-                  },
-                  {
-                    id: 9,
-                    time1: "Tuesday 05:00 PM",
-                    time2: "Tuesday 17:00",
-                  },
-                  {
-                    id: 10,
-                    time1: "Tuesday 05:30 PM",
-                    time2: "Tuesday 17:30",
-                  },
-                  {
-                    id: 11,
-                    time1: "Tuesday 06:00 PM",
-                    time2: "Tuesday 18:00",
-                  },
-                  {
-                    id: 12,
-                    time1: "Tuesday 06:30 PM",
-                    time2: "Tuesday 18:30",
-                  },
-                  {
-                    id: 13,
-                    time1: "Tuesday 07:00 PM",
-                    time2: "Tuesday 19:00",
-                  },
-                  {
-                    id: 14,
-                    time1: "Tuesday 07:30 PM",
-                    time2: "Tuesday 19:30",
-                  },
-                ],
-              },
-              {
-                id: 3,
-                day: "Wednessday - Click to view times",
-                times: [
-                  {
-                    id: 1,
-                    time1: "Wednessday 07:00 AM",
-                    time2: "Wednessday 07:00",
-                  },
-                  {
-                    id: 2,
-                    time1: "Wednessday 07:30 AM",
-                    time2: "Wednessday 07:30",
-                  },
-                  {
-                    id: 3,
-                    time1: "Wednesday 02:00 PM",
-                    time2: "Wednesday 14:00",
-                  },
-                  {
-                    id: 4,
-                    time1: "Wednesday 02:30 PM",
-                    time2: "Wednesday 14:30",
-                  },
-                  {
-                    id: 5,
-                    time1: "Wednesday 03:00 PM",
-                    time2: "Wednesday 15:00",
-                  },
-                  {
-                    id: 6,
-                    time1: "Wednesday 03:30 PM",
-                    time2: "Wednesday 15:30",
-                  },
-                  {
-                    id: 7,
-                    time1: "Wednesday 04:00 PM",
-                    time2: "Wednesday 16:00",
-                  },
-                  {
-                    id: 8,
-                    time1: "Wednesday 04:30 PM",
-                    time2: "Wednesday 16:30",
-                  },
-                  {
-                    id: 9,
-                    time1: "Wednesday 05:00 PM",
-                    time2: "Wednesday 17:00",
-                  },
-                  {
-                    id: 10,
-                    time1: "Wednesday 05:30 PM",
-                    time2: "Wednesday 17:30",
-                  },
-                  {
-                    id: 11,
-                    time1: "Wednesday 06:00 PM",
-                    time2: "Wednesday 18:00",
-                  },
-                  {
-                    id: 12,
-                    time1: "Wednesday 06:30 PM",
-                    time2: "Wednesday 18:30",
-                  },
-                  {
-                    id: 13,
-                    time1: "Wednesday 07:00 PM",
-                    time2: "Wednesday 19:00",
-                  },
-                  {
-                    id: 14,
-                    time1: "Wednesday 07:30 PM",
-                    time2: "Wednesday 19:30",
-                  },
-                ],
-              },
-              {
-                id: 4,
-                day: "Thursday - Click to view times",
-                times: [
-                  {
-                    id: 1,
-                    time1: "Thursday 07:00 AM",
-                    time2: "Thursday 07:00",
-                  },
-                  {
-                    id: 2,
-                    time1: "Thursday 07:30 AM",
-                    time2: "Thursday 07:30",
-                  },
-                  {
-                    id: 3,
-                    time1: "Thursday 02:00 PM",
-                    time2: "Thursday 14:00",
-                  },
-                  {
-                    id: 4,
-                    time1: "Thursday 02:30 PM",
-                    time2: "Thursday 14:30",
-                  },
-                  {
-                    id: 5,
-                    time1: "Thursday 03:00 PM",
-                    time2: "Thursday 15:00",
-                  },
-                  {
-                    id: 6,
-                    time1: "Thursday 03:30 PM",
-                    time2: "Thursday 15:30",
-                  },
-                  {
-                    id: 7,
-                    time1: "Thursday 04:00 PM",
-                    time2: "Thursday 16:00",
-                  },
-                  {
-                    id: 8,
-                    time1: "Thursday 04:30 PM",
-                    time2: "Thursday 16:30",
-                  },
-                  {
-                    id: 9,
-                    time1: "Thursday 05:00 PM",
-                    time2: "Thursday 17:00",
-                  },
-                  {
-                    id: 10,
-                    time1: "Thursday 05:30 PM",
-                    time2: "Thursday 17:30",
-                  },
-                  {
-                    id: 11,
-                    time1: "Thursday 06:00 PM",
-                    time2: "Thursday 18:00",
-                  },
-                  {
-                    id: 12,
-                    time1: "Thursday 06:30 PM",
-                    time2: "Thursday 18:30",
-                  },
-                  {
-                    id: 13,
-                    time1: "Thursday 07:00 PM",
-                    time2: "Thursday 19:00",
-                  },
-                  {
-                    id: 14,
-                    time1: "Thursday 07:30 PM",
-                    time2: "Thursday 19:30",
-                  },
-                ],
-              },
-              {
-                id: 5,
-                day: "Friday - Click to view times",
-                times: [
-                  { id: 1, time1: "Friday 07:00 AM", time2: "Friday 07:00" },
-                  { id: 2, time1: "Friday 07:30 AM", time2: "Friday 07:30" },
-                  {
-                    id: 3,
-                    time1: "Friday 02:00 PM",
-                    time2: "Friday 14:00",
-                  },
-                  {
-                    id: 4,
-                    time1: "Friday 02:30 PM",
-                    time2: "Friday 14:30",
-                  },
-                  {
-                    id: 5,
-                    time1: "Friday 03:00 PM",
-                    time2: "Friday 15:00",
-                  },
-                  {
-                    id: 6,
-                    time1: "Friday 03:30 PM",
-                    time2: "Friday 15:30",
-                  },
-                  {
-                    id: 7,
-                    time1: "Friday 04:00 PM",
-                    time2: "Friday 16:00",
-                  },
-                  {
-                    id: 8,
-                    time1: "Friday 04:30 PM",
-                    time2: "Friday 16:30",
-                  },
-                  {
-                    id: 9,
-                    time1: "Friday 05:00 PM",
-                    time2: "Friday 17:00",
-                  },
-                  {
-                    id: 10,
-                    time1: "Friday 05:30 PM",
-                    time2: "Friday 17:30",
-                  },
-                  {
-                    id: 11,
-                    time1: "Friday 06:00 PM",
-                    time2: "Friday 18:00",
-                  },
-                  {
-                    id: 12,
-                    time1: "Friday 06:30 PM",
-                    time2: "Friday 18:30",
-                  },
-                  {
-                    id: 13,
-                    time1: "Friday 07:00 PM",
-                    time2: "Friday 19:00",
-                  },
-                  {
-                    id: 14,
-                    time1: "Friday 07:30 PM",
-                    time2: "Friday 19:30",
-                  },
-                ],
-              },
-              {
-                id: 6,
-                day: "Saturday - Click to view times",
-                times: [
-                  {
-                    id: 1,
-                    time1: "Saturday 07:30 AM",
-                    time2: "Saturday 07:30",
-                  },
-                  {
-                    id: 2,
-                    time1: "Saturday 09:00 AM",
-                    time2: "Saturday 09:00",
-                  },
-                  {
-                    id: 3,
-                    time1: "Saturday 10:30 AM",
-                    time2: "Saturday 10:30",
-                  },
-                  {
-                    id: 4,
-                    time1: "Saturday 12:00 PM",
-                    time2: "Saturday 12:00",
-                  },
-                  {
-                    id: 5,
-                    time1: "Saturday 01:15 PM",
-                    time2: "Saturday 13:15",
-                  },
-                  {
-                    id: 6,
-                    time1: "Saturday 02:30 PM",
-                    time2: "Saturday 14:30",
-                  },
-                  {
-                    id: 7,
-                    time1: "Saturday 03:50 PM",
-                    time2: "Saturday 15:50",
-                  },
-                  {
-                    id: 8,
-                    time1: "Saturday 05:10 PM",
-                    time2: "Saturday 17:10",
-                  },
-                  {
-                    id: 9,
-                    time1: "Saturday 06:30 PM",
-                    time2: "Saturday 18:30",
-                  },
-                  {
-                    id: 10,
-                    time1: "Saturday 07:45 PM",
-                    time2: "Saturday 19:45",
-                  },
-                ],
-              },
-              {
-                id: 7,
-                day: "Sunday - Click to view times",
-                times: [
-                  {
-                    id: 1,
-                    time1: "Sunday 07:30 AM",
-                    time2: "Sunday 07:30",
-                  },
-                  {
-                    id: 2,
-                    time1: "Sunday 09:00 AM",
-                    time2: "Sunday 09:00",
-                  },
-                  {
-                    id: 3,
-                    time1: "Sunday 10:30 AM",
-                    time2: "Sunday 10:30",
-                  },
-                  {
-                    id: 4,
-                    time1: "Sunday 12:00 PM",
-                    time2: "Sunday 12:00",
-                  },
-                  {
-                    id: 5,
-                    time1: "Sunday 01:15 PM",
-                    time2: "Sunday 13:15",
-                  },
-                  {
-                    id: 6,
-                    time1: "Sunday 02:30 PM",
-                    time2: "Sunday 14:30",
-                  },
-                  {
-                    id: 7,
-                    time1: "Sunday 03:50 PM",
-                    time2: "Sunday 15:50",
-                  },
-                  {
-                    id: 8,
-                    time1: "Sunday 05:10 PM",
-                    time2: "Sunday 17:10",
-                  },
-                  {
-                    id: 9,
-                    time1: "Sunday 06:30 PM",
-                    time2: "Sunday 18:30",
-                  },
-                  {
-                    id: 10,
-                    time1: "Sunday 07:45 PM",
-                    time2: "Sunday 19:45",
-                  },
-                ],
-              },
-            ].map((item) => (
-              <div key={item.id}>
-                <div
-                  onClick={() => toggleDay(item.id)}
-                  className="flex flex-col gap-2 cursor-pointer border border-gray-300 p-2 transition-all duration-200"
-                >
-                  <h1 className="md:text-[11px] lg:text-[13px] xl:text-[14px]">
-                    {item.day}
-                  </h1>
-                </div>
-                {openDays[item.id] && (
-                  <div className="mt-2 pl-4 space-y-2 flex flex-wrap justify-center gap-2">
-                    {item.times.map((time) => (
-                      <div
-                        key={time.id}
-                        className="w-[150px] h-[100px] border border-gray-300 p-1 flex flex-col"
-                      >
-                        <div className="flex flex-col items-center justify-center gap-1 bg-black/5 grow-1 ">
-                          <input
-                            type="checkbox"
-                            id={`time-${item.id}-${time.id}`}
-                            className="rounded border-gray-300 "
-                            checked={
-                              !!selectedTimes[`${item.day}-${time.time1}`]
-                            }
-                            onChange={(e) =>
-                              handleTimeSelect(
-                                item.day,
-                                time.time1,
-                                time.time2,
-                                e.target.checked
-                              )
-                            }
-                          />
-                          <label
-                            htmlFor={`time-${item.id}-${time.id}`}
-                            className="md:text-[10px] lg:text-[12px] xl:text-[13px] font-bold"
-                          >
-                            {time.time1}
-                          </label>
-                        </div>
-                        <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] p-2 text-center">
-                          {time.time2}
-                        </p>
-                      </div>
-                    ))}
+                {
+                  id: 1,
+                  day: "Monday - Click to view times",
+                  times: [
+                    { id: 1, time1: "Monday 07:00 AM", time2: "Monday 07:00" },
+                    { id: 2, time1: "Monday 07:30 AM", time2: "Monday 07:30" },
+                    { id: 3, time1: "Monday 02:00 PM", time2: "Monday 14:00" },
+                    { id: 4, time1: "Monday 02:30 PM", time2: "Monday 14:30" },
+                    { id: 5, time1: "Monday 03:00 PM", time2: "Monday 15:00" },
+                    { id: 6, time1: "Monday 03:30 PM", time2: "Monday 15:30" },
+                    { id: 7, time1: "Monday 04:00 PM", time2: "Monday 16:00" },
+                    { id: 8, time1: "Monday 04:30 PM", time2: "Monday 16:30" },
+                    { id: 9, time1: "Monday 05:00 PM", time2: "Monday 17:00" },
+                    { id: 10, time1: "Monday 05:30 PM", time2: "Monday 17:30" },
+                    { id: 11, time1: "Monday 06:00 PM", time2: "Monday 18:00" },
+                    { id: 12, time1: "Monday 06:30 PM", time2: "Monday 18:30" },
+                    { id: 13, time1: "Monday 07:00 PM", time2: "Monday 19:00" },
+                    { id: 14, time1: "Monday 07:30 PM", time2: "Monday 19:30" },
+                  ],
+                },
+                {
+                  id: 2,
+                  day: "Tuesday - Click to view times",
+                  times: [
+                    { id: 1, time1: "Tuesday 07:00 AM", time2: "Tuesday 07:00" },
+                    { id: 2, time1: "Tuesday 07:30 AM", time2: "Tuesday 07:30" },
+                    {
+                      id: 3,
+                      time1: "Tuesday 02:00 PM",
+                      time2: "Tuesday 14:00",
+                    },
+                    {
+                      id: 4,
+                      time1: "Tuesday 02:30 PM",
+                      time2: "Tuesday 14:30",
+                    },
+                    {
+                      id: 5,
+                      time1: "Tuesday 03:00 PM",
+                      time2: "Tuesday 15:00",
+                    },
+                    {
+                      id: 6,
+                      time1: "Tuesday 03:30 PM",
+                      time2: "Tuesday 15:30",
+                    },
+                    {
+                      id: 7,
+                      time1: "Tuesday 04:00 PM",
+                      time2: "Tuesday 16:00",
+                    },
+                    {
+                      id: 8,
+                      time1: "Tuesday 04:30 PM",
+                      time2: "Tuesday 16:30",
+                    },
+                    {
+                      id: 9,
+                      time1: "Tuesday 05:00 PM",
+                      time2: "Tuesday 17:00",
+                    },
+                    {
+                      id: 10,
+                      time1: "Tuesday 05:30 PM",
+                      time2: "Tuesday 17:30",
+                    },
+                    {
+                      id: 11,
+                      time1: "Tuesday 06:00 PM",
+                      time2: "Tuesday 18:00",
+                    },
+                    {
+                      id: 12,
+                      time1: "Tuesday 06:30 PM",
+                      time2: "Tuesday 18:30",
+                    },
+                    {
+                      id: 13,
+                      time1: "Tuesday 07:00 PM",
+                      time2: "Tuesday 19:00",
+                    },
+                    {
+                      id: 14,
+                      time1: "Tuesday 07:30 PM",
+                      time2: "Tuesday 19:30",
+                    },
+                  ],
+                },
+                {
+                  id: 3,
+                  day: "Wednessday - Click to view times",
+                  times: [
+                    {
+                      id: 1,
+                      time1: "Wednessday 07:00 AM",
+                      time2: "Wednessday 07:00",
+                    },
+                    {
+                      id: 2,
+                      time1: "Wednessday 07:30 AM",
+                      time2: "Wednessday 07:30",
+                    },
+                    {
+                      id: 3,
+                      time1: "Wednesday 02:00 PM",
+                      time2: "Wednesday 14:00",
+                    },
+                    {
+                      id: 4,
+                      time1: "Wednesday 02:30 PM",
+                      time2: "Wednesday 14:30",
+                    },
+                    {
+                      id: 5,
+                      time1: "Wednesday 03:00 PM",
+                      time2: "Wednesday 15:00",
+                    },
+                    {
+                      id: 6,
+                      time1: "Wednesday 03:30 PM",
+                      time2: "Wednesday 15:30",
+                    },
+                    {
+                      id: 7,
+                      time1: "Wednesday 04:00 PM",
+                      time2: "Wednesday 16:00",
+                    },
+                    {
+                      id: 8,
+                      time1: "Wednesday 04:30 PM",
+                      time2: "Wednesday 16:30",
+                    },
+                    {
+                      id: 9,
+                      time1: "Wednesday 05:00 PM",
+                      time2: "Wednesday 17:00",
+                    },
+                    {
+                      id: 10,
+                      time1: "Wednesday 05:30 PM",
+                      time2: "Wednesday 17:30",
+                    },
+                    {
+                      id: 11,
+                      time1: "Wednesday 06:00 PM",
+                      time2: "Wednesday 18:00",
+                    },
+                    {
+                      id: 12,
+                      time1: "Wednesday 06:30 PM",
+                      time2: "Wednesday 18:30",
+                    },
+                    {
+                      id: 13,
+                      time1: "Wednesday 07:00 PM",
+                      time2: "Wednesday 19:00",
+                    },
+                    {
+                      id: 14,
+                      time1: "Wednesday 07:30 PM",
+                      time2: "Wednesday 19:30",
+                    },
+                  ],
+                },
+                {
+                  id: 4,
+                  day: "Thursday - Click to view times",
+                  times: [
+                    {
+                      id: 1,
+                      time1: "Thursday 07:00 AM",
+                      time2: "Thursday 07:00",
+                    },
+                    {
+                      id: 2,
+                      time1: "Thursday 07:30 AM",
+                      time2: "Thursday 07:30",
+                    },
+                    {
+                      id: 3,
+                      time1: "Thursday 02:00 PM",
+                      time2: "Thursday 14:00",
+                    },
+                    {
+                      id: 4,
+                      time1: "Thursday 02:30 PM",
+                      time2: "Thursday 14:30",
+                    },
+                    {
+                      id: 5,
+                      time1: "Thursday 03:00 PM",
+                      time2: "Thursday 15:00",
+                    },
+                    {
+                      id: 6,
+                      time1: "Thursday 03:30 PM",
+                      time2: "Thursday 15:30",
+                    },
+                    {
+                      id: 7,
+                      time1: "Thursday 04:00 PM",
+                      time2: "Thursday 16:00",
+                    },
+                    {
+                      id: 8,
+                      time1: "Thursday 04:30 PM",
+                      time2: "Thursday 16:30",
+                    },
+                    {
+                      id: 9,
+                      time1: "Thursday 05:00 PM",
+                      time2: "Thursday 17:00",
+                    },
+                    {
+                      id: 10,
+                      time1: "Thursday 05:30 PM",
+                      time2: "Thursday 17:30",
+                    },
+                    {
+                      id: 11,
+                      time1: "Thursday 06:00 PM",
+                      time2: "Thursday 18:00",
+                    },
+                    {
+                      id: 12,
+                      time1: "Thursday 06:30 PM",
+                      time2: "Thursday 18:30",
+                    },
+                    {
+                      id: 13,
+                      time1: "Thursday 07:00 PM",
+                      time2: "Thursday 19:00",
+                    },
+                    {
+                      id: 14,
+                      time1: "Thursday 07:30 PM",
+                      time2: "Thursday 19:30",
+                    },
+                  ],
+                },
+                {
+                  id: 5,
+                  day: "Friday - Click to view times",
+                  times: [
+                    { id: 1, time1: "Friday 07:00 AM", time2: "Friday 07:00" },
+                    { id: 2, time1: "Friday 07:30 AM", time2: "Friday 07:30" },
+                    {
+                      id: 3,
+                      time1: "Friday 02:00 PM",
+                      time2: "Friday 14:00",
+                    },
+                    {
+                      id: 4,
+                      time1: "Friday 02:30 PM",
+                      time2: "Friday 14:30",
+                    },
+                    {
+                      id: 5,
+                      time1: "Friday 03:00 PM",
+                      time2: "Friday 15:00",
+                    },
+                    {
+                      id: 6,
+                      time1: "Friday 03:30 PM",
+                      time2: "Friday 15:30",
+                    },
+                    {
+                      id: 7,
+                      time1: "Friday 04:00 PM",
+                      time2: "Friday 16:00",
+                    },
+                    {
+                      id: 8,
+                      time1: "Friday 04:30 PM",
+                      time2: "Friday 16:30",
+                    },
+                    {
+                      id: 9,
+                      time1: "Friday 05:00 PM",
+                      time2: "Friday 17:00",
+                    },
+                    {
+                      id: 10,
+                      time1: "Friday 05:30 PM",
+                      time2: "Friday 17:30",
+                    },
+                    {
+                      id: 11,
+                      time1: "Friday 06:00 PM",
+                      time2: "Friday 18:00",
+                    },
+                    {
+                      id: 12,
+                      time1: "Friday 06:30 PM",
+                      time2: "Friday 18:30",
+                    },
+                    {
+                      id: 13,
+                      time1: "Friday 07:00 PM",
+                      time2: "Friday 19:00",
+                    },
+                    {
+                      id: 14,
+                      time1: "Friday 07:30 PM",
+                      time2: "Friday 19:30",
+                    },
+                  ],
+                },
+                {
+                  id: 6,
+                  day: "Saturday - Click to view times",
+                  times: [
+                    {
+                      id: 1,
+                      time1: "Saturday 07:30 AM",
+                      time2: "Saturday 07:30",
+                    },
+                    {
+                      id: 2,
+                      time1: "Saturday 09:00 AM",
+                      time2: "Saturday 09:00",
+                    },
+                    {
+                      id: 3,
+                      time1: "Saturday 10:30 AM",
+                      time2: "Saturday 10:30",
+                    },
+                    {
+                      id: 4,
+                      time1: "Saturday 12:00 PM",
+                      time2: "Saturday 12:00",
+                    },
+                    {
+                      id: 5,
+                      time1: "Saturday 01:15 PM",
+                      time2: "Saturday 13:15",
+                    },
+                    {
+                      id: 6,
+                      time1: "Saturday 02:30 PM",
+                      time2: "Saturday 14:30",
+                    },
+                    {
+                      id: 7,
+                      time1: "Saturday 03:50 PM",
+                      time2: "Saturday 15:50",
+                    },
+                    {
+                      id: 8,
+                      time1: "Saturday 05:10 PM",
+                      time2: "Saturday 17:10",
+                    },
+                    {
+                      id: 9,
+                      time1: "Saturday 06:30 PM",
+                      time2: "Saturday 18:30",
+                    },
+                    {
+                      id: 10,
+                      time1: "Saturday 07:45 PM",
+                      time2: "Saturday 19:45",
+                    },
+                  ],
+                },
+                {
+                  id: 7,
+                  day: "Sunday - Click to view times",
+                  times: [
+                    {
+                      id: 1,
+                      time1: "Sunday 07:30 AM",
+                      time2: "Sunday 07:30",
+                    },
+                    {
+                      id: 2,
+                      time1: "Sunday 09:00 AM",
+                      time2: "Sunday 09:00",
+                    },
+                    {
+                      id: 3,
+                      time1: "Sunday 10:30 AM",
+                      time2: "Sunday 10:30",
+                    },
+                    {
+                      id: 4,
+                      time1: "Sunday 12:00 PM",
+                      time2: "Sunday 12:00",
+                    },
+                    {
+                      id: 5,
+                      time1: "Sunday 01:15 PM",
+                      time2: "Sunday 13:15",
+                    },
+                    {
+                      id: 6,
+                      time1: "Sunday 02:30 PM",
+                      time2: "Sunday 14:30",
+                    },
+                    {
+                      id: 7,
+                      time1: "Sunday 03:50 PM",
+                      time2: "Sunday 15:50",
+                    },
+                    {
+                      id: 8,
+                      time1: "Sunday 05:10 PM",
+                      time2: "Sunday 17:10",
+                    },
+                    {
+                      id: 9,
+                      time1: "Sunday 06:30 PM",
+                      time2: "Sunday 18:30",
+                    },
+                    {
+                      id: 10,
+                      time1: "Sunday 07:45 PM",
+                      time2: "Sunday 19:45",
+                    },
+                  ],
+                },
+              ].map((item) => (
+                <div key={item.id}>
+                  <div
+                    onClick={() => toggleDay(item.id)}
+                    className="flex flex-col gap-2 cursor-pointer border border-gray-300 p-2 transition-all duration-200"
+                  >
+                    <h1 className="md:text-[11px] lg:text-[13px] xl:text-[14px]">
+                      {item.day}
+                    </h1>
                   </div>
-                )}
-              </div>
-            ))} */}
+                  {openDays[item.id] && (
+                    <div className="mt-2 pl-4 space-y-2 flex flex-wrap justify-center gap-2">
+                      {item.times.map((time) => (
+                        <div
+                          key={time.id}
+                          className="w-[150px] h-[100px] border border-gray-300 p-1 flex flex-col"
+                        >
+                          <div className="flex flex-col items-center justify-center gap-1 bg-black/5 grow-1 ">
+                            <input
+                              type="checkbox"
+                              id={`time-${item.id}-${time.id}`}
+                              className="rounded border-gray-300 "
+                              checked={
+                                !!selectedTimes[`${item.day}-${time.time1}`]
+                              }
+                              onChange={(e) =>
+                                handleTimeSelect(
+                                  item.day,
+                                  time.time1,
+                                  time.time2,
+                                  e.target.checked
+                                )
+                              }
+                            />
+                            <label
+                              htmlFor={`time-${item.id}-${time.id}`}
+                              className="md:text-[10px] lg:text-[12px] xl:text-[13px] font-bold"
+                            >
+                              {time.time1}
+                            </label>
+                          </div>
+                          <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] p-2 text-center">
+                            {time.time2}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))} */}
           </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleNextAvailability();
+            }}
+            className="flex flex-col gap-10"
+          >
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor={`startPreference-${currentStudentIndex}`}
+                className="text-[12px] font-medium"
+              >
+                When would you like to start?{" "}
+                <span className="text-red-500">*</span>
+              </label>
+              <select
+                id={`startPreference-${currentStudentIndex}`}
+                required
+                value={
+                  registerData.students[currentStudentIndex].startPreference ||
+                  ""
+                }
+                onChange={(e) =>
+                  handleStudentChange(
+                    currentStudentIndex,
+                    "startPreference",
+                    e.target.value
+                  )
+                }
+                className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]"
+              >
+                <option value="">Select</option>
+                <option value="asap">As soon as possible</option>
+                <option value="later">At a later date</option>
+              </select>
+              {registerData.students[currentStudentIndex].startPreference ===
+                "later" && (
+                <div className="mt-2">
+                  <label
+                    htmlFor={`startDate-${currentStudentIndex}`}
+                    className="text-[12px] font-medium block mb-1"
+                  >
+                    Select start date <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    id={`startDate-${currentStudentIndex}`}
+                    required
+                    value={
+                      registerData.students[currentStudentIndex].startDate || ""
+                    }
+                    onChange={(e) =>
+                      handleStudentChange(
+                        currentStudentIndex,
+                        "startDate",
+                        e.target.value
+                      )
+                    }
+                    min={new Date().toISOString().split("T")[0]}
+                    className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]"
+                  />
+                </div>
+              )}
+            </div>
 
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor={`startPreference-${currentStudentIndex}`}
-              className="text-[12px] font-medium"
-            >
-              When would you like to start?{" "}
-              <span className="text-red-500">*</span>
-            </label>
-            <select
-              id={`startPreference-${currentStudentIndex}`}
-              required
-              value={
-                registerData.students[currentStudentIndex].startPreference || ""
-              }
-              onChange={(e) =>
-                handleStudentChange(
-                  currentStudentIndex,
-                  "startPreference",
-                  e.target.value
-                )
-              }
-              className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]"
-            >
-              <option value="">Select</option>
-              <option value="asap">As soon as possible</option>
-              <option value="later">At a later date</option>
-            </select>
-            {registerData.students[currentStudentIndex].startPreference ===
-              "later" && (
-              <div className="mt-2">
-                <label
-                  htmlFor={`startDate-${currentStudentIndex}`}
-                  className="text-[12px] font-medium block mb-1"
-                >
-                  Select start date <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  id={`startDate-${currentStudentIndex}`}
-                  required
-                  value={
-                    registerData.students[currentStudentIndex].startDate || ""
-                  }
-                  onChange={(e) =>
-                    handleStudentChange(
-                      currentStudentIndex,
-                      "startDate",
-                      e.target.value
-                    )
-                  }
-                  min={new Date().toISOString().split("T")[0]}
-                  className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]"
-                />
-              </div>
-            )}
-          </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setStep4(true);
+                  setStep5(false);
+                }}
+                className="px-5 py-3  font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200 md:text-[8px] lg:text-[11px] xl:text-[12px] bg-black/5 "
+              >
+                Back to Student Info
+              </button>
 
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setStep4(true);
-                setStep5(false);
-              }}
-              className="px-5 py-3  font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200 md:text-[8px] lg:text-[11px] xl:text-[12px] bg-black/5 "
-            >
-              Back to Student Info
-            </button>
-
-            <button
-              type="submit"
-              className="px-5 py-3 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer bg-secondary-color text-white md:text-[8px] lg:text-[11px] xl:text-[12px]"
-            >
-              {currentStudentIndex < registerData.students.length - 1
-                ? "Save & Add Next Student"
-                : "Continue"}
-            </button>
-          </div>
-        </form>
+              <button
+                type="submit"
+                className="px-5 py-3 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer bg-secondary-color text-white md:text-[8px] lg:text-[11px] xl:text-[12px]"
+              >
+                {currentStudentIndex < registerData.students.length - 1
+                  ? "Save & Add Next Student"
+                  : "Continue"}
+              </button>
+            </div>
+          </form>
+        </div>
       ) : step6 ? (
         <div className="space-y-8">
           <h1 className="md:text-[12px] lg:text-[14px] xl:text-[16px] font-bold">
