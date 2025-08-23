@@ -20,15 +20,11 @@ import {
   endOfWeek,
   parseISO,
 } from "date-fns";
+import { SelectedSlot } from "@/types/calendar";
 
 type TimeSlot = {
   time: string;
   formattedTime: string;
-};
-
-type SelectedSlot = {
-  date: Date;
-  time: string;
 };
 
 const CalendarSelector = ({
@@ -65,6 +61,13 @@ const CalendarSelector = ({
     setTimeSlots(slots);
   }, []);
 
+  // Helper function to check if a slot is selected
+  const isSlotSelected = (date: Date, time: string) => {
+    return selectedSlots.some(
+      (slot) => isSameDay(new Date(slot.date), date) && slot.time === time
+    );
+  };
+
   // Get days for the current month view
   const getDaysInMonth = () => {
     const start = startOfWeek(startOfMonth(currentMonth));
@@ -85,12 +88,6 @@ const CalendarSelector = ({
     }
   };
 
-  const isSlotSelected = (date: Date, time: string) => {
-    return selectedSlots.some(
-      (slot) => isSameDay(slot.date, date) && slot.time === time
-    );
-  };
-
   const nextMonth = () => {
     setCurrentMonth(addMonths(currentMonth, 1));
   };
@@ -107,7 +104,7 @@ const CalendarSelector = ({
   };
 
   const hasSlotsOnDay = (day: Date) => {
-    return selectedSlots.some((slot) => isSameDay(slot.date, day));
+    return selectedSlots.some((slot) => isSameDay(new Date(slot.date), day));
   };
 
   const isDayDisabled = (day: Date) => {
@@ -117,8 +114,8 @@ const CalendarSelector = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <div className="flex">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex-1">
         {/* Month/Year Navigation */}
         <div className="flex items-center justify-between mb-4">
           <button
@@ -219,7 +216,7 @@ const CalendarSelector = ({
       </div>
 
       {selectedDate && (
-        <div className="mt-6">
+        <div className=" flex-1 p-8">
           <h3 className="text-lg font-medium mb-4">
             Available time slots for{" "}
             {selectedDate.toLocaleDateString("en-US", {
