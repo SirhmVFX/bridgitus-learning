@@ -19,7 +19,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={` ${open_sans.variable} antialiased`}>
+      <body className={` ${open_sans.variable} antialiased p-4`}>
         <RegisterLayout>{children}</RegisterLayout>
       </body>
     </html>
