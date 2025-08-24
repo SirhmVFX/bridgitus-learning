@@ -8,6 +8,8 @@ import { useState } from "react";
 
 function Header() {
   const [open, setOpen] = useState(false);
+  const [openMobile, setOpenMobile] = useState(false);
+  const [openMobileMenu, setOpenMobileMenu] = useState(false);
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-[9999999] `}>
@@ -42,7 +44,7 @@ function Header() {
           </Link>
         </div>
       </div>
-      <div className="border bg-white border-b-black/10 ">
+      <div className=" bg-white border-b-black/1 ">
         <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] w-full mx-auto flex justify-between items-center py-1  px-4 md:px-0 ">
           <div className="md:w-[70px] lg:w-[150px] xl:w-[170px] w-[180px]">
             <Image
@@ -166,10 +168,126 @@ function Header() {
             </ul>
           </div>
 
-          <div className="md:hidden block">
+          <div
+            className="md:hidden block cursor-pointer z-[9999999999999]"
+            onClick={() => setOpenMobile(!openMobile)}
+          >
             <Menu />
           </div>
         </div>
+        {/* Mobile navigation dropdown */}
+        {openMobile && (
+          <div className="fixed top-25 left-0 right-0 z-[9999999] bg-white p-4">
+            <ul className="flex flex-col gap-4">
+              <Link
+                className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                href="/"
+              >
+                Home
+              </Link>
+              <Link
+                className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                href="/about"
+              >
+                About Us
+              </Link>
+              <Link
+                className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                href="/services"
+              >
+                Our Services
+              </Link>
+
+              <div className="flex justify-between">
+                <Link
+                  href="/classes"
+                  className="md:text-[8px] lg:text-[11px] xl:text-[12px] text-left cursor-pointer z-50"
+                >
+                  Classes
+                </Link>
+
+                <div
+                  onClick={() => setOpenMobileMenu(!openMobileMenu)}
+                  className="w-[10px] h-[10px] bg-black"
+                ></div>
+              </div>
+              {openMobileMenu && (
+                <div className=" flex flex-col gap-4 py-4  w-full ">
+                  <Link
+                    href="/classes/#regular"
+                    className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                  >
+                    Regular Tutoring
+                  </Link>
+                  <Link
+                    href="/classes/#special-math"
+                    className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                  >
+                    Special Math Class
+                  </Link>
+                  <Link
+                    href="/classes/#special-science"
+                    className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                  >
+                    Special Science Class
+                  </Link>
+                  <Link
+                    href="/classes/#english"
+                    className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                  >
+                    Special English Class
+                  </Link>
+                  <Link
+                    href="/classes/#hsc"
+                    className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                  >
+                    HSC class
+                  </Link>
+                  <Link
+                    href="/classes/#vce"
+                    className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                  >
+                    VCE class
+                  </Link>
+                  <Link
+                    href="/classes/#scholarship"
+                    className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                  >
+                    Scholarship Preparatory Class{" "}
+                  </Link>
+                  <Link
+                    href="/classes/#college"
+                    className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
+                  >
+                    College Preparatory Class
+                  </Link>
+                </div>
+              )}
+
+              <Link
+                className={`md:text-[8px] lg:text-[11px] xl:text-[12px] z-50`}
+                href="/pricing"
+              >
+                Pricing
+              </Link>
+              {/* <Link
+                  className={`md:text-[8px] lg:text-[11px] xl:text-[12px] z-50`}
+                  href="/testimonials"
+                >
+                  Testimonials
+                </Link> */}
+              <Link
+                className={`md:text-[8px] lg:text-[11px] xl:text-[12px] z-50 `}
+                href="/contact"
+              >
+                Contact
+              </Link>
+              <Button style="link" href="/register">
+                Register Now
+              </Button>
+            </ul>
+          </div>
+        )}
       </div>
     </header>
   );
