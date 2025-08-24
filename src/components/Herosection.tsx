@@ -32,7 +32,7 @@ function HeroSection() {
           </div>
         </div>
 
-        <div className="w-full  md:w-1/2 h-full ">
+        <div className="w-full  md:w-1/2  ">
           <Image
             src="/assets/i6.jpg"
             alt="hero"
