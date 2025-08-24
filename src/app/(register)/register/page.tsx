@@ -180,22 +180,22 @@ function Register() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-4">
-            <div className="flex flex-col gap-2 items-center">
+            <div className="flex flex-col gap-2 md:items-center">
               <div className="w-12 h-12 flex items-center justify-center rounded-full bg-primary-color">
                 <h1 className="text-white">1</h1>
               </div>
               <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
                 You book
               </h1>
-              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
+              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] md:text-center">
                 Let us know about you, your child and how we can help.
               </p>
-              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
+              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] md:text-center">
                 We want to learn as much as we can about your child and what has
                 brought you to us - the more detailed you can be, the better our
                 tutor match can be!
               </p>
-              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
+              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] md:text-center">
                 <span className="font-bold">
                   No payment details are required upfront -
                 </span>
@@ -203,20 +203,20 @@ function Register() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-2 items-center">
+            <div className="flex flex-col gap-2 md:items-center">
               <div className="w-12 h-12 flex items-center justify-center rounded-full bg-primary-color">
                 <h1 className="text-white">2</h1>
               </div>
               <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
                 We Assess
               </h1>
-              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
+              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] md:text-center">
                 We carefully assess your child to gain a clear understanding of
                 their current level, strengths, and specific learning needs.
                 Based on this, we create a tailored academic support plan
                 designed to build confidence and foster continuous growth.
               </p>
-              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
+              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] md:text-center">
                 Following the assessment, your child will be paired with a
                 qualified tutor who provides structured, step-by-step guidance.
                 Our tutors use engaging methods to make learning enjoyable while
@@ -224,23 +224,23 @@ function Register() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-2 items-center">
+            <div className="flex flex-col gap-2 md:items-center">
               <div className="w-12 h-12 flex items-center justify-center rounded-full bg-primary-color">
                 <h1 className="text-white">3</h1>
               </div>
               <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
                 We Tutor
               </h1>
-              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
+              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] md:text-center">
                 We work with your child directly, providing lessons that are
                 tailored to their unique needs and learning style.
               </p>
-              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
+              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] md:text-center">
                 From the very first session, our focus is on building
                 confidence, improving understanding, making learning enjoyable
                 and bridging learning gaps.
               </p>
-              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-center">
+              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] md:text-center">
                 Most students begin to see positive changes within the first 5
                 sessions—whether that’s better grades, stronger skills, or a
                 renewed love for learning. And we’ll keep you updated every step
