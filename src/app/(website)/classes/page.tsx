@@ -6,7 +6,7 @@ function Classes() {
       <section className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] md:mx-auto">
         <section
           id="classes"
-          className="py-20 bg-background md:pt-32 lg:pt-40 xl:pt-52"
+          className="py-28 bg-background md:pt-32 lg:pt-40 xl:pt-52"
         >
           <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] mx-auto px-4">
             <div className="text-center mb-16">
@@ -372,7 +372,7 @@ function Classes() {
               ))}
             </div>
 
-            <div className="  rounded-3xl p-8 border border-black/10">
+            <div className="  rounded-3xl md:p-8 p-4 border border-black/10">
               <div className="text-center mb-12">
                 <div className="inline-flex items-center px-4 py-2 bg-yellow-500/10 rounded-full border border-yellow-500/20 mb-6">
                   <span className="text-sm font-medium text-yellow-500-foreground">
@@ -388,7 +388,7 @@ function Classes() {
                 </p>
               </div>
               <div className="grid md:grid-cols-2 gap-8">
-                <div className="group p-8 bg-card rounded-2xl border cursor-pointer border-black/10 hover:border-yellow-500/50 transition-all duration-300 hover:shadow-lg">
+                <div className="group md:p-8 p-4 bg-card rounded-2xl border cursor-pointer border-black/10 hover:border-yellow-500/50 transition-all duration-300 hover:shadow-lg">
                   <div className="flex items-center mb-6">
                     <div className="p-4 bg-yellow-500/10 rounded-xl group-hover:bg-yellow-500/20 transition-colors mr-4">
                       <svg
@@ -492,7 +492,7 @@ function Classes() {
                     </p>
                   </div>
                 </div>
-                <div className="group p-8 bg-card rounded-2xl border cursor-pointer border-black/10 hover:border-yellow-500/50 transition-all duration-300 hover:shadow-lg">
+                <div className="group md:p-8 p-4 bg-card rounded-2xl border cursor-pointer border-black/10 hover:border-yellow-500/50 transition-all duration-300 hover:shadow-lg">
                   <div className="flex items-center mb-6">
                     <div className="p-4 bg-yellow-500/10 rounded-xl group-hover:bg-yellow-500/20 transition-colors mr-4">
                       <svg
