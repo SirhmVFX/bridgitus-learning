@@ -114,8 +114,8 @@ const CalendarSelector = ({
   };
 
   return (
-    <div className="flex">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex-1">
+    <div className="grid grid-cols-1 md:grid-cols-2">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 ">
         {/* Month/Year Navigation */}
         <div className="flex items-center justify-between mb-4">
           <button
@@ -216,7 +216,7 @@ const CalendarSelector = ({
       </div>
 
       {selectedDate && (
-        <div className=" flex-1 p-8">
+        <div className=" md:p-8 p-4">
           <h3 className="text-lg font-medium mb-4">
             Available time slots for{" "}
             {selectedDate.toLocaleDateString("en-US", {
