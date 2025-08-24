@@ -2,7 +2,7 @@ import Button from "./Button";
 
 function Brief() {
   return (
-    <section className="bg-gradient-to-b from-black to-black/20 md:h-screen h-fit flex items-center md:pb-0 pb-36">
+    <section className="bg-gradient-to-b from-black to-black/20 md:h-screen h-fit flex items-center md:pb-0 py-20">
       <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] md:mx-auto flex md:flex-row flex-col-reverse justify-between gap-20 items-center px-4 md:px-0">
         <div className="md:w-1/2 flex flex-col md:gap-5 gap-3 items-start">
           <h1 className="text-white md:text-4xl text-2xl font-bold">
