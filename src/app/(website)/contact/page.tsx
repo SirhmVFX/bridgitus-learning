@@ -24,7 +24,7 @@ function Contact() {
 
       <section
         id="contact"
-        className="md:pt-32 lg:pt:40 xl:pt-52 bg-background"
+        className="md:pt-32 lg:pt:40 xl:pt-52 bg-background pt-28"
       >
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center flex flex-col gap-4">
