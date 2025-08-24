@@ -52,7 +52,7 @@ function Header() {
           </Link>
         </div>
       </div>
-      <div className=" bg-white border-b-black/1 ">
+      <div className=" bg-white border-b border-b-black/1 ">
         <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] w-full mx-auto flex justify-between items-center py-1  px-4 md:px-0 ">
           <div className="md:w-[70px] lg:w-[150px] xl:w-[170px] w-[180px]">
             <Image
