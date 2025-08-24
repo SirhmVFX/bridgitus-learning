@@ -145,7 +145,9 @@ function Register() {
   };
 
   const handleNextAvailability = () => {
-    const hasSelectedTimes = Object.values(selectedTimes).some(Boolean);
+    const currentStudent = registerData.students[currentStudentIndex];
+    const hasSelectedTimes = currentStudent.selectedTimeSlots?.length > 0;
+
     if (!hasSelectedTimes) {
       alert("Please select at least one available time slot");
       return;
@@ -155,7 +157,6 @@ function Register() {
     if (currentStudentIndex < registerData.students.length - 1) {
       // Move to next student's info
       setCurrentStudentIndex((prev) => prev + 1);
-      setSelectedTimes({}); // Reset selected times for next student
       setStep5(false);
       setStep4(true);
     } else {
@@ -163,6 +164,40 @@ function Register() {
       setStep5(false);
       setStep6(true);
     }
+  };
+
+  const handleSubmit = () => {
+    // Log all form data to console
+    console.log("=== Form Submission Data ===");
+    console.log("Parent/Guardian Information:", {
+      organizingFor: registerData.organizingFor,
+      parentFirstName: registerData.parentFirstName,
+      parentLastName: registerData.parentLastName,
+      parentEmail: registerData.parentEmail,
+      parentPhone: registerData.parentPhone,
+      parentPostcode: registerData.parentPostcode,
+      parentReferredBy: registerData.parentReferredBy,
+    });
+
+    console.log("Students Information:");
+    registerData.students.forEach((student, index) => {
+      console.log(`Student ${index + 1}:`, {
+        ...student,
+        // Format the selectedTimeSlots for better readability
+        selectedTimeSlots: student.selectedTimeSlots.map((slot) => ({
+          date: new Date(slot.date).toLocaleDateString(),
+          time: slot.time,
+        })),
+      });
+    });
+
+    // Here you would typically send the data to your backend
+    // For now, we'll just log it
+    console.log("=== End of Form Data ===");
+
+    // Move to the final step
+    setStep6(false);
+    setStep7(true);
   };
 
   return (
@@ -1114,477 +1149,6 @@ function Register() {
                 });
               }}
             />
-            {/* {[
-                {
-                  id: 1,
-                  day: "Monday - Click to view times",
-                  times: [
-                    { id: 1, time1: "Monday 07:00 AM", time2: "Monday 07:00" },
-                    { id: 2, time1: "Monday 07:30 AM", time2: "Monday 07:30" },
-                    { id: 3, time1: "Monday 02:00 PM", time2: "Monday 14:00" },
-                    { id: 4, time1: "Monday 02:30 PM", time2: "Monday 14:30" },
-                    { id: 5, time1: "Monday 03:00 PM", time2: "Monday 15:00" },
-                    { id: 6, time1: "Monday 03:30 PM", time2: "Monday 15:30" },
-                    { id: 7, time1: "Monday 04:00 PM", time2: "Monday 16:00" },
-                    { id: 8, time1: "Monday 04:30 PM", time2: "Monday 16:30" },
-                    { id: 9, time1: "Monday 05:00 PM", time2: "Monday 17:00" },
-                    { id: 10, time1: "Monday 05:30 PM", time2: "Monday 17:30" },
-                    { id: 11, time1: "Monday 06:00 PM", time2: "Monday 18:00" },
-                    { id: 12, time1: "Monday 06:30 PM", time2: "Monday 18:30" },
-                    { id: 13, time1: "Monday 07:00 PM", time2: "Monday 19:00" },
-                    { id: 14, time1: "Monday 07:30 PM", time2: "Monday 19:30" },
-                  ],
-                },
-                {
-                  id: 2,
-                  day: "Tuesday - Click to view times",
-                  times: [
-                    { id: 1, time1: "Tuesday 07:00 AM", time2: "Tuesday 07:00" },
-                    { id: 2, time1: "Tuesday 07:30 AM", time2: "Tuesday 07:30" },
-                    {
-                      id: 3,
-                      time1: "Tuesday 02:00 PM",
-                      time2: "Tuesday 14:00",
-                    },
-                    {
-                      id: 4,
-                      time1: "Tuesday 02:30 PM",
-                      time2: "Tuesday 14:30",
-                    },
-                    {
-                      id: 5,
-                      time1: "Tuesday 03:00 PM",
-                      time2: "Tuesday 15:00",
-                    },
-                    {
-                      id: 6,
-                      time1: "Tuesday 03:30 PM",
-                      time2: "Tuesday 15:30",
-                    },
-                    {
-                      id: 7,
-                      time1: "Tuesday 04:00 PM",
-                      time2: "Tuesday 16:00",
-                    },
-                    {
-                      id: 8,
-                      time1: "Tuesday 04:30 PM",
-                      time2: "Tuesday 16:30",
-                    },
-                    {
-                      id: 9,
-                      time1: "Tuesday 05:00 PM",
-                      time2: "Tuesday 17:00",
-                    },
-                    {
-                      id: 10,
-                      time1: "Tuesday 05:30 PM",
-                      time2: "Tuesday 17:30",
-                    },
-                    {
-                      id: 11,
-                      time1: "Tuesday 06:00 PM",
-                      time2: "Tuesday 18:00",
-                    },
-                    {
-                      id: 12,
-                      time1: "Tuesday 06:30 PM",
-                      time2: "Tuesday 18:30",
-                    },
-                    {
-                      id: 13,
-                      time1: "Tuesday 07:00 PM",
-                      time2: "Tuesday 19:00",
-                    },
-                    {
-                      id: 14,
-                      time1: "Tuesday 07:30 PM",
-                      time2: "Tuesday 19:30",
-                    },
-                  ],
-                },
-                {
-                  id: 3,
-                  day: "Wednessday - Click to view times",
-                  times: [
-                    {
-                      id: 1,
-                      time1: "Wednessday 07:00 AM",
-                      time2: "Wednessday 07:00",
-                    },
-                    {
-                      id: 2,
-                      time1: "Wednessday 07:30 AM",
-                      time2: "Wednessday 07:30",
-                    },
-                    {
-                      id: 3,
-                      time1: "Wednesday 02:00 PM",
-                      time2: "Wednesday 14:00",
-                    },
-                    {
-                      id: 4,
-                      time1: "Wednesday 02:30 PM",
-                      time2: "Wednesday 14:30",
-                    },
-                    {
-                      id: 5,
-                      time1: "Wednesday 03:00 PM",
-                      time2: "Wednesday 15:00",
-                    },
-                    {
-                      id: 6,
-                      time1: "Wednesday 03:30 PM",
-                      time2: "Wednesday 15:30",
-                    },
-                    {
-                      id: 7,
-                      time1: "Wednesday 04:00 PM",
-                      time2: "Wednesday 16:00",
-                    },
-                    {
-                      id: 8,
-                      time1: "Wednesday 04:30 PM",
-                      time2: "Wednesday 16:30",
-                    },
-                    {
-                      id: 9,
-                      time1: "Wednesday 05:00 PM",
-                      time2: "Wednesday 17:00",
-                    },
-                    {
-                      id: 10,
-                      time1: "Wednesday 05:30 PM",
-                      time2: "Wednesday 17:30",
-                    },
-                    {
-                      id: 11,
-                      time1: "Wednesday 06:00 PM",
-                      time2: "Wednesday 18:00",
-                    },
-                    {
-                      id: 12,
-                      time1: "Wednesday 06:30 PM",
-                      time2: "Wednesday 18:30",
-                    },
-                    {
-                      id: 13,
-                      time1: "Wednesday 07:00 PM",
-                      time2: "Wednesday 19:00",
-                    },
-                    {
-                      id: 14,
-                      time1: "Wednesday 07:30 PM",
-                      time2: "Wednesday 19:30",
-                    },
-                  ],
-                },
-                {
-                  id: 4,
-                  day: "Thursday - Click to view times",
-                  times: [
-                    {
-                      id: 1,
-                      time1: "Thursday 07:00 AM",
-                      time2: "Thursday 07:00",
-                    },
-                    {
-                      id: 2,
-                      time1: "Thursday 07:30 AM",
-                      time2: "Thursday 07:30",
-                    },
-                    {
-                      id: 3,
-                      time1: "Thursday 02:00 PM",
-                      time2: "Thursday 14:00",
-                    },
-                    {
-                      id: 4,
-                      time1: "Thursday 02:30 PM",
-                      time2: "Thursday 14:30",
-                    },
-                    {
-                      id: 5,
-                      time1: "Thursday 03:00 PM",
-                      time2: "Thursday 15:00",
-                    },
-                    {
-                      id: 6,
-                      time1: "Thursday 03:30 PM",
-                      time2: "Thursday 15:30",
-                    },
-                    {
-                      id: 7,
-                      time1: "Thursday 04:00 PM",
-                      time2: "Thursday 16:00",
-                    },
-                    {
-                      id: 8,
-                      time1: "Thursday 04:30 PM",
-                      time2: "Thursday 16:30",
-                    },
-                    {
-                      id: 9,
-                      time1: "Thursday 05:00 PM",
-                      time2: "Thursday 17:00",
-                    },
-                    {
-                      id: 10,
-                      time1: "Thursday 05:30 PM",
-                      time2: "Thursday 17:30",
-                    },
-                    {
-                      id: 11,
-                      time1: "Thursday 06:00 PM",
-                      time2: "Thursday 18:00",
-                    },
-                    {
-                      id: 12,
-                      time1: "Thursday 06:30 PM",
-                      time2: "Thursday 18:30",
-                    },
-                    {
-                      id: 13,
-                      time1: "Thursday 07:00 PM",
-                      time2: "Thursday 19:00",
-                    },
-                    {
-                      id: 14,
-                      time1: "Thursday 07:30 PM",
-                      time2: "Thursday 19:30",
-                    },
-                  ],
-                },
-                {
-                  id: 5,
-                  day: "Friday - Click to view times",
-                  times: [
-                    { id: 1, time1: "Friday 07:00 AM", time2: "Friday 07:00" },
-                    { id: 2, time1: "Friday 07:30 AM", time2: "Friday 07:30" },
-                    {
-                      id: 3,
-                      time1: "Friday 02:00 PM",
-                      time2: "Friday 14:00",
-                    },
-                    {
-                      id: 4,
-                      time1: "Friday 02:30 PM",
-                      time2: "Friday 14:30",
-                    },
-                    {
-                      id: 5,
-                      time1: "Friday 03:00 PM",
-                      time2: "Friday 15:00",
-                    },
-                    {
-                      id: 6,
-                      time1: "Friday 03:30 PM",
-                      time2: "Friday 15:30",
-                    },
-                    {
-                      id: 7,
-                      time1: "Friday 04:00 PM",
-                      time2: "Friday 16:00",
-                    },
-                    {
-                      id: 8,
-                      time1: "Friday 04:30 PM",
-                      time2: "Friday 16:30",
-                    },
-                    {
-                      id: 9,
-                      time1: "Friday 05:00 PM",
-                      time2: "Friday 17:00",
-                    },
-                    {
-                      id: 10,
-                      time1: "Friday 05:30 PM",
-                      time2: "Friday 17:30",
-                    },
-                    {
-                      id: 11,
-                      time1: "Friday 06:00 PM",
-                      time2: "Friday 18:00",
-                    },
-                    {
-                      id: 12,
-                      time1: "Friday 06:30 PM",
-                      time2: "Friday 18:30",
-                    },
-                    {
-                      id: 13,
-                      time1: "Friday 07:00 PM",
-                      time2: "Friday 19:00",
-                    },
-                    {
-                      id: 14,
-                      time1: "Friday 07:30 PM",
-                      time2: "Friday 19:30",
-                    },
-                  ],
-                },
-                {
-                  id: 6,
-                  day: "Saturday - Click to view times",
-                  times: [
-                    {
-                      id: 1,
-                      time1: "Saturday 07:30 AM",
-                      time2: "Saturday 07:30",
-                    },
-                    {
-                      id: 2,
-                      time1: "Saturday 09:00 AM",
-                      time2: "Saturday 09:00",
-                    },
-                    {
-                      id: 3,
-                      time1: "Saturday 10:30 AM",
-                      time2: "Saturday 10:30",
-                    },
-                    {
-                      id: 4,
-                      time1: "Saturday 12:00 PM",
-                      time2: "Saturday 12:00",
-                    },
-                    {
-                      id: 5,
-                      time1: "Saturday 01:15 PM",
-                      time2: "Saturday 13:15",
-                    },
-                    {
-                      id: 6,
-                      time1: "Saturday 02:30 PM",
-                      time2: "Saturday 14:30",
-                    },
-                    {
-                      id: 7,
-                      time1: "Saturday 03:50 PM",
-                      time2: "Saturday 15:50",
-                    },
-                    {
-                      id: 8,
-                      time1: "Saturday 05:10 PM",
-                      time2: "Saturday 17:10",
-                    },
-                    {
-                      id: 9,
-                      time1: "Saturday 06:30 PM",
-                      time2: "Saturday 18:30",
-                    },
-                    {
-                      id: 10,
-                      time1: "Saturday 07:45 PM",
-                      time2: "Saturday 19:45",
-                    },
-                  ],
-                },
-                {
-                  id: 7,
-                  day: "Sunday - Click to view times",
-                  times: [
-                    {
-                      id: 1,
-                      time1: "Sunday 07:30 AM",
-                      time2: "Sunday 07:30",
-                    },
-                    {
-                      id: 2,
-                      time1: "Sunday 09:00 AM",
-                      time2: "Sunday 09:00",
-                    },
-                    {
-                      id: 3,
-                      time1: "Sunday 10:30 AM",
-                      time2: "Sunday 10:30",
-                    },
-                    {
-                      id: 4,
-                      time1: "Sunday 12:00 PM",
-                      time2: "Sunday 12:00",
-                    },
-                    {
-                      id: 5,
-                      time1: "Sunday 01:15 PM",
-                      time2: "Sunday 13:15",
-                    },
-                    {
-                      id: 6,
-                      time1: "Sunday 02:30 PM",
-                      time2: "Sunday 14:30",
-                    },
-                    {
-                      id: 7,
-                      time1: "Sunday 03:50 PM",
-                      time2: "Sunday 15:50",
-                    },
-                    {
-                      id: 8,
-                      time1: "Sunday 05:10 PM",
-                      time2: "Sunday 17:10",
-                    },
-                    {
-                      id: 9,
-                      time1: "Sunday 06:30 PM",
-                      time2: "Sunday 18:30",
-                    },
-                    {
-                      id: 10,
-                      time1: "Sunday 07:45 PM",
-                      time2: "Sunday 19:45",
-                    },
-                  ],
-                },
-              ].map((item) => (
-                <div key={item.id}>
-                  <div
-                    onClick={() => toggleDay(item.id)}
-                    className="flex flex-col gap-2 cursor-pointer border border-gray-300 p-2 transition-all duration-200"
-                  >
-                    <h1 className="md:text-[11px] lg:text-[13px] xl:text-[14px]">
-                      {item.day}
-                    </h1>
-                  </div>
-                  {openDays[item.id] && (
-                    <div className="mt-2 pl-4 space-y-2 flex flex-wrap justify-center gap-2">
-                      {item.times.map((time) => (
-                        <div
-                          key={time.id}
-                          className="w-[150px] h-[100px] border border-gray-300 p-1 flex flex-col"
-                        >
-                          <div className="flex flex-col items-center justify-center gap-1 bg-black/5 grow-1 ">
-                            <input
-                              type="checkbox"
-                              id={`time-${item.id}-${time.id}`}
-                              className="rounded border-gray-300 "
-                              checked={
-                                !!selectedTimes[`${item.day}-${time.time1}`]
-                              }
-                              onChange={(e) =>
-                                handleTimeSelect(
-                                  item.day,
-                                  time.time1,
-                                  time.time2,
-                                  e.target.checked
-                                )
-                              }
-                            />
-                            <label
-                              htmlFor={`time-${item.id}-${time.id}`}
-                              className="md:text-[10px] lg:text-[12px] xl:text-[13px] font-bold"
-                            >
-                              {time.time1}
-                            </label>
-                          </div>
-                          <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] p-2 text-center">
-                            {time.time2}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))} */}
           </div>
           <form
             onSubmit={(e) => {
@@ -1675,493 +1239,103 @@ function Register() {
           </form>
         </div>
       ) : step6 ? (
-        <div className="space-y-8">
-          <h1 className="md:text-[12px] lg:text-[14px] xl:text-[16px] font-bold">
-            How would you like to have the lessons?{" "}
-            <span className="text-red-500">*</span>
+        <div className="flex flex-col gap-6">
+          <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
+            Review Your Information
           </h1>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div
-              className={`p-6 border-2 rounded-lg cursor-pointer transition-colors ${
-                registerData.students[currentStudentIndex].lessonType ===
-                "online"
-                  ? "border-primary-color bg-primary-color/10"
-                  : "border-gray-200 hover:border-primary-color/50"
-              }`}
-              onClick={() => {
-                handleStudentChange(
-                  currentStudentIndex,
-                  "lessonType",
-                  "online"
-                );
-                // Clear location when switching to online
-                handleStudentChange(currentStudentIndex, "location", "");
-              }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  handleStudentChange(
-                    currentStudentIndex,
-                    "lessonType",
-                    "online"
-                  );
-                  handleStudentChange(currentStudentIndex, "location", "");
-                }
-              }}
-            >
-              <div className="flex items-center">
-                <div className="p-2 rounded-full bg-primary-color/20 mr-4">
-                  {registerData.students[currentStudentIndex].lessonType ===
-                    "online" && (
-                    <svg
-                      className="w-6 h-6 text-primary-color"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  )}
-                </div>
-                <div>
-                  <h3 className="md:text-[12px] lg:text-[14px] xl:text-[16px] font-medium">
-                    Online
-                  </h3>
-                  <p className="md:text-[12px] lg:text-[14px] xl:text-[16px] text-gray-600">
-                    Live, one-on-one lessons from anywhere
-                  </p>
-                </div>
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h2 className="text-lg font-semibold mb-4">
+              Parent/Guardian Information
+            </h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-600">Name</p>
+                <p>
+                  {registerData.parentFirstName} {registerData.parentLastName}
+                </p>
               </div>
-            </div>
-
-            <div
-              className={`p-6 border-2 rounded-lg cursor-pointer transition-colors ${
-                registerData.students[currentStudentIndex].lessonType ===
-                "in-person"
-                  ? "border-primary-color bg-primary-color/10"
-                  : "border-gray-200 hover:border-primary-color/50"
-              }`}
-              onClick={() => {
-                handleStudentChange(
-                  currentStudentIndex,
-                  "lessonType",
-                  "in-person"
-                );
-              }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  handleStudentChange(
-                    currentStudentIndex,
-                    "lessonType",
-                    "in-person"
-                  );
-                }
-              }}
-            >
-              <div className="flex items-center">
-                <div className="p-2 rounded-full bg-primary-color/20 mr-4">
-                  {registerData.students[currentStudentIndex].lessonType ===
-                    "in-person" && (
-                    <svg
-                      className="w-6 h-6 text-primary-color"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  )}
-                </div>
-                <div>
-                  <h3 className="md:text-[12px] lg:text-[14px] xl:text-[16px] font-medium">
-                    In-Person
-                  </h3>
-                  <p className="md:text-[12px] lg:text-[14px] xl:text-[16px] text-gray-600">
-                    Face-to-face lessons at your preferred location
-                  </p>
-                </div>
+              <div>
+                <p className="text-sm text-gray-600">Email</p>
+                <p>{registerData.parentEmail}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Phone</p>
+                <p>{registerData.parentPhone}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Postcode</p>
+                <p>{registerData.parentPostcode}</p>
               </div>
             </div>
           </div>
 
-          {registerData.students[currentStudentIndex].lessonType ===
-            "in-person" && (
-            <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Preferred Location <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-color"
-                placeholder="Enter your preferred location (e.g., home, library, etc.)"
-                value={
-                  registerData.students[currentStudentIndex].location || ""
-                }
-                onChange={(e) =>
-                  handleStudentChange(
-                    currentStudentIndex,
-                    "location",
-                    e.target.value.trim()
-                  )
-                }
-              />
-              {!registerData.students[
-                currentStudentIndex
-              ]?.location?.trim() && (
-                <p className="mt-1 text-sm text-red-600">
-                  Location is required for in-person lessons
-                </p>
-              )}
+          {registerData.students.map((student, index) => (
+            <div key={index} className="bg-white p-6 rounded-lg shadow">
+              <h2 className="text-lg font-semibold mb-4">
+                Student {index + 1}: {student.firstName} {student.lastName}
+              </h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-600">School</p>
+                  <p>{student.school}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Grade</p>
+                  <p>{student.grade}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Subjects</p>
+                  <p>{student.subjectHelpNeeded?.split(",").join(", ")}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Selected Time Slots</p>
+                  <div className="space-y-1">
+                    {student.selectedTimeSlots.map((slot, i) => (
+                      <div key={i} className="text-sm">
+                        {format(new Date(slot.date), "EEEE, MMMM d, yyyy")} at{" "}
+                        {slot.time}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
-          )}
+          ))}
 
-          <div className="flex gap-2 pt-6">
+          <div className="flex justify-between mt-6">
             <button
               type="button"
               onClick={() => {
-                setStep5(true);
                 setStep6(false);
+                setStep5(true);
               }}
-              className="px-5 py-3  font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200 md:text-[8px] lg:text-[11px] xl:text-[12px] bg-black/5 "
+              className="px-5 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200 md:text-[8px] lg:text-[11px] xl:text-[12px] bg-black/5"
             >
-              Prev
+              Back
             </button>
 
             <button
               type="button"
-              onClick={() => {
-                const currentStudent =
-                  registerData.students[currentStudentIndex];
-
-                // Validate lesson type is selected
-                if (!currentStudent.lessonType) {
-                  alert("Please select a lesson type");
-                  return;
-                }
-
-                // Validate location if in-person is selected
-                if (
-                  currentStudent.lessonType === "in-person" &&
-                  !currentStudent.location?.trim()
-                ) {
-                  alert("Please enter a preferred location");
-                  return;
-                }
-
-                // Proceed to next step if validation passes
-                if (currentStudentIndex < registerData.students.length - 1) {
-                  setCurrentStudentIndex(currentStudentIndex + 1);
-                } else {
-                  setStep6(false);
-                  setStep7(true);
-                }
-              }}
-              className="px-5 py-3  font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer bg-secondary-color text-white md:text-[8px] lg:text-[11px] xl:text-[12px]"
+              onClick={handleSubmit}
+              className="px-5 py-3 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer bg-secondary-color text-white md:text-[8px] lg:text-[11px] xl:text-[12px]"
             >
-              {currentStudentIndex < registerData.students.length - 1
-                ? "Next Student"
-                : "Continue"}
+              Submit Registration
             </button>
           </div>
         </div>
       ) : step7 ? (
-        <div className="max-w-3xl mx-auto py-12 px-4">
-          <div className="bg-white p-8 rounded-xl shadow-lg text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-8 h-8 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold">Review Your Registration</h1>
-            <p className="text-gray-600 mb-8">
-              Please review your information before submitting.
-            </p>
-
-            <div className="bg-gray-50 p-6 rounded-lg text-left mb-8 space-y-6">
-              <div>
-                <h2 className="md:text-[14px] lg:text-[16px] xl:text-[18px] font-medium text-gray-900 border-b pb-2 mb-4">
-                  Parent/Guardian Information
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                      Name
-                    </h3>
-                    <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                      {registerData.parentFirstName}{" "}
-                      {registerData.parentLastName}
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                      Email
-                    </h3>
-                    <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                      {registerData.parentEmail}
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                      Phone
-                    </h3>
-                    <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                      {registerData.parentPhone}
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                      Postcode
-                    </h3>
-                    <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                      {registerData.parentPostcode}
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                      Referred By
-                    </h3>
-                    <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                      {registerData.parentReferredBy || "Not specified"}
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                      Start Preference
-                    </h3>
-                    <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                      {registerData.startPreference === "asap"
-                        ? "As soon as possible"
-                        : registerData.startDate
-                          ? `On ${new Date(registerData.startDate).toLocaleDateString()}`
-                          : "Not specified"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h2 className="text-lg font-medium text-gray-900 border-b pb-2 mb-4">
-                  Students Information
-                </h2>
-                <div className="space-y-6">
-                  {registerData.students.map((student, index) => {
-                    // Get selected times for this student
-                    const studentTimes = student.selectedTimeSlots || [];
-
-                    return (
-                      <div
-                        key={index}
-                        className="bg-white p-4 rounded-lg border border-gray-200 md:text-[12px] lg:text-[14px] xl:text-[16px]"
-                      >
-                        <h3 className="font-medium text-gray-900 mb-3 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                          Student {index + 1}
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                              Name
-                            </h4>
-                            <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                              {student.firstName} {student.lastName}
-                            </p>
-                          </div>
-
-                          <div>
-                            <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                              School & Grade
-                            </h4>
-                            <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                              {student.school || "Not specified"}
-                              {student.grade && `, Grade ${student.grade}`}
-                            </p>
-                          </div>
-                          <div>
-                            <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                              Subject Help Needed
-                            </h4>
-                            <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                              {student.subjectHelpNeeded || "Not specified"}
-                            </p>
-                          </div>
-                          <div>
-                            <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                              Current Performance
-                            </h4>
-                            <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                              {student.currentPerformance || "Not specified"}
-                            </p>
-                          </div>
-                          <div>
-                            <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                              Lesson Type
-                            </h4>
-                            <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                              {student.lessonType === "online"
-                                ? "Online"
-                                : `In-Person at ${student.location || "Not specified"}`}
-                            </p>
-                          </div>
-                          <div>
-                            <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                              Start Preference
-                            </h4>
-                            <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                              {student.startPreference === "asap"
-                                ? "As soon as possible"
-                                : student.startDate
-                                  ? `On ${new Date(student.startDate).toLocaleDateString()}`
-                                  : "Not specified"}
-                            </p>
-                          </div>
-                          <div>
-                            <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                              Favourite Things
-                            </h4>
-                            <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                              {student.favouriteThingsToDo || "Not specified"}
-                            </p>
-                          </div>
-                          <div className="md:col-span-2">
-                            <h4 className="text-sm font-medium text-gray-500 mb-2 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                              Selected Availability
-                            </h4>
-                            {studentTimes.length > 0 ? (
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                {studentTimes?.map(
-                                  (timeSlot: SelectedSlot, idx) => (
-                                    <div
-                                      key={idx}
-                                      className="bg-gray-50 p-2 rounded border border-gray-200"
-                                    >
-                                      <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                                        {format(
-                                          new Date(timeSlot.date),
-                                          "EEEE, MMMM d, yyyy"
-                                        )}{" "}
-                                        {timeSlot.time}
-                                      </p>
-                                    </div>
-                                  )
-                                )}
-                              </div>
-                            ) : (
-                              <p className="text-sm text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px] italic">
-                                No time slots selected
-                              </p>
-                            )}
-                          </div>
-                          {student.helpComment && (
-                            <div className="md:col-span-2">
-                              <h4 className="text-sm font-medium text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                                Additional Comments
-                              </h4>
-                              <p className="text-sm text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                                {student.helpComment}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <h2 className="text-lg font-medium text-gray-900 border-b pb-2 mb-4">
-                  Selected Time Slots
-                </h2>
-                {Object.entries(selectedTimes).filter(
-                  ([_, isSelected]) => isSelected
-                ).length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                    {Object.entries(selectedTimes)
-                      .filter(([_, isSelected]) => isSelected)
-                      .map(([timeSlot]) => {
-                        // Format the time slot for better readability
-                        const formattedTime = timeSlot
-                          .replace("Monday - Click to view times-", "Mon, ")
-                          .replace("Tuesday - Click to view times-", "Tue, ")
-                          .replace("Wednessday - Click to view times-", "Wed, ")
-                          .replace("Thursday - Click to view times-", "Thu, ")
-                          .replace("Friday - Click to view times-", "Fri, ")
-                          .replace("Saturday - Click to view times-", "Sat, ")
-                          .replace("Sunday - Click to view times-", "Sun, ")
-                          .replace("AM", "am")
-                          .replace("PM", "pm");
-
-                        return (
-                          <div
-                            key={timeSlot}
-                            className="bg-white p-3 rounded border border-gray-200 hover:bg-gray-50 transition-colors"
-                          >
-                            <p className="text-sm font-medium text-gray-900 md:text-[12px] lg:text-[14px] xl:text-[16px]">
-                              {formattedTime}
-                            </p>
-                          </div>
-                        );
-                      })}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 md:text-[12px] lg:text-[14px] xl:text-[16px] italic">
-                    No time slots selected
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                type="button"
-                onClick={() => {
-                  setStep7(false);
-                  setStep6(true);
-                }}
-                className="px-6 py-3 border border-gray-300 shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 md:text-[12px] lg:text-[14px] xl:text-[16px]"
-              >
-                Back to Edit
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  console.log("Form submitted:", registerData);
-                  console.log("Selected times:", selectedTimes);
-                  // Here you would typically submit to your backend
-                  alert("Thank you! Your registration has been submitted.");
-                }}
-                className="md:text-[12px] lg:text-[14px] xl:text-[16px] px-6 py-3 border border-transparent shadow-sm text-base font-medium text-white bg-primary-color hover:bg-primary-color/90"
-              >
-                Submit Registration
-              </button>
-            </div>
-          </div>
+        <div className="text-center py-10">
+          <h1 className="text-2xl font-bold text-green-600 mb-4">
+            Registration Submitted Successfully!
+          </h1>
+          <p className="mb-6">
+            Thank you for registering with Bridgtus. We&apos;ll be in touch
+            shortly to confirm your booking.
+          </p>
+          <p className="text-sm text-gray-500">
+            Check your browser&apos;s console to see the submitted data.
+          </p>
         </div>
       ) : null}
     </div>
