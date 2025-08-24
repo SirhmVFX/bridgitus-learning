@@ -3,7 +3,15 @@
 import Link from "next/link";
 import Button from "./Button";
 import Image from "next/image";
-import { Mail, Menu, Phone, Star } from "./Icons";
+import {
+  Cancel,
+  ChevronDown,
+  ChevronUp,
+  Mail,
+  Menu,
+  Phone,
+  Star,
+} from "./Icons";
 import { useState } from "react";
 
 function Header() {
@@ -172,7 +180,7 @@ function Header() {
             className="md:hidden block cursor-pointer z-[9999999999999]"
             onClick={() => setOpenMobile(!openMobile)}
           >
-            <Menu />
+            {openMobile ? <Cancel /> : <Menu />}
           </div>
         </div>
         {/* Mobile navigation dropdown */}
@@ -182,18 +190,21 @@ function Header() {
               <Link
                 className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
                 href="/"
+                onClick={() => setOpenMobile(false)}
               >
                 Home
               </Link>
               <Link
                 className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
                 href="/about"
+                onClick={() => setOpenMobile(false)}
               >
                 About Us
               </Link>
               <Link
                 className={`md:text-[8px] lg:text-[11px] xl:text-[12px] `}
                 href="/services"
+                onClick={() => setOpenMobile(false)}
               >
                 Our Services
               </Link>
@@ -202,14 +213,17 @@ function Header() {
                 <Link
                   href="/classes"
                   className="md:text-[8px] lg:text-[11px] xl:text-[12px] text-left cursor-pointer z-50"
+                  onClick={() => setOpenMobile(false)}
                 >
                   Classes
                 </Link>
 
                 <div
                   onClick={() => setOpenMobileMenu(!openMobileMenu)}
-                  className="w-[10px] h-[10px] bg-black"
-                ></div>
+                  className=""
+                >
+                  {openMobileMenu ? <ChevronUp /> : <ChevronDown />}
+                </div>
               </div>
               {openMobileMenu && (
                 <div className=" flex flex-col gap-4 py-4  w-full ">
@@ -267,6 +281,7 @@ function Header() {
               <Link
                 className={`md:text-[8px] lg:text-[11px] xl:text-[12px] z-50`}
                 href="/pricing"
+                onClick={() => setOpenMobile(false)}
               >
                 Pricing
               </Link>
@@ -279,6 +294,7 @@ function Header() {
               <Link
                 className={`md:text-[8px] lg:text-[11px] xl:text-[12px] z-50 `}
                 href="/contact"
+                onClick={() => setOpenMobile(false)}
               >
                 Contact
               </Link>
