@@ -20,7 +20,7 @@ function About() {
         </div>
         <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] w-full md:mx-auto md:px-0 px-4 absolute top-0 left-0 right-0 bottom-0 flex items-center z-50">
           <div className="md:w-2/3 flex flex-col gap-4">
-            <h1 className="md:text-4xl lg:text-5xl xl:text-6xl text-white font-bold">
+            <h1 className="md:text-4xl lg:text-5xl xl:text-6xl text-5xl text-white font-bold">
               Where Every{" "}
               <span className="text-green-500">
                 Learner’s Journey is Uniquely Designed
