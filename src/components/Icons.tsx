@@ -110,7 +110,7 @@ export const Menu = () => {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="text-white lucide lucide-menu-icon lucide-menu"
+      className=" lucide lucide-menu-icon lucide-menu"
     >
       <path d="M4 12h16" />
       <path d="M4 18h16" />
