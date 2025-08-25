@@ -22,6 +22,8 @@ function Register() {
       {
         firstName: "",
         lastName: "",
+        age: "",
+        gender: "",
         school: "",
         grade: "",
         subjectHelpNeeded: "",
@@ -102,6 +104,8 @@ function Register() {
         newStudents.push({
           firstName: "",
           lastName: "",
+          age: "",
+          gender: "",
           school: "",
           grade: "",
           subjectHelpNeeded: "",
@@ -628,6 +632,48 @@ function Register() {
                   }
                   className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
                 />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label htmlFor="" className="text-[12px]  font-medium">
+                  Student age: <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  required
+                  value={registerData.students[currentStudentIndex].firstName}
+                  onChange={(e) =>
+                    handleStudentChange(
+                      currentStudentIndex,
+                      "age",
+                      e.target.value
+                    )
+                  }
+                  className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label htmlFor="" className="text-[12px]  font-medium">
+                  Student gender: <span className="text-red-500">*</span>
+                </label>
+                <select
+                  required
+                  value={registerData.students[currentStudentIndex].gender}
+                  onChange={(e) =>
+                    handleStudentChange(
+                      currentStudentIndex,
+                      "gender",
+                      e.target.value
+                    )
+                  }
+                  className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
+                >
+                  <option value="">Select gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
               </div>
 
               <div className="flex flex-col gap-2">
