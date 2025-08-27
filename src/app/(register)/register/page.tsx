@@ -43,6 +43,12 @@ function Register() {
     ],
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
+
   const [openDays, setOpenDays] = useState<Record<number, boolean>>({});
   const [selectedTimes, setSelectedTimes] = useState<Record<string, boolean>>(
     {}
@@ -170,38 +176,112 @@ function Register() {
     }
   };
 
-  const handleSubmit = () => {
-    // Log all form data to console
-    console.log("=== Form Submission Data ===");
-    console.log("Parent/Guardian Information:", {
-      organizingFor: registerData.organizingFor,
-      parentFirstName: registerData.parentFirstName,
-      parentLastName: registerData.parentLastName,
-      parentEmail: registerData.parentEmail,
-      parentPhone: registerData.parentPhone,
-      parentPostcode: registerData.parentPostcode,
-      parentReferredBy: registerData.parentReferredBy,
-    });
+  // const handleSubmit = () => {
+  //   // Log all form data to console
+  //   console.log("=== Form Submission Data ===");
+  //   console.log("Parent/Guardian Information:", {
+  //     organizingFor: registerData.organizingFor,
+  //     parentFirstName: registerData.parentFirstName,
+  //     parentLastName: registerData.parentLastName,
+  //     parentEmail: registerData.parentEmail,
+  //     parentPhone: registerData.parentPhone,
+  //     parentPostcode: registerData.parentPostcode,
+  //     parentReferredBy: registerData.parentReferredBy,
+  //   });
 
-    console.log("Students Information:");
-    registerData.students.forEach((student, index) => {
-      console.log(`Student ${index + 1}:`, {
-        ...student,
-        // Format the selectedTimeSlots for better readability
-        selectedTimeSlots: student.selectedTimeSlots.map((slot) => ({
-          date: new Date(slot.date).toLocaleDateString(),
-          time: slot.time,
-        })),
+  //   console.log("Students Information:");
+  //   registerData.students.forEach((student, index) => {
+  //     console.log(`Student ${index + 1}:`, {
+  //       ...student,
+  //       // Format the selectedTimeSlots for better readability
+  //       selectedTimeSlots: student.selectedTimeSlots.map((slot) => ({
+  //         date: new Date(slot.date).toLocaleDateString(),
+  //         time: slot.time,
+  //       })),
+  //     });
+  //   });
+
+  //   // Here you would typically send the data to your backend
+  //   // For now, we'll just log it
+  //   console.log("=== End of Form Data ===");
+
+  //   // Move to the final step
+  //   setStep6(false);
+  //   setStep7(true);
+  // };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    try {
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          registerData,
+        }),
       });
-    });
 
-    // Here you would typically send the data to your backend
-    // For now, we'll just log it
-    console.log("=== End of Form Data ===");
+      const data = await response.json();
 
-    // Move to the final step
-    setStep6(false);
-    setStep7(true);
+      if (response.ok) {
+        setSubmitStatus({
+          success: true,
+          message: "Message sent successfully! We'll get back to you soon.",
+        });
+        // Reset form
+        setRegisterData({
+          organizingFor: "",
+          parentFirstName: "",
+          parentLastName: "",
+          parentEmail: "",
+          parentPhone: "",
+          parentPostcode: "",
+          parentReferredBy: "",
+          noOfStudents: "1",
+          startPreference: "",
+          startDate: "",
+          students: [
+            {
+              firstName: "",
+              lastName: "",
+              age: "",
+              gender: "",
+              school: "",
+              grade: "",
+              subjectHelpNeeded: "",
+              expectingResult: "",
+              helpComment: "",
+              currentPerformance: "",
+              schoolAttitude: "",
+              mind: "",
+              personality: "",
+              favouriteThingsToDo: "",
+              lessonType: "",
+              location: "",
+              startPreference: "",
+              startDate: "",
+              selectedTimeSlots: [] as SelectedSlot[],
+            },
+          ],
+        });
+        setStep7(true);
+      } else {
+        throw new Error(data.message || "Failed to send message");
+      }
+    } catch (error) {
+      setSubmitStatus({
+        success: false,
+        message: "Failed to send message. Please try again later.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -639,9 +719,9 @@ function Register() {
                   Student age: <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type="number"
+                  type="date"
                   required
-                  value={registerData.students[currentStudentIndex].firstName}
+                  value={registerData.students[currentStudentIndex].age}
                   onChange={(e) =>
                     handleStudentChange(
                       currentStudentIndex,
@@ -1327,6 +1407,14 @@ function Register() {
                   <p>{student.school}</p>
                 </div>
                 <div>
+                  <p className="text-sm text-gray-600">D.O.B</p>
+                  <p>{student.age}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Gender</p>
+                  <p>{student.gender}</p>
+                </div>
+                <div>
                   <p className="text-sm text-gray-600">Grade</p>
                   <p>{student.grade}</p>
                 </div>
@@ -1366,7 +1454,7 @@ function Register() {
               onClick={handleSubmit}
               className="px-5 py-3 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer bg-secondary-color text-white md:text-[8px] lg:text-[11px] xl:text-[12px]"
             >
-              Submit Registration
+              {isSubmitting ? "Submitting..." : "Submit Registration"}
             </button>
           </div>
         </div>
