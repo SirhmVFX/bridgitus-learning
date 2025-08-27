@@ -96,11 +96,7 @@ function Pricing() {
                   <h1 className="text-6xl font-bold">{item.price}</h1>
                   <p>{item.per}</p>
                 </div>
-                <Button
-                  variant={`${item.id === 2 ? "filled" : "outline"}`}
-                  style="link"
-                  href="/register"
-                >
+                <Button style="link" href="/register">
                   Book your first lesson now
                 </Button>
                 <div className="flex flex-col gap-1">
