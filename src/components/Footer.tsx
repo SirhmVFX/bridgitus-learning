@@ -72,8 +72,18 @@ function Footer() {
           <h1 className="text-sm text-white">Socials</h1>
           <div className="flex gap-2 ">
             {[
-              { id: 1, title: "Facebook", url: "#", icon: <Facebook /> },
-              { id: 2, title: "Instagram", url: "#", icon: <Instagram /> },
+              {
+                id: 1,
+                title: "Facebook",
+                url: "https://www.facebook.com/profile.php?id=61579279874406",
+                icon: <Facebook />,
+              },
+              {
+                id: 2,
+                title: "Instagram",
+                url: "https://www.instagram.com/bridgitus/",
+                icon: <Instagram />,
+              },
               { id: 3, title: "Linkedin", url: "#", icon: <Linkedin /> },
             ].map((e) => (
               <Link
