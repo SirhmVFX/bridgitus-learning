@@ -6,6 +6,7 @@ interface ButtonProps {
   variant?: "filled" | "outline";
   href?: string;
   className?: string;
+  disabled?: boolean;
   onClick?: () => void;
 }
 
@@ -15,6 +16,7 @@ function Button({
   variant = "filled",
   href = "",
   className = "",
+  disabled = false,
   onClick,
 }: ButtonProps) {
   const baseStyles =
@@ -30,7 +32,12 @@ function Button({
   const buttonClasses = `${baseStyles} ${variantStyles[variant]} ${className}`;
 
   return style === "button" ? (
-    <button onClick={onClick} type="submit" className={buttonClasses}>
+    <button
+      disabled={disabled}
+      onClick={onClick}
+      type="submit"
+      className={buttonClasses}
+    >
       {children}
     </button>
   ) : (
