@@ -1,6 +1,88 @@
+"use client";
+
 import Button from "@/components/Button";
+import { useState } from "react";
 
 function Contact() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+    agree: false,
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value, type } = e.target as HTMLInputElement;
+    const checked =
+      type === "checkbox" ? (e.target as HTMLInputElement).checked : undefined;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.agree) {
+      setSubmitStatus({
+        success: false,
+        message: "Please agree to the privacy policy",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          message: formData.message,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSubmitStatus({
+          success: true,
+          message: "Message sent successfully! We'll get back to you soon.",
+        });
+        // Reset form
+        setFormData({
+          name: "",
+          email: "",
+          message: "",
+          agree: false,
+        });
+      } else {
+        throw new Error(data.message || "Failed to send message");
+      }
+    } catch (error) {
+      setSubmitStatus({
+        success: false,
+        message: "Failed to send message. Please try again later.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <main>
       {/* <section className="  relative  flex items-center justify-center md:h-[250px] lg:h-[300px] xl:h-[400px] h-[300px] ">
@@ -41,7 +123,7 @@ function Contact() {
               <div className="p-6 rounded-2xl bg-card border border-black/10 hover:shadow-elegant transition-all duration-300">
                 <div className="text-3xl mb-4">📧</div>
                 <h3 className="font-semibold text-foreground mb-2">Email</h3>
-                <p className="text-black/70">bridgituslearning@gmail.com</p>
+                <p className="text-black/70">info@bridgitus.com</p>
               </div>
               <div className="p-6 rounded-2xl bg-card border border-black/10 hover:shadow-elegant transition-all duration-300">
                 <div className="text-3xl mb-4">📱</div>
@@ -67,31 +149,62 @@ function Contact() {
               </div>
             </div>
 
-            <form className="w-full flex flex-col gap-4 items-start">
+            <form
+              onSubmit={handleSubmit}
+              className="w-full flex flex-col gap-4 items-start mt-8"
+            >
               <h1 className="text-xl font-medium">Leave us your info </h1>
               <input
                 type="text"
-                className="w-full bg-transparent p-4 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full bg-transparent p-4 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]"
                 placeholder="Your Name"
+                required
               />
               <input
-                type="text"
-                className="w-full bg-transparent p-4 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full bg-transparent p-4 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]"
                 placeholder="Your Email"
+                required
               />
               <textarea
-                className="w-full bg-transparent p-4 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+                className="w-full bg-transparent p-4 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]"
                 placeholder="Your Message"
                 rows={5}
+                required
               ></textarea>
-              <div>
-                <input type="checkbox" className="mr-2" />
-                <label htmlFor="">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="agree"
+                  checked={formData.agree as boolean}
+                  onChange={handleChange}
+                  className="mr-2"
+                  required
+                />
+                <label htmlFor="agree">
                   You agree to our friendly{" "}
                   <span className="text-primarycolor">privacy policy</span>
                 </label>
               </div>
-              <Button style="button">Send Message</Button>
+              <Button style="button" disabled={isSubmitting}>
+                {isSubmitting ? "Sending..." : "Send Message"}
+              </Button>
+              {submitStatus && (
+                <div
+                  className={`mt-2 text-sm ${submitStatus.success ? "text-green-600" : "text-red-600"}`}
+                >
+                  {submitStatus.message}
+                </div>
+              )}
             </form>
           </div>
         </div>
