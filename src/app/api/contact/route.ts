@@ -111,8 +111,8 @@ This message was sent from the contact form on ${process.env.NEXT_PUBLIC_SITE_UR
 
     // Create email message
     const msg = {
-      to: "sirhmvfx@gmail.com",
-      from: process.env.EMAIL_FROM || "noreply@bridgitus.com",
+      to: "admin@bridgitus.com",
+      from: process.env.EMAIL_FROM || "admin@bridgitus.com",
       subject: `New Contact Enquiry: ${name} - Bridgitus Learning`,
       text: textContent,
       html: htmlContent,

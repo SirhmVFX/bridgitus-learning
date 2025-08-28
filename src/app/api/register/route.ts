@@ -258,15 +258,15 @@ export async function POST(request: Request) {
     // Send email to parent
     const parentEmail = {
       to: registerData.parentEmail,
-      from: process.env.EMAIL_FROM || "noreply@bridgitus.com",
+      from: process.env.EMAIL_FROM || "admin@bridgitus.com",
       subject: `✅ Expression of Interest Received - 🎉 Thank You for Your Interest in Bridgitus Learning`,
       html: parentEmailContent,
     };
 
     // Send email to admin
     const adminEmail = {
-      to: process.env.ADMIN_EMAIL || "sirhmvfx@gmail.com",
-      from: process.env.EMAIL_FROM || "noreply@bridgitus.com",
+      to: process.env.ADMIN_EMAIL || "admin@bridgitus.com",
+      from: process.env.EMAIL_FROM || "admin@bridgitus.com",
       subject: `🚨 New Booking Request Registration - BridgitUs Learn: ${registerData.parentFirstName} ${registerData.parentLastName}`,
       html: adminEmailContent,
     };
