@@ -1,6 +1,7 @@
 "use client";
 
 import Button from "@/components/Button";
+import Link from "next/link";
 import { useState } from "react";
 
 function Contact() {
@@ -192,7 +193,9 @@ function Contact() {
                 />
                 <label htmlFor="agree">
                   You agree to our friendly{" "}
-                  <span className="text-primarycolor">privacy policy</span>
+                  <Link href="/privacy-policy" className="text-primary-color">
+                    privacy policy
+                  </Link>
                 </label>
               </div>
               <Button style="button" disabled={isSubmitting}>
