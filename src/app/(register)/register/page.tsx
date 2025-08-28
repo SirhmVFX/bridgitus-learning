@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { format, isSameDay } from "date-fns";
 import CalendarSelector from "@/components/CalendarSelector";
 import { SelectedSlot } from "@/types/calendar";
+import Link from "next/link";
 
 function Register() {
   const [registerData, setRegisterData] = useState({
@@ -716,7 +717,7 @@ function Register() {
 
               <div className="flex flex-col gap-2">
                 <label htmlFor="" className="text-[12px]  font-medium">
-                  Student age: <span className="text-red-500">*</span>
+                  Student Date of Birth: <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="date"
@@ -879,14 +880,197 @@ function Register() {
                       </label>
                     ))}
 
-                  {["7", "8", "9", "10"].includes(
+                  {["7"].includes(
                     registerData.students[currentStudentIndex].grade
                   ) &&
                     [
-                      "Yrs 7 - 10 General Support",
-                      "Yrs 7- 10 English",
-                      "Yrs 7- 10 Maths",
-                      "Yrs 7- 10 Science",
+                      "Grade 7 General Support",
+                      "Grade 7  English",
+                      "Grade 7 Maths",
+                      "Grade 7 Science",
+                      "NAPLAN Preparation",
+                      "Selective School Preparation",
+                    ].map((subject) => (
+                      <label
+                        key={subject}
+                        className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
+                          registerData.students[
+                            currentStudentIndex
+                          ].subjectHelpNeeded?.includes(subject)
+                            ? "bg-primary-color/20 border-primary-color"
+                            : "border-gray-300 hover:border-primary-color/50"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="rounded border-gray-300 text-primary-color focus:ring-primary-color mr-2"
+                          checked={
+                            registerData.students[
+                              currentStudentIndex
+                            ].subjectHelpNeeded?.includes(subject) || false
+                          }
+                          onChange={(e) => {
+                            const currentSubjects =
+                              registerData.students[
+                                currentStudentIndex
+                              ].subjectHelpNeeded
+                                ?.split(",")
+                                .filter(Boolean) || [];
+                            let newSubjects;
+
+                            if (e.target.checked) {
+                              newSubjects = [
+                                ...new Set([...currentSubjects, subject]),
+                              ];
+                            } else {
+                              newSubjects = currentSubjects.filter(
+                                (s) => s !== subject
+                              );
+                            }
+
+                            handleStudentChange(
+                              currentStudentIndex,
+                              "subjectHelpNeeded",
+                              newSubjects.join(",")
+                            );
+                          }}
+                        />
+                        <span className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
+                          {subject}
+                        </span>
+                      </label>
+                    ))}
+
+                  {["8"].includes(
+                    registerData.students[currentStudentIndex].grade
+                  ) &&
+                    [
+                      "Grade 8 General Support",
+                      "Grade 8  English",
+                      "Grade 8 Maths",
+                      "Grade 8 Science",
+                      "NAPLAN Preparation",
+                      "Selective School Preparation",
+                    ].map((subject) => (
+                      <label
+                        key={subject}
+                        className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
+                          registerData.students[
+                            currentStudentIndex
+                          ].subjectHelpNeeded?.includes(subject)
+                            ? "bg-primary-color/20 border-primary-color"
+                            : "border-gray-300 hover:border-primary-color/50"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="rounded border-gray-300 text-primary-color focus:ring-primary-color mr-2"
+                          checked={
+                            registerData.students[
+                              currentStudentIndex
+                            ].subjectHelpNeeded?.includes(subject) || false
+                          }
+                          onChange={(e) => {
+                            const currentSubjects =
+                              registerData.students[
+                                currentStudentIndex
+                              ].subjectHelpNeeded
+                                ?.split(",")
+                                .filter(Boolean) || [];
+                            let newSubjects;
+
+                            if (e.target.checked) {
+                              newSubjects = [
+                                ...new Set([...currentSubjects, subject]),
+                              ];
+                            } else {
+                              newSubjects = currentSubjects.filter(
+                                (s) => s !== subject
+                              );
+                            }
+
+                            handleStudentChange(
+                              currentStudentIndex,
+                              "subjectHelpNeeded",
+                              newSubjects.join(",")
+                            );
+                          }}
+                        />
+                        <span className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
+                          {subject}
+                        </span>
+                      </label>
+                    ))}
+
+                  {["9"].includes(
+                    registerData.students[currentStudentIndex].grade
+                  ) &&
+                    [
+                      "Grade 9 General Support",
+                      "Grade 9  English",
+                      "Grade 9 Maths",
+                      "Grade 9 Science",
+                      "NAPLAN Preparation",
+                      "Selective School Preparation",
+                    ].map((subject) => (
+                      <label
+                        key={subject}
+                        className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
+                          registerData.students[
+                            currentStudentIndex
+                          ].subjectHelpNeeded?.includes(subject)
+                            ? "bg-primary-color/20 border-primary-color"
+                            : "border-gray-300 hover:border-primary-color/50"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="rounded border-gray-300 text-primary-color focus:ring-primary-color mr-2"
+                          checked={
+                            registerData.students[
+                              currentStudentIndex
+                            ].subjectHelpNeeded?.includes(subject) || false
+                          }
+                          onChange={(e) => {
+                            const currentSubjects =
+                              registerData.students[
+                                currentStudentIndex
+                              ].subjectHelpNeeded
+                                ?.split(",")
+                                .filter(Boolean) || [];
+                            let newSubjects;
+
+                            if (e.target.checked) {
+                              newSubjects = [
+                                ...new Set([...currentSubjects, subject]),
+                              ];
+                            } else {
+                              newSubjects = currentSubjects.filter(
+                                (s) => s !== subject
+                              );
+                            }
+
+                            handleStudentChange(
+                              currentStudentIndex,
+                              "subjectHelpNeeded",
+                              newSubjects.join(",")
+                            );
+                          }}
+                        />
+                        <span className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
+                          {subject}
+                        </span>
+                      </label>
+                    ))}
+
+                  {["10"].includes(
+                    registerData.students[currentStudentIndex].grade
+                  ) &&
+                    [
+                      "Grade 10 General Support",
+                      "Grade 10  English",
+                      "Grade 10 Maths",
+                      "Grade 10 Science",
                       "NAPLAN Preparation",
                       "Selective School Preparation",
                     ].map((subject) => (
@@ -1459,17 +1643,39 @@ function Register() {
           </div>
         </div>
       ) : step7 ? (
-        <div className="text-center py-10">
-          <h1 className="text-2xl font-bold text-green-600 mb-4">
-            Registration Submitted Successfully!
-          </h1>
-          <p className="mb-6">
-            Thank you for registering with Bridgtus. We&apos;ll be in touch
-            shortly to confirm your booking.
-          </p>
-          <p className="text-sm text-gray-500">
-            Check your browser&apos;s console to see the submitted data.
-          </p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-lg bg-white p-8 text-center shadow-xl">
+            <div className="mb-6">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                <svg
+                  className="h-10 w-10 text-green-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+            </div>
+            <h1 className="mb-3 text-2xl font-bold text-gray-900">
+              Registration Submitted Successfully!
+            </h1>
+            <p className="mb-6 text-gray-600">
+              Thank you for registering with Bridgtus. We&apos;ll be in touch
+              shortly to confirm your booking.
+            </p>
+            <Link
+              href="/"
+              className="inline-block w-full rounded-md bg-secondary-color px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-secondary-color/90 focus:outline-none focus:ring-2 focus:ring-secondary-color focus:ring-offset-2"
+            >
+              Return to Home
+            </Link>
+          </div>
         </div>
       ) : null}
     </div>
