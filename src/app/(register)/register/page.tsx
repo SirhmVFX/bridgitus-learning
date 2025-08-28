@@ -295,7 +295,7 @@ function Register() {
       <div>
         <div>
           {registerSuccess ? (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
               <div className="w-full max-w-md rounded-lg bg-white p-8 text-center shadow-xl">
                 <div className="mb-6">
                   <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
@@ -315,7 +315,7 @@ function Register() {
                   </div>
                 </div>
                 <h1 className="mb-3 text-2xl font-bold text-gray-900">
-                  Registration Submitted Successfully!
+                  Registration Submitted Successfully! 🎉
                 </h1>
                 <p className="mb-6 text-gray-600">
                   Thank you for registering with Bridgtus. We&apos;ll be in
