@@ -240,7 +240,7 @@ export const Linkedin = () => {
   );
 };
 
-export const ChevronDown = () => {
+export const ChevronDown = ({ className }: { className?: string }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -252,14 +252,14 @@ export const ChevronDown = () => {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="lucide lucide-chevron-down-icon lucide-chevron-down"
+      className={`${className} lucide lucide-chevron-down-icon lucide-chevron-down`}
     >
       <path d="m6 9 6 6 6-6" />
     </svg>
   );
 };
 
-export const ChevronUp = () => {
+export const ChevronUp = ({ className }: { className?: string }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -271,7 +271,7 @@ export const ChevronUp = () => {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="lucide lucide-chevron-up-icon lucide-chevron-up"
+      className={`${className} lucide lucide-chevron-up-icon lucide-chevron-up`}
     >
       <path d="m18 15-6-6-6 6" />
     </svg>
