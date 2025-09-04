@@ -1058,6 +1058,9 @@ function Register() {
                         "Grade 9  English",
                         "Grade 9 Maths",
                         "Grade 9 Science",
+                        "Grade 9 Chemistry",
+                        "Grade 9 Biology",
+                        "Grade 9 Physics",
                         "NAPLAN Preparation",
                         "Selective School Preparation",
                       ].map((subject) => (
@@ -1119,6 +1122,9 @@ function Register() {
                         "Grade 10  English",
                         "Grade 10 Maths",
                         "Grade 10 Science",
+                        "Grade 10 Chemistry",
+                        "Grade 10 Biology",
+                        "Grade 10 Physics",
                         "NAPLAN Preparation",
                         "Selective School Preparation",
                       ].map((subject) => (
