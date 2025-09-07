@@ -109,7 +109,7 @@ function About() {
           <div className="md:w-1/3">
             <div className="w-full h-[400px] ">
               <Image
-                src="/assets/i.jpg"
+                src="/assets/picc.jpg"
                 alt="directors image"
                 width={1000}
                 height={1000}
@@ -165,7 +165,7 @@ function About() {
       <section className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] w-full md:mx-auto md:px-0 px-4 md:py-14 py-10 xl:h-screen flex md:flex-row flex-col items-center md:gap-0 gap-6">
         <div className="md:w-1/2 flex flex-col gap-6">
           <h1 className="text-3xl md:text-5xl font-bold">
-            Bridgitus Is More than a Institute. It&apos;s a Story
+            Bridgitus Is More than an Institute. It&apos;s a Story
           </h1>
           <p className="text-lg text-black/70 leading-relaxed">
             Bridgitus Learning is a premier online tuition platform dedicated to
