@@ -84,7 +84,12 @@ function Footer() {
                 url: "https://www.instagram.com/bridgitus/",
                 icon: <Instagram />,
               },
-              { id: 3, title: "Linkedin", url: "#", icon: <Linkedin /> },
+              {
+                id: 3,
+                title: "Linkedin",
+                url: "https://www.linkedin.com/in/bridgitus-learning-538390383?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
+                icon: <Linkedin />,
+              },
             ].map((e) => (
               <Link
                 className="text-xs text-white/50 flex items-center gap-2 bg-white/10 rounded-full p-2"
