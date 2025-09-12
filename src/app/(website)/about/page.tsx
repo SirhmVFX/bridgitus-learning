@@ -118,9 +118,7 @@ function About() {
             </div>
 
             <div className="p-4">
-              <h1 className="text-black md:text-base text-sm">
-                Phemmie Olugbogi
-              </h1>
+              <h1 className="text-black md:text-base text-sm">Femi Olugbogi</h1>
               <p className="text-black/50 md:text-sm text-xs italic">
                 Founder, Bridgitus Learning
               </p>
