@@ -35,9 +35,7 @@ function Brief() {
           </h1>
           <div className="flex md:gap-5 gap-2 items-center">
             <div>
-              <h1 className="text-white md:text-base text-sm">
-                Phemmie Olugbogi
-              </h1>
+              <h1 className="text-white md:text-base text-sm">Femi Olugbogi</h1>
               <p className="text-white/50 md:text-sm text-xs">
                 Founder, Bridgitus Learning
               </p>
