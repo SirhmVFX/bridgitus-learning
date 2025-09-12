@@ -21,7 +21,7 @@ function Pricing() {
                 id: 1,
                 title: "Basic plan",
                 desc: "Pay as you go",
-                price: "$45",
+                price: "$50",
                 per: "/hour lesson",
 
                 perks: [
@@ -38,8 +38,8 @@ function Pricing() {
                 id: 2,
                 title: "Standard plan",
                 desc: "Growth Plan",
-                price: "$855",
-                per: "20 classes at $42.75/hr",
+                price: "$955",
+                per: "20 classes at $47.75/hr",
                 perks: [
                   {
                     id: 1,
@@ -62,8 +62,8 @@ function Pricing() {
                 id: 3,
                 title: "Premium plan",
                 desc: "Success Plan",
-                price: "$1,215",
-                per: "30 classes at $40.50/hr",
+                price: "$1,365",
+                per: "30 classes at $45.50/hr",
 
                 perks: [
                   {
