@@ -31,6 +31,10 @@ function Footer() {
               info@bridgitus.com
             </Link>
           </div>
+
+          <div>
+            <h1 className="text-xs text-white/50">ABN: 16146552112</h1>
+          </div>
         </div>
         <div className="flex flex-col gap-4">
           <h1 className="text-sm text-white">Legal</h1>
