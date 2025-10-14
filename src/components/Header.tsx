@@ -54,7 +54,7 @@ function Header() {
       </div>
       <div className=" bg-white border-b border-b-black/1 ">
         <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] w-full mx-auto flex justify-between items-center py-1  px-4 md:px-0 ">
-          <div className="md:w-[70px] lg:w-[150px] xl:w-[170px] w-[180px]">
+          <div className="md:w-[70px] lg:w-[150px] xl:w-[170px] w-[180px] flex flex-col items-center">
             <Image
               width={1000}
               height={1000}
@@ -62,6 +62,9 @@ function Header() {
               alt="logo"
               className="w-full h-full object-contain"
             />
+            <h1 className="text-[11px] font-bold text-blue-900">
+              ABN: 16146552112
+            </h1>
           </div>
 
           <div className="hidden md:block">
