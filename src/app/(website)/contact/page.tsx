@@ -142,11 +142,9 @@ function Contact() {
                   Alternate Phone
                 </h3>
                 <a
-                  href="tel:+61402173788"
+                  href="tel:"
                   className="text-black/70 hover:text-primary transition-colors cursor-pointer"
-                >
-                  +61 402 173 788
-                </a>
+                ></a>
               </div>
             </div>
 
