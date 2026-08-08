@@ -1,9 +1,10 @@
 // src/app/api/contact/route.ts
 import { NextResponse } from "next/server";
-import sgMail from "@sendgrid/mail";
+// import sgMail from "@sendgrid/mail";  // ← uncomment when email subscription is renewed
+import { db } from "@/lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
-// Initialize SendGrid with your API key
-sgMail.setApiKey(process.env.SENDGRID_API_KEY || "");
+// sgMail.setApiKey(process.env.SENDGRID_API_KEY || "");  // ← uncomment when email subscription is renewed
 
 export async function POST(request: Request) {
   try {
@@ -63,9 +64,8 @@ export async function POST(request: Request) {
                   </a>
                 </p>
               </div>
-              ${
-                phone
-                  ? `
+              ${phone
+        ? `
                 <div>
                   <p style="color: #7f8c8d; margin: 5px 0; font-size: 13px;">Phone</p>
                   <p style="margin: 0 0 15px 0;">
@@ -75,8 +75,8 @@ export async function POST(request: Request) {
                   </p>
                 </div>
               `
-                  : ""
-              }
+        : ""
+      }
             </div>
             
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e6ed; text-align: center;">
@@ -119,13 +119,22 @@ This message was sent from the contact form on ${process.env.NEXT_PUBLIC_SITE_UR
       replyTo: email,
     };
 
-    // Send email
-    await sgMail.send(msg);
+    // ── EMAIL DISABLED — uncomment the block below when SendGrid subscription is renewed ──
+    // await sgMail.send(msg);
+
+    // Save to Firestore for admin panel (always runs — no email needed)
+    await addDoc(collection(db, "contactMessages"), {
+      name,
+      email,
+      message,
+      phone: phone ?? null,
+      read: false,
+      createdAt: serverTimestamp(),
+    });
 
     return NextResponse.json(
       {
-        message:
-          "Your message has been sent successfully! We'll get back to you soon.",
+        message: "Your message has been received! We'll get back to you soon.",
       },
       { status: 200 }
     );
