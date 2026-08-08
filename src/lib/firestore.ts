@@ -1,0 +1,401 @@
+import {
+  collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc,
+  query, where, serverTimestamp, Timestamp, limit,
+} from "firebase/firestore";
+import { db } from "./firebase";
+
+// ─────────────────────────────────────────────────────────────
+// TYPES
+// ─────────────────────────────────────────────────────────────
+
+export interface Student {
+  id?: string;
+  studentId: string; email: string;
+  firstName: string; lastName: string; dateOfBirth: string;
+  gender: string; school: string; grade: string; subjects: string[];
+  parentFirstName: string; parentLastName: string;
+  parentEmail: string; parentPhone: string; postcode: string;
+  enrolledAt?: Timestamp; status: "active" | "inactive" | "suspended";
+  avatar?: string; bio?: string; credentialsSent?: boolean;
+  paymentStatus: "pending" | "paid" | "failed" | "waived";
+  paymentReference?: string; paymentAmount?: number; paidAt?: Timestamp;
+  createdAt?: Timestamp; updatedAt?: Timestamp;
+}
+
+export interface LearningMaterial {
+  id?: string; title: string; description: string;
+  grade: string; subject: string;
+  type: "text" | "document" | "pdf" | "image" | "video" | "link" | "mixed";
+  content?: string; fileUrl?: string; fileName?: string;
+  linkUrl?: string; linkLabel?: string; thumbnailUrl?: string;
+  published: boolean; order: number; estimatedMinutes?: number;
+  linkedMaterialId?: string;
+  createdAt?: Timestamp; updatedAt?: Timestamp;
+}
+
+export type QuestionType = "multiple_choice" | "true_false" | "short_answer";
+export interface Question {
+  id: string; type: QuestionType; text: string;
+  options?: string[]; correctAnswer: string; points: number; explanation?: string;
+}
+
+export interface Test {
+  id?: string; title: string; description: string;
+  grade: string; subject: string; type: "test" | "exam";
+  questions: Question[]; totalPoints: number; passMark: number;
+  maxAttempts: number; timeLimit?: number; linkedMaterialId?: string;
+  published: boolean; createdAt?: Timestamp; updatedAt?: Timestamp;
+}
+
+export interface TestAttempt {
+  id?: string; testId: string; testTitle?: string;
+  studentId: string; studentUid: string;
+  answers: Record<string, string>; score: number; totalPoints: number;
+  percentage: number; passed: boolean; attemptNumber: number;
+  status: "pending_review" | "approved" | "rejected";
+  adminComment?: string; submittedAt?: Timestamp; reviewedAt?: Timestamp;
+}
+
+export interface Assignment {
+  id?: string; title: string; description: string;
+  grade: string; subject: string;
+  type: "ixl" | "deltamath" | "custom" | "document";
+  platformUrl?: string; platform?: "ixl" | "deltamath" | "other";
+  content?: string; fileUrl?: string; fileName?: string;
+  dueDate?: string; maxScore?: number; linkedMaterialId?: string;
+  targetGrades: string[]; targetStudentIds?: string[];
+  published: boolean; createdAt?: Timestamp; updatedAt?: Timestamp;
+}
+
+export interface AssignmentSubmission {
+  id?: string; assignmentId: string; studentId: string; studentUid: string;
+  status: "not_started" | "in_progress" | "submitted" | "graded";
+  score?: number; feedback?: string; submittedAt?: Timestamp; gradedAt?: Timestamp;
+}
+
+export interface StudentProgress {
+  id?: string; studentId: string; grade: string; subject: string;
+  overallScore: number; testsCompleted: number; testsPassed: number;
+  assignmentsCompleted: number; materialsCompleted: number;
+  lastActivity?: Timestamp; updatedAt?: Timestamp;
+}
+
+export interface MaterialCompletion {
+  id?: string; studentId: string; materialId: string;
+  grade: string; subject: string; completedAt?: Timestamp;
+}
+
+export interface Announcement {
+  id?: string; title: string; body: string;
+  targetGrades: string[]; pinned: boolean; published: boolean;
+  createdAt?: Timestamp; updatedAt?: Timestamp;
+}
+
+export interface SiteContent {
+  id?: string; section: string; data: Record<string, unknown>; updatedAt?: Timestamp;
+}
+export interface SiteTestimonial {
+  id?: string; name: string; role: string; quote: string; rating: number;
+  avatar?: string; published: boolean; order: number; createdAt?: Timestamp;
+}
+export interface SitePricingPlan {
+  id?: string; title: string; tagline: string; price: string; per: string;
+  perks: Array<{ desc: string }>; freePerks: string[];
+  highlighted: boolean; order: number; published: boolean;
+  amountKobo?: number;   // exact amount in kobo/smallest currency unit for Paystack
+  createdAt?: Timestamp;
+}
+export interface SiteFaq {
+  id?: string; question: string; answer: string;
+  order: number; published: boolean; createdAt?: Timestamp;
+}
+export interface ContactMessage {
+  id?: string; name: string; email: string; message: string;
+  read: boolean; createdAt?: Timestamp;
+}
+export interface SiteClass {
+  id?: string; title: string; grades: string; description: string;
+  subjects: string[]; type: "one-on-one" | "group" | "online";
+  image?: string; published: boolean; order: number;
+}
+export interface SiteService {
+  id?: string; title: string; description: string; icon?: string;
+  bullets?: string[]; image?: string;
+  section: "offer" | "why" | "exam_prep"; published: boolean; order: number;
+}
+export interface SitePartner {
+  id?: string; name: string; logo: string; url?: string;
+  published: boolean; order: number;
+}
+
+// ─────────────────────────────────────────────────────────────
+// STUDENTS
+// ─────────────────────────────────────────────────────────────
+
+export async function getStudentByUid(uid: string): Promise<Student | null> {
+  const snap = await getDocs(query(collection(db, "students"), where("uid", "==", uid)));
+  if (snap.empty) return null;
+  const d = snap.docs[0];
+  return { id: d.id, ...(d.data() as Student) };
+}
+
+export async function getStudentById(id: string): Promise<Student | null> {
+  const snap = await getDoc(doc(db, "students", id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...(snap.data() as Student) };
+}
+
+export async function updateStudent(id: string, data: Partial<Student>): Promise<void> {
+  await updateDoc(doc(db, "students", id), { ...data, updatedAt: serverTimestamp() });
+}
+
+// ─────────────────────────────────────────────────────────────
+// LEARNING MATERIALS  (no composite index — filter + sort client-side)
+// ─────────────────────────────────────────────────────────────
+
+export async function getMaterialsByGrade(grade: string): Promise<LearningMaterial[]> {
+  // Single-field where — no index needed
+  const snap = await getDocs(query(collection(db, "learningMaterials"), where("grade", "==", grade)));
+  return snap.docs
+    .map(d => ({ id: d.id, ...(d.data() as LearningMaterial) }))
+    .filter(m => m.published)
+    .sort((a, b) => a.order - b.order);
+}
+
+export async function getMaterialsByGradeAndSubject(grade: string, subject: string): Promise<LearningMaterial[]> {
+  const snap = await getDocs(query(collection(db, "learningMaterials"), where("grade", "==", grade)));
+  return snap.docs
+    .map(d => ({ id: d.id, ...(d.data() as LearningMaterial) }))
+    .filter(m => m.published && m.subject === subject)
+    .sort((a, b) => a.order - b.order);
+}
+
+export async function getMaterialById(id: string): Promise<LearningMaterial | null> {
+  const snap = await getDoc(doc(db, "learningMaterials", id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...(snap.data() as LearningMaterial) };
+}
+
+// ─────────────────────────────────────────────────────────────
+// TESTS  (no composite index)
+// ─────────────────────────────────────────────────────────────
+
+export async function getTestsByGrade(grade: string): Promise<Test[]> {
+  const snap = await getDocs(query(collection(db, "tests"), where("grade", "==", grade)));
+  return snap.docs
+    .map(d => ({ id: d.id, ...(d.data() as Test) }))
+    .filter(t => t.published)
+    .sort((a, b) => (b.createdAt as Timestamp)?.toMillis() - (a.createdAt as Timestamp)?.toMillis() || 0);
+}
+
+export async function getTestById(id: string): Promise<Test | null> {
+  const snap = await getDoc(doc(db, "tests", id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...(snap.data() as Test) };
+}
+
+export async function getStudentAttempts(studentId: string, testId: string): Promise<TestAttempt[]> {
+  const snap = await getDocs(query(collection(db, "testAttempts"), where("studentId", "==", studentId)));
+  return snap.docs
+    .map(d => ({ id: d.id, ...(d.data() as TestAttempt) }))
+    .filter(a => a.testId === testId)
+    .sort((a, b) => (b.submittedAt as Timestamp)?.toMillis() - (a.submittedAt as Timestamp)?.toMillis() || 0);
+}
+
+export async function getAllStudentAttempts(studentId: string): Promise<TestAttempt[]> {
+  const snap = await getDocs(query(collection(db, "testAttempts"), where("studentId", "==", studentId)));
+  return snap.docs
+    .map(d => ({ id: d.id, ...(d.data() as TestAttempt) }))
+    .sort((a, b) => (b.submittedAt as Timestamp)?.toMillis() - (a.submittedAt as Timestamp)?.toMillis() || 0);
+}
+
+export async function submitTestAttempt(attempt: Omit<TestAttempt, "id">): Promise<string> {
+  const ref = await addDoc(collection(db, "testAttempts"), { ...attempt, submittedAt: serverTimestamp() });
+  return ref.id;
+}
+
+export async function getApprovedAttempts(studentId: string): Promise<TestAttempt[]> {
+  const snap = await getDocs(query(collection(db, "testAttempts"), where("studentId", "==", studentId)));
+  return snap.docs
+    .map(d => ({ id: d.id, ...(d.data() as TestAttempt) }))
+    .filter(a => a.status === "approved")
+    .sort((a, b) => (b.submittedAt as Timestamp)?.toMillis() - (a.submittedAt as Timestamp)?.toMillis() || 0);
+}
+
+// ─────────────────────────────────────────────────────────────
+// ASSIGNMENTS  (no composite index)
+// ─────────────────────────────────────────────────────────────
+
+export async function getAssignmentsForStudent(grade: string, studentId: string): Promise<Assignment[]> {
+  // array-contains alone is fine without composite index
+  const snap = await getDocs(query(collection(db, "assignments"), where("targetGrades", "array-contains", grade)));
+  return snap.docs
+    .map(d => ({ id: d.id, ...(d.data() as Assignment) }))
+    .filter(a => a.published && (!a.targetStudentIds?.length || a.targetStudentIds.includes(studentId)))
+    .sort((a, b) => (b.createdAt as Timestamp)?.toMillis() - (a.createdAt as Timestamp)?.toMillis() || 0);
+}
+
+export async function getAssignmentById(id: string): Promise<Assignment | null> {
+  const snap = await getDoc(doc(db, "assignments", id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...(snap.data() as Assignment) };
+}
+
+export async function getSubmission(assignmentId: string, studentId: string): Promise<AssignmentSubmission | null> {
+  const snap = await getDocs(query(collection(db, "assignmentSubmissions"),
+    where("assignmentId", "==", assignmentId), where("studentId", "==", studentId), limit(1)));
+  if (snap.empty) return null;
+  const d = snap.docs[0];
+  return { id: d.id, ...(d.data() as AssignmentSubmission) };
+}
+
+export async function upsertSubmission(sub: Omit<AssignmentSubmission, "id">): Promise<void> {
+  const existing = await getSubmission(sub.assignmentId, sub.studentId);
+  if (existing?.id) {
+    await updateDoc(doc(db, "assignmentSubmissions", existing.id), { ...sub, submittedAt: serverTimestamp() });
+  } else {
+    await addDoc(collection(db, "assignmentSubmissions"), { ...sub, submittedAt: serverTimestamp() });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// PROGRESS
+// ─────────────────────────────────────────────────────────────
+
+export async function getStudentProgress(studentId: string): Promise<StudentProgress[]> {
+  const snap = await getDocs(query(collection(db, "studentProgress"), where("studentId", "==", studentId)));
+  return snap.docs.map(d => ({ id: d.id, ...(d.data() as StudentProgress) }));
+}
+
+export async function upsertStudentProgress(
+  studentId: string, grade: string, subject: string,
+  patch: { scoreToAdd?: number; passed?: boolean; materialCompleted?: boolean; assignmentCompleted?: boolean }
+): Promise<void> {
+  const snap = await getDocs(query(collection(db, "studentProgress"),
+    where("studentId", "==", studentId), where("grade", "==", grade), where("subject", "==", subject), limit(1)));
+  if (!snap.empty) {
+    const ex = snap.docs[0].data() as StudentProgress;
+    const tests = (ex.testsCompleted ?? 0) + (patch.scoreToAdd !== undefined ? 1 : 0);
+    const newScore = patch.scoreToAdd !== undefined && tests > 0
+      ? Math.round(((ex.overallScore ?? 0) * (ex.testsCompleted ?? 0) + patch.scoreToAdd) / tests)
+      : ex.overallScore ?? 0;
+    await updateDoc(snap.docs[0].ref, {
+      testsCompleted: tests,
+      testsPassed: (ex.testsPassed ?? 0) + (patch.passed ? 1 : 0),
+      materialsCompleted: (ex.materialsCompleted ?? 0) + (patch.materialCompleted ? 1 : 0),
+      assignmentsCompleted: (ex.assignmentsCompleted ?? 0) + (patch.assignmentCompleted ? 1 : 0),
+      overallScore: newScore,
+      lastActivity: serverTimestamp(), updatedAt: serverTimestamp(),
+    });
+  } else {
+    await addDoc(collection(db, "studentProgress"), {
+      studentId, grade, subject,
+      overallScore: patch.scoreToAdd ?? 0,
+      testsCompleted: patch.scoreToAdd !== undefined ? 1 : 0,
+      testsPassed: patch.passed ? 1 : 0,
+      materialsCompleted: patch.materialCompleted ? 1 : 0,
+      assignmentsCompleted: patch.assignmentCompleted ? 1 : 0,
+      lastActivity: serverTimestamp(), updatedAt: serverTimestamp(),
+    });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// MATERIAL COMPLETION
+// ─────────────────────────────────────────────────────────────
+
+export async function getMaterialCompletions(studentId: string, grade: string): Promise<MaterialCompletion[]> {
+  const snap = await getDocs(query(collection(db, "materialCompletions"),
+    where("studentId", "==", studentId), where("grade", "==", grade)));
+  return snap.docs.map(d => ({ id: d.id, ...(d.data() as MaterialCompletion) }));
+}
+
+export async function markMaterialComplete(studentId: string, material: LearningMaterial): Promise<void> {
+  const snap = await getDocs(query(collection(db, "materialCompletions"),
+    where("studentId", "==", studentId), where("materialId", "==", material.id!), limit(1)));
+  if (!snap.empty) return;
+  await addDoc(collection(db, "materialCompletions"), {
+    studentId, materialId: material.id, grade: material.grade,
+    subject: material.subject, completedAt: serverTimestamp(),
+  });
+  await upsertStudentProgress(studentId, material.grade, material.subject, { materialCompleted: true });
+}
+
+export async function unmarkMaterialComplete(studentId: string, materialId: string): Promise<void> {
+  const snap = await getDocs(query(collection(db, "materialCompletions"),
+    where("studentId", "==", studentId), where("materialId", "==", materialId), limit(1)));
+  if (!snap.empty) await deleteDoc(snap.docs[0].ref);
+}
+
+export function isMaterialCompleted(completions: MaterialCompletion[], materialId: string): boolean {
+  return completions.some(c => c.materialId === materialId);
+}
+
+// ─────────────────────────────────────────────────────────────
+// ANNOUNCEMENTS  (no composite index)
+// ─────────────────────────────────────────────────────────────
+
+export async function getAnnouncementsForStudent(grade: string): Promise<Announcement[]> {
+  // Single where only — filter + sort client-side
+  const snap = await getDocs(query(collection(db, "announcements"), where("published", "==", true)));
+  return snap.docs
+    .map(d => ({ id: d.id, ...(d.data() as Announcement) }))
+    .filter(a => a.targetGrades.length === 0 || a.targetGrades.includes(grade))
+    .sort((a, b) => {
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+      return (b.createdAt as Timestamp)?.toMillis() - (a.createdAt as Timestamp)?.toMillis() || 0;
+    });
+}
+
+// ─────────────────────────────────────────────────────────────
+// SITE CONTENT (CMS)  — single where, no index needed
+// ─────────────────────────────────────────────────────────────
+
+export async function getSiteContent(section: string): Promise<Record<string, unknown> | null> {
+  const snap = await getDocs(query(collection(db, "siteContent"), where("section", "==", section), limit(1)));
+  if (snap.empty) return null;
+  return (snap.docs[0].data() as SiteContent).data;
+}
+
+export async function getPublishedTestimonials(): Promise<SiteTestimonial[]> {
+  const snap = await getDocs(query(collection(db, "siteTestimonials"), where("published", "==", true)));
+  return snap.docs
+    .map(d => ({ id: d.id, ...(d.data() as SiteTestimonial) }))
+    .sort((a, b) => a.order - b.order);
+}
+
+export async function getPublishedPricingPlans(): Promise<SitePricingPlan[]> {
+  const snap = await getDocs(query(collection(db, "sitePricingPlans"), where("published", "==", true)));
+  return snap.docs
+    .map(d => ({ id: d.id, ...(d.data() as SitePricingPlan) }))
+    .sort((a, b) => a.order - b.order);
+}
+
+export async function getPublishedFaqs(): Promise<SiteFaq[]> {
+  const snap = await getDocs(query(collection(db, "siteFaqs"), where("published", "==", true)));
+  return snap.docs
+    .map(d => ({ id: d.id, ...(d.data() as SiteFaq) }))
+    .sort((a, b) => a.order - b.order);
+}
+
+export async function getPublishedClasses(): Promise<SiteClass[]> {
+  const snap = await getDocs(query(collection(db, "siteClasses"), where("published", "==", true)));
+  return snap.docs
+    .map(d => ({ id: d.id, ...(d.data() as SiteClass) }))
+    .sort((a, b) => a.order - b.order);
+}
+
+export async function getPublishedServices(section?: string): Promise<SiteService[]> {
+  const snap = await getDocs(query(collection(db, "siteServices"), where("published", "==", true)));
+  return snap.docs
+    .map(d => ({ id: d.id, ...(d.data() as SiteService) }))
+    .filter(s => !section || s.section === section)
+    .sort((a, b) => a.order - b.order);
+}
+
+export async function getPublishedPartners(): Promise<SitePartner[]> {
+  const snap = await getDocs(query(collection(db, "sitePartners"), where("published", "==", true)));
+  return snap.docs
+    .map(d => ({ id: d.id, ...(d.data() as SitePartner) }))
+    .sort((a, b) => a.order - b.order);
+}

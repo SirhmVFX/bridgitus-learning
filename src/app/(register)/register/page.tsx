@@ -49,6 +49,7 @@ function Register() {
     success: boolean;
     message: string;
   } | null>(null);
+  const [createdStudents, setCreatedStudents] = useState<Array<{ name: string; studentId: string; email: string; grade: string; password?: string }>>([]);
 
   const [openDays, setOpenDays] = useState<Record<number, boolean>>({});
   const [selectedTimes, setSelectedTimes] = useState<Record<string, boolean>>(
@@ -230,12 +231,20 @@ function Register() {
       });
 
       const data = await response.json();
+      console.log("API Response:", data);
 
       if (response.ok) {
+        console.log("Students from API:", data.students);
         setSubmitStatus({
           success: true,
           message: "Message sent successfully! We'll get back to you soon.",
         });
+        if (data.students && data.students.length > 0) {
+          console.log("Setting createdStudents:", data.students);
+          setCreatedStudents(data.students);
+        } else {
+          console.log("No students in response or empty array");
+        }
         // Reset form
         setRegisterData({
           organizingFor: "",
@@ -280,13 +289,13 @@ function Register() {
         throw new Error(data.message || "Failed to send message");
       }
     } catch (error) {
+      console.error("Registration error:", error);
       setSubmitStatus({
         success: false,
         message: "Failed to send message. Please try again later.",
       });
     } finally {
       setIsSubmitting(false);
-      setRegisterSuccess(true);
     }
   };
 
@@ -296,37 +305,100 @@ function Register() {
         <div>
           {registerSuccess ? (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-              <div className="w-full max-w-md rounded-lg bg-white p-8 text-center shadow-xl">
-                <div className="mb-6">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-                    <svg
-                      className="h-10 w-10 text-green-600"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      />
+              <div className="w-full max-w-lg bg-white p-0 overflow-hidden">
+                {/* Header */}
+                <div className="bg-secondary-color px-8 py-6 text-center">
+                  <div className="mx-auto w-14 h-14 bg-white/20 flex items-center justify-center mb-3">
+                    <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
+                  <h1 className="text-xl font-bold text-white">Registration Successful! 🎉</h1>
+                  <p className="text-white/70 text-sm mt-1">Your login credentials have been emailed to you</p>
                 </div>
-                <h1 className="mb-3 text-2xl font-bold text-gray-900">
-                  Registration Submitted Successfully! 🎉
-                </h1>
-                <p className="mb-6 text-gray-600">
-                  Thank you for registering with Bridgtus. We&apos;ll be in
-                  touch shortly to confirm your booking.
-                </p>
-                <Link
-                  href="/"
-                  className="inline-block w-full rounded-md bg-secondary-color px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-secondary-color/90 focus:outline-none focus:ring-2 focus:ring-secondary-color focus:ring-offset-2"
-                >
-                  Return to Home
-                </Link>
+
+                <div className="px-8 py-6 space-y-5">
+                  {/* Parent info */}
+                  <div className="bg-gray-50 border border-gray-200 p-4">
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Registered By</p>
+                    <p className="font-medium text-gray-900">{registerData.parentFirstName} {registerData.parentLastName}</p>
+                    <p className="text-sm text-gray-500">{registerData.parentEmail}</p>
+                  </div>
+
+                  {/* Student credentials */}
+                  {(() => {
+                    console.log("Rendering popup, createdStudents:", createdStudents);
+                    return createdStudents.length > 0;
+                  })() && (
+                    <div>
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Your Login Credentials</p>
+                      <div className="space-y-3">
+                        {createdStudents.map((s, i) => (
+                          <div key={i} className="border-2 border-secondary-color bg-secondary-color/5 p-4">
+                            <p className="font-semibold text-gray-900 mb-3">{s.name} — Grade {s.grade}</p>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex items-center justify-between bg-white border border-gray-200 px-3 py-2">
+                                <div>
+                                  <p className="text-xs text-gray-400">Student ID</p>
+                                  <p className="font-mono font-bold text-secondary-color text-base tracking-wide">{s.studentId}</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => navigator.clipboard.writeText(s.studentId).then(() => alert("Student ID copied!"))}
+                                  className="text-xs text-secondary-color border border-secondary-color px-2 py-1 hover:bg-secondary-color hover:text-white transition-colors"
+                                >Copy</button>
+                              </div>
+                              <div className="flex items-center justify-between bg-white border border-gray-200 px-3 py-2">
+                                <div>
+                                  <p className="text-xs text-gray-400">Email</p>
+                                  <p className="font-medium text-gray-800 break-all">{s.email}</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => navigator.clipboard.writeText(s.email).then(() => alert("Email copied!"))}
+                                  className="text-xs text-secondary-color border border-secondary-color px-2 py-1 hover:bg-secondary-color hover:text-white transition-colors ml-2 shrink-0"
+                                >Copy</button>
+                              </div>
+                              {s.password && (
+                                <div className="flex items-center justify-between bg-amber-50 border border-amber-300 px-3 py-2">
+                                  <div>
+                                    <p className="text-xs text-amber-600 font-semibold">Password (shown once only!)</p>
+                                    <p className="font-mono font-bold text-amber-800 text-base tracking-widest">{s.password}</p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => navigator.clipboard.writeText(s.password!).then(() => alert("Password copied!"))}
+                                    className="text-xs text-amber-700 border border-amber-400 px-2 py-1 hover:bg-amber-500 hover:text-white transition-colors ml-2 shrink-0"
+                                  >Copy</button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Instructions */}
+                  <div className="bg-amber-50 border border-amber-300 px-4 py-3">
+                    <p className="text-xs text-amber-800 leading-relaxed font-semibold mb-1">⚠️ Save your credentials now!</p>
+                    <p className="text-xs text-amber-700 leading-relaxed">
+                      Copy and save your <strong>Student ID</strong> and <strong>Password</strong> above — the password is only shown once here. It has also been sent to your email. Log in using your Student ID or email address, then complete payment to unlock all portal features.
+                    </p>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex gap-3">
+                    <Link href="/portal/login"
+                      className="flex-1 bg-secondary-color text-white text-center font-semibold py-3 text-sm hover:bg-secondary-color/90 transition-colors">
+                      Log In to Portal →
+                    </Link>
+                    <Link href="/"
+                      className="flex-1 border border-gray-300 text-gray-700 text-center font-semibold py-3 text-sm hover:bg-gray-50 transition-colors">
+                      Back to Home
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
           ) : (
@@ -500,7 +572,7 @@ function Register() {
             className="flex flex-col gap-10"
           >
             {registerData.organizingFor === "my-child" ||
-            registerData.organizingFor === "someone-else" ? (
+              registerData.organizingFor === "someone-else" ? (
               <div>
                 <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
                   Your details
@@ -880,13 +952,12 @@ function Register() {
                       ].map((subject) => (
                         <label
                           key={subject}
-                          className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
-                            registerData.students[
-                              currentStudentIndex
-                            ].subjectHelpNeeded?.includes(subject)
-                              ? "bg-primary-color/20 border-primary-color"
-                              : "border-gray-300 hover:border-primary-color/50"
-                          }`}
+                          className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${registerData.students[
+                            currentStudentIndex
+                          ].subjectHelpNeeded?.includes(subject)
+                            ? "bg-primary-color/20 border-primary-color"
+                            : "border-gray-300 hover:border-primary-color/50"
+                            }`}
                         >
                           <input
                             type="checkbox"
@@ -941,13 +1012,12 @@ function Register() {
                       ].map((subject) => (
                         <label
                           key={subject}
-                          className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
-                            registerData.students[
-                              currentStudentIndex
-                            ].subjectHelpNeeded?.includes(subject)
-                              ? "bg-primary-color/20 border-primary-color"
-                              : "border-gray-300 hover:border-primary-color/50"
-                          }`}
+                          className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${registerData.students[
+                            currentStudentIndex
+                          ].subjectHelpNeeded?.includes(subject)
+                            ? "bg-primary-color/20 border-primary-color"
+                            : "border-gray-300 hover:border-primary-color/50"
+                            }`}
                         >
                           <input
                             type="checkbox"
@@ -1002,13 +1072,12 @@ function Register() {
                       ].map((subject) => (
                         <label
                           key={subject}
-                          className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
-                            registerData.students[
-                              currentStudentIndex
-                            ].subjectHelpNeeded?.includes(subject)
-                              ? "bg-primary-color/20 border-primary-color"
-                              : "border-gray-300 hover:border-primary-color/50"
-                          }`}
+                          className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${registerData.students[
+                            currentStudentIndex
+                          ].subjectHelpNeeded?.includes(subject)
+                            ? "bg-primary-color/20 border-primary-color"
+                            : "border-gray-300 hover:border-primary-color/50"
+                            }`}
                         >
                           <input
                             type="checkbox"
@@ -1066,13 +1135,12 @@ function Register() {
                       ].map((subject) => (
                         <label
                           key={subject}
-                          className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
-                            registerData.students[
-                              currentStudentIndex
-                            ].subjectHelpNeeded?.includes(subject)
-                              ? "bg-primary-color/20 border-primary-color"
-                              : "border-gray-300 hover:border-primary-color/50"
-                          }`}
+                          className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${registerData.students[
+                            currentStudentIndex
+                          ].subjectHelpNeeded?.includes(subject)
+                            ? "bg-primary-color/20 border-primary-color"
+                            : "border-gray-300 hover:border-primary-color/50"
+                            }`}
                         >
                           <input
                             type="checkbox"
@@ -1130,13 +1198,12 @@ function Register() {
                       ].map((subject) => (
                         <label
                           key={subject}
-                          className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
-                            registerData.students[
-                              currentStudentIndex
-                            ].subjectHelpNeeded?.includes(subject)
-                              ? "bg-primary-color/20 border-primary-color"
-                              : "border-gray-300 hover:border-primary-color/50"
-                          }`}
+                          className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${registerData.students[
+                            currentStudentIndex
+                          ].subjectHelpNeeded?.includes(subject)
+                            ? "bg-primary-color/20 border-primary-color"
+                            : "border-gray-300 hover:border-primary-color/50"
+                            }`}
                         >
                           <input
                             type="checkbox"
@@ -1200,13 +1267,12 @@ function Register() {
                       ].map((subject) => (
                         <label
                           key={subject}
-                          className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
-                            registerData.students[
-                              currentStudentIndex
-                            ].subjectHelpNeeded?.includes(subject)
-                              ? "bg-primary-color/20 border-primary-color"
-                              : "border-gray-300 hover:border-primary-color/50"
-                          }`}
+                          className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${registerData.students[
+                            currentStudentIndex
+                          ].subjectHelpNeeded?.includes(subject)
+                            ? "bg-primary-color/20 border-primary-color"
+                            : "border-gray-300 hover:border-primary-color/50"
+                            }`}
                         >
                           <input
                             type="checkbox"
@@ -1556,33 +1622,33 @@ function Register() {
                 </select>
                 {registerData.students[currentStudentIndex].startPreference ===
                   "later" && (
-                  <div className="mt-2">
-                    <label
-                      htmlFor={`startDate-${currentStudentIndex}`}
-                      className="text-[12px] font-medium block mb-1"
-                    >
-                      Select start date <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      id={`startDate-${currentStudentIndex}`}
-                      required
-                      value={
-                        registerData.students[currentStudentIndex].startDate ||
-                        ""
-                      }
-                      onChange={(e) =>
-                        handleStudentChange(
-                          currentStudentIndex,
-                          "startDate",
-                          e.target.value
-                        )
-                      }
-                      min={new Date().toISOString().split("T")[0]}
-                      className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]"
-                    />
-                  </div>
-                )}
+                    <div className="mt-2">
+                      <label
+                        htmlFor={`startDate-${currentStudentIndex}`}
+                        className="text-[12px] font-medium block mb-1"
+                      >
+                        Select start date <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="date"
+                        id={`startDate-${currentStudentIndex}`}
+                        required
+                        value={
+                          registerData.students[currentStudentIndex].startDate ||
+                          ""
+                        }
+                        onChange={(e) =>
+                          handleStudentChange(
+                            currentStudentIndex,
+                            "startDate",
+                            e.target.value
+                          )
+                        }
+                        min={new Date().toISOString().split("T")[0]}
+                        className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px]"
+                      />
+                    </div>
+                  )}
               </div>
 
               <div className="flex gap-2">
@@ -1704,37 +1770,13 @@ function Register() {
           </div>
         ) : step7 ? (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="w-full max-w-md rounded-lg bg-white p-8 text-center shadow-xl">
-              <div className="mb-6">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-                  <svg
-                    className="h-10 w-10 text-green-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </div>
+            <div className="w-full max-w-md bg-white p-8 text-center">
+              <h1 className="mb-3 text-2xl font-bold text-gray-900">Registration Submitted Successfully!</h1>
+              <p className="mb-6 text-gray-600">Thank you for registering with Bridgitus. Check your email for login credentials.</p>
+              <div className="flex gap-3">
+                <Link href="/portal/login" className="flex-1 inline-block bg-secondary-color px-4 py-2.5 text-sm font-medium text-white text-center hover:bg-secondary-color/90">Log In to Portal</Link>
+                <Link href="/" className="flex-1 inline-block border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 text-center hover:bg-gray-50">Return to Home</Link>
               </div>
-              <h1 className="mb-3 text-2xl font-bold text-gray-900">
-                Registration Submitted Successfully!
-              </h1>
-              <p className="mb-6 text-gray-600">
-                Thank you for registering with Bridgtus. We&apos;ll be in touch
-                shortly to confirm your booking.
-              </p>
-              <Link
-                href="/"
-                className="inline-block w-full rounded-md bg-secondary-color px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-secondary-color/90 focus:outline-none focus:ring-2 focus:ring-secondary-color focus:ring-offset-2"
-              >
-                Return to Home
-              </Link>
             </div>
           </div>
         ) : null}

@@ -1,28 +1,29 @@
-import Image from "next/image";
-import Button from "./Button";
+import Link from "next/link";
+import { getSiteContent } from "@/lib/firestore";
 
-function Cta() {
+const DEFAULTS = {
+  heading: "Every class is an opportunity to succeed.",
+  subheading: "Ready to take the first step? Register today and start your learning journey.",
+  buttonLabel: "Get Started",
+  buttonHref: "/register",
+};
+
+async function Cta() {
+  let c = DEFAULTS;
+  try {
+    const d = await getSiteContent("cta");
+    if (d) c = { ...DEFAULTS, ...(d as typeof DEFAULTS) };
+  } catch { }
+
   return (
-    <section className="bg-black  relative py-10 flex items-center justify-center md:h-[250px] lg:h-[300px] xl:h-[400px] h-[300px] ">
-      <Image
-        src="/assets/line2.png"
-        alt="cta"
-        width={1000}
-        height={1000}
-        className="w-full h-full object-cover absolute top-0 left-0 bottom-0"
-      />
-
-      <div className="flex flex-col gap-5 items-center justify-center absolute top-0 left-0 bottom-0 right-0 ">
-        <h1 className="md:w-2/3 text-2xl md:text-3xl lg:text-4xl xl:text-5xl text-white text-center">
-          Every class is an opportunity to succeed and an experience to remember
-          for the future.{" "}
-        </h1>
-        <p className="text-sm md:text-lg text-white/50">
-          Ready to take the first step?
-        </p>
-        <Button style="link" href="register">
-          Book your first session
-        </Button>
+    <section className="py-16 sm:py-20 bg-secondary-color">
+      <div className="w-full max-w-[1250px] mx-auto px-4 md:px-6 text-center flex flex-col items-center gap-6">
+        <h2 className="text-2xl sm:text-4xl font-bold text-white max-w-2xl leading-tight">{c.heading}</h2>
+        <p className="text-white/70 text-base sm:text-lg max-w-xl">{c.subheading}</p>
+        <Link href={c.buttonHref}
+          className="inline-block bg-white text-secondary-color font-bold px-8 py-4 text-sm sm:text-base hover:bg-white/90 transition-colors">
+          {c.buttonLabel}
+        </Link>
       </div>
     </section>
   );

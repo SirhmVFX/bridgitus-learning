@@ -9,3 +9,70 @@
 body {
   font-family: var(--font-open-sans);
 }
+
+/* ── Portal global overrides: no rounded corners, no shadows ── */
+.portal-root *,
+.portal-root *::before,
+.portal-root *::after {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Tailwind utility overrides — zero out all radius/shadow utilities in the portal */
+[class*="rounded"] {
+  border-radius: 0 !important;
+}
+
+[class*="shadow"] {
+  box-shadow: none !important;
+}
+
+/* ── Portal-specific UI components ── */
+.portal-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  padding: 20px 24px;
+}
+
+.portal-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.portal-input:focus {
+  border-color: #00369b;
+}
+
+.portal-btn-primary {
+  background: #00369b;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.portal-btn-primary:hover {
+  background: #002370;
+}
+
+.portal-btn-primary:disabled {
+  opacity: 0.55;
+}
+
+/* Badge — no radius */
+.portal-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

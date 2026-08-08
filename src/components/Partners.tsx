@@ -1,44 +1,33 @@
 import Image from "next/image";
+import { getPublishedPartners } from "@/lib/firestore";
 
-function Partners() {
+const FALLBACK = [
+  { id: "1", name: "DeltaMath", logo: "/assets/dm.png", url: "https://deltamath.com", published: true, order: 0 },
+  { id: "2", name: "Education", logo: "/assets/edu.png", url: "", published: true, order: 1 },
+  { id: "3", name: "IXL", logo: "/assets/ixl.webp", url: "https://ixl.com", published: true, order: 2 },
+  { id: "4", name: "Khan Academy", logo: "/assets/kah.png", url: "", published: true, order: 3 },
+  { id: "5", name: "Khan", logo: "/assets/kh.png", url: "", published: true, order: 4 },
+  { id: "6", name: "Quizlet", logo: "/assets/qz.png", url: "", published: true, order: 5 },
+  { id: "7", name: "Slader", logo: "/assets/sl.jpg", url: "", published: true, order: 6 },
+];
+
+async function Partners() {
+  let partners = FALLBACK;
+  try {
+    const data = await getPublishedPartners();
+    if (data.length > 0) partners = data as typeof FALLBACK;
+  } catch { }
+
   return (
-    <section className="flex items-center  ">
-      <div className="md:w-[800px] lg:w-[1000px] xl:w-[1250px] md:mx-auto flex md:flex-row flex-col items-center justify-between md:gap-20 gap-4 py-4 px-2 md:px-0">
-        {/* <div className=" flex flex-col gap-4 items-center md:p-10 ">
-          <h1 className="md:text-5xl text-3xl ">
-            Some partners we&apos;ve worked with
-          </h1>
-          <p className="md:text-sm text-xs text-black/50 md:text-center">
-            Join us on a journey beyond boundaries, where innovation isn&pos;t
-            just a destination – it&apos;s the very fabric of our existence. At
-            Bridgitus Learning, we&apos;re redefining the future by delivering
-            education smoother than you can imagine.
-          </p>
-        </div> */}
-
-        <h1 className="text-sm">Partner with:</h1>
-        <div className="flex gap-2 md:gap-4  justify-between grow-1">
-          {[
-            { id: 1, img: "/assets/dm.png" },
-            { id: 2, img: "/assets/edu.png" },
-            { id: 3, img: "/assets/ixl.webp" },
-            { id: 4, img: "/assets/kah.png" },
-            { id: 5, img: "/assets/kh.png" },
-            { id: 6, img: "/assets/qz.png" },
-            { id: 7, img: "/assets/sl.jpg" },
-          ].map((e) => (
-            <div
-              key={e.id}
-              className="md:h-4 h-3 w-fit hover:scale-105 cursor-pointer transition-all duration-300 "
-            >
-              <Image
-                src={e.img}
-                alt="logo"
-                width={1000}
-                height={1000}
-                className="w-full h-full object-contain"
-              />
-            </div>
+    <section className="py-4 border-b border-gray-100">
+      <div className="w-full max-w-[1250px] mx-auto flex flex-wrap items-center justify-between gap-4 px-4 md:px-6">
+        <p className="text-xs text-gray-500 font-medium whitespace-nowrap">Partner with:</p>
+        <div className="flex flex-wrap gap-4 sm:gap-6 items-center">
+          {partners.map((p) => (
+            <a key={p.id} href={p.url || undefined} target={p.url ? "_blank" : undefined} rel="noopener noreferrer"
+              className="h-5 sm:h-6 w-auto hover:scale-105 transition-transform duration-200 cursor-pointer">
+              <Image src={p.logo} alt={p.name} width={80} height={24} className="h-full w-auto object-contain" />
+            </a>
           ))}
         </div>
       </div>
