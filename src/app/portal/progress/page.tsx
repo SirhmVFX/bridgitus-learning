@@ -11,15 +11,21 @@ import {
   getMaterialsByGrade,
   getMaterialCompletions,
   isMaterialCompleted,
+  getLearningGaps,
+  getPracticeAttempts,
   type TestAttempt,
   type StudentProgress,
   type Assignment,
   type LearningMaterial,
   type MaterialCompletion,
+  type LearningGap,
+  type PracticeAttempt,
 } from "@/lib/firestore";
 import {
   MdBarChart, MdTrendingUp, MdEmojiEvents, MdMenuBook,
+  MdAutoAwesome, MdWarning, MdCheckCircle,
 } from "react-icons/md";
+import Link from "next/link";
 
 // ── Badges ─────────────────────────────────────────────────
 
@@ -79,20 +85,25 @@ export default function ProgressPage() {
   const [materials, setMaterials] = useState<LearningMaterial[]>([]);
   const [completions, setCompletions] = useState<MaterialCompletion[]>([]);
   const [assignmentsCompleted, setAssignmentsCompleted] = useState(0);
+  const [gaps, setGaps] = useState<LearningGap[]>([]);
+  const [practiceAttempts, setPracticeAttempts] = useState<PracticeAttempt[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!student?.id || !student?.grade) return;
     async function load() {
-      const [att, prog, ass, mats, comps] = await Promise.all([
+      const [att, prog, ass, mats, comps, gapData, practiceData] = await Promise.all([
         getAllStudentAttempts(student!.id!),
         getStudentProgress(student!.id!),
         getAssignmentsForStudent(student!.grade, student!.id!),
         getMaterialsByGrade(student!.grade),
         getMaterialCompletions(student!.id!, student!.grade),
+        getLearningGaps(student!.id!),
+        getPracticeAttempts(student!.id!),
       ]);
       setAttempts(att); setProgress(prog); setAssignments(ass);
       setMaterials(mats); setCompletions(comps);
+      setGaps(gapData); setPracticeAttempts(practiceData);
 
       let completed = 0;
       for (const a of ass) {
@@ -275,6 +286,84 @@ export default function ProgressPage() {
                 </div>
               </div>
             )}
+
+            {/* Learning Gaps Panel */}
+            {(() => {
+              // Build topic accuracy from test attempts + practice attempts combined
+              const topicMap: Record<string, { subject: string; scores: number[] }> = {};
+              for (const g of gaps) {
+                if (!topicMap[g.topic]) topicMap[g.topic] = { subject: g.subject, scores: [] };
+                topicMap[g.topic].scores.push(g.accuracy);
+              }
+              for (const pa of practiceAttempts) {
+                const key = pa.topic;
+                if (!topicMap[key]) topicMap[key] = { subject: pa.subject, scores: [] };
+                topicMap[key].scores.push(pa.percentage);
+              }
+              const topicRows = Object.entries(topicMap).map(([topic, { subject, scores }]) => ({
+                topic, subject,
+                accuracy: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
+              })).sort((a, b) => a.accuracy - b.accuracy);
+
+              const gapColor = (acc: number) =>
+                acc < 40 ? { bar: "#ef4444", badge: "bg-red-100 text-red-700", icon: "🔴" } :
+                  acc < 60 ? { bar: "#f59e0b", badge: "bg-amber-100 text-amber-700", icon: "🟡" } :
+                    acc < 80 ? { bar: "#3b82f6", badge: "bg-blue-100 text-blue-700", icon: "🔵" } :
+                      { bar: "#22c55e", badge: "bg-emerald-100 text-emerald-700", icon: "🟢" };
+
+              if (topicRows.length === 0 && gaps.length === 0) return null;
+
+              return (
+                <div className="bg-white border border-gray-200 p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+                      <MdAutoAwesome size={16} className="text-purple-600" /> Topic Accuracy &amp; Learning Gaps
+                    </h2>
+                    <Link href="/portal/practice"
+                      className="text-xs font-semibold text-purple-700 hover:text-purple-900 flex items-center gap-1">
+                      <MdAutoAwesome size={12} /> Practice weak topics →
+                    </Link>
+                  </div>
+
+                  {topicRows.length === 0 ? (
+                    <div className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200">
+                      <MdCheckCircle size={20} className="text-emerald-600 shrink-0" />
+                      <p className="text-sm text-emerald-800 font-medium">No active learning gaps. Great work!</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {topicRows.map(({ topic, subject, accuracy }) => {
+                        const c = gapColor(accuracy);
+                        return (
+                          <div key={topic}>
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs">{c.icon}</span>
+                                <p className="text-sm font-medium text-gray-800">{topic}</p>
+                                <span className="text-xs text-gray-400">{subject}</span>
+                              </div>
+                              <span className={`text-xs font-bold px-2 py-0.5 ${c.badge}`}>{accuracy}%</span>
+                            </div>
+                            <div className="h-2 bg-gray-100">
+                              <div className="h-full transition-all duration-700" style={{ width: `${accuracy}%`, background: c.bar }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {gaps.filter(g => g.accuracy < 60).length > 0 && (
+                        <div className="mt-3 flex items-start gap-2 bg-amber-50 border border-amber-200 px-3 py-2">
+                          <MdWarning size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                          <p className="text-xs text-amber-800">
+                            You have <strong>{gaps.filter(g => g.accuracy < 60).length}</strong> topic{gaps.filter(g => g.accuracy < 60).length !== 1 ? "s" : ""} below 60% accuracy.
+                            {" "}<Link href="/portal/practice" className="font-bold underline">Start a practice session</Link> to improve.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Badges */}
             <div className="bg-white border border-gray-200 p-5">

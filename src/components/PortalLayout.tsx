@@ -10,6 +10,7 @@ import {
   MdDashboard, MdMenuBook, MdAssignment, MdQuiz,
   MdBarChart, MdPerson, MdLogout, MdMenu, MdSchool,
   MdNotifications, MdClose, MdLock, MdCampaign, MdPushPin,
+  MdAutoAwesome,
 } from "react-icons/md";
 
 const NAV = [
@@ -17,6 +18,7 @@ const NAV = [
   { href: "/portal/materials", label: "Learning Materials", icon: MdMenuBook, requiresPaid: true },
   { href: "/portal/tests", label: "Tests & Exams", icon: MdQuiz, requiresPaid: true },
   { href: "/portal/assignments", label: "Assignments", icon: MdAssignment, requiresPaid: true },
+  { href: "/portal/practice", label: "AI Practice", icon: MdAutoAwesome, requiresPaid: true },
   { href: "/portal/progress", label: "My Progress", icon: MdBarChart, requiresPaid: true },
   { href: "/portal/account", label: "My Account", icon: MdPerson },
 ];
@@ -118,8 +120,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             <Link key={item.href} href={locked ? "/portal/payment" : item.href}
               onClick={() => setSidebarOpen(false)}
               className={`flex items-center gap-3 px-5 py-3 text-sm font-medium transition-all ${isActive ? "bg-white/10 text-white border-l-2 border-primary-color"
-                  : locked ? "text-white/30 cursor-pointer"
-                    : "text-white/60 hover:text-white hover:bg-white/5"
+                : locked ? "text-white/30 cursor-pointer"
+                  : "text-white/60 hover:text-white hover:bg-white/5"
                 }`}>
               <item.icon size={18} />
               <span className="flex-1">{item.label}</span>

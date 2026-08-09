@@ -99,10 +99,25 @@ export interface SiteTestimonial {
   avatar?: string; published: boolean; order: number; createdAt?: Timestamp;
 }
 export interface SitePricingPlan {
-  id?: string; title: string; tagline: string; price: string; per: string;
-  perks: Array<{ desc: string }>; freePerks: string[];
-  highlighted: boolean; order: number; published: boolean;
-  amountKobo?: number;   // exact amount in kobo/smallest currency unit for Paystack
+  id?: string;
+  title: string;
+  tagline: string;        // shown under title e.g. "(Best Value for Families)"
+  price: string;          // display price e.g. "$49.99"
+  per: string;            // e.g. "/week"
+  badge?: string;         // e.g. "1 to 4 Children"
+  description?: string;   // short description under badge
+  icon?: string;          // emoji icon e.g. "👨‍👩‍👧‍👦"
+  ctaLabel?: string;      // button text e.g. "Book your family plan now"
+  ctaHref?: string;       // button link
+  perks: Array<{ desc: string }>;
+  freePerks: string[];
+  features?: Array<{ icon: string; title: string; desc: string }>;  // "What's Included" grid
+  bottomNote1?: string;   // e.g. "More learning. More progress. More value together."
+  bottomNote2?: string;   // e.g. "Cancel or pause anytime"
+  highlighted: boolean;
+  order: number;
+  published: boolean;
+  amountKobo?: number;
   createdAt?: Timestamp;
 }
 export interface SiteFaq {
@@ -398,4 +413,137 @@ export async function getPublishedPartners(): Promise<SitePartner[]> {
   return snap.docs
     .map(d => ({ id: d.id, ...(d.data() as SitePartner) }))
     .sort((a, b) => a.order - b.order);
+}
+
+// ─────────────────────────────────────────────────────────────
+// AI QUESTION SETS (saved generator output)
+// ─────────────────────────────────────────────────────────────
+
+export interface AIQuestion {
+  id: string;
+  type: "multiple_choice" | "true_false" | "short_answer" | "extended_response";
+  text: string;
+  options?: string[];
+  correctAnswer: string;
+  points: number;
+  explanation?: string;
+  workedSolution?: string;
+  topic?: string;
+  subtopic?: string;
+  difficulty?: string;
+}
+
+export interface QuestionSet {
+  id?: string;
+  title: string;
+  curriculum: string;
+  subject: string;
+  year: string;
+  topic: string;
+  subtopic?: string;
+  difficulty: string;
+  format: string;
+  context: string;
+  questionCount: number;
+  questions: AIQuestion[];
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
+}
+
+export interface LearningGap {
+  id?: string;
+  studentId: string;
+  subject: string;
+  topic: string;
+  subtopic?: string;
+  accuracy: number;        // 0–100 percentage
+  attemptCount: number;
+  lastAttemptAt?: Timestamp;
+  resolved: boolean;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
+}
+
+export interface PracticeAttempt {
+  id?: string;
+  studentId: string;
+  studentUid: string;
+  questionSetId?: string;
+  questions: AIQuestion[];
+  answers: Record<string, string>;
+  score: number;
+  totalPoints: number;
+  percentage: number;
+  subject: string;
+  topic: string;
+  difficulty: string;
+  submittedAt?: Timestamp;
+}
+
+// ── Question Set helpers (student portal — read only) ────────────────────
+
+export async function getQuestionSetById(id: string): Promise<QuestionSet | null> {
+  const snap = await getDoc(doc(db, "questionSets", id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...(snap.data() as QuestionSet) };
+}
+
+// ── Learning Gaps ────────────────────────────────────────────────────────
+
+export async function getLearningGaps(studentId: string): Promise<LearningGap[]> {
+  const snap = await getDocs(query(
+    collection(db, "learningGaps"),
+    where("studentId", "==", studentId),
+    where("resolved", "==", false)
+  ));
+  return snap.docs.map(d => ({ id: d.id, ...(d.data() as LearningGap) }))
+    .sort((a, b) => a.accuracy - b.accuracy);  // worst gaps first
+}
+
+export async function upsertLearningGap(
+  studentId: string, subject: string, topic: string, subtopic: string | undefined,
+  accuracy: number
+): Promise<void> {
+  const q = query(collection(db, "learningGaps"),
+    where("studentId", "==", studentId),
+    where("subject", "==", subject),
+    where("topic", "==", topic)
+  );
+  const snap = await getDocs(q);
+  if (!snap.empty) {
+    const existing = snap.docs[0].data() as LearningGap;
+    await updateDoc(snap.docs[0].ref, {
+      accuracy,
+      attemptCount: (existing.attemptCount ?? 0) + 1,
+      resolved: accuracy >= 80,
+      lastAttemptAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+  } else {
+    await addDoc(collection(db, "learningGaps"), {
+      studentId, subject, topic, subtopic: subtopic ?? null,
+      accuracy, attemptCount: 1, resolved: accuracy >= 80,
+      lastAttemptAt: serverTimestamp(),
+      createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+    });
+  }
+}
+
+// ── Practice Attempts ────────────────────────────────────────────────────
+
+export async function savePracticeAttempt(attempt: Omit<PracticeAttempt, "id">): Promise<string> {
+  const ref = await addDoc(collection(db, "practiceAttempts"), {
+    ...attempt, submittedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function getPracticeAttempts(studentId: string): Promise<PracticeAttempt[]> {
+  const snap = await getDocs(query(
+    collection(db, "practiceAttempts"),
+    where("studentId", "==", studentId)
+  ));
+  return snap.docs
+    .map(d => ({ id: d.id, ...(d.data() as PracticeAttempt) }))
+    .sort((a, b) => (b.submittedAt as Timestamp)?.toMillis() - (a.submittedAt as Timestamp)?.toMillis() || 0);
 }
