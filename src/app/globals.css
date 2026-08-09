@@ -76,3 +76,52 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+
+/* ── Print / Save as PDF ──────────────────────────────── */
+@media print {
+  /* Hide navigation, sidebars, and action buttons */
+  aside,
+  header,
+  nav,
+  .print\:hidden,
+  button:not(.print-show) {
+    display: none !important;
+  }
+
+  /* Full-width content */
+  body,
+  main,
+  .flex-1 {
+    display: block !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Remove shadows / ring borders that look bad on paper */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Keep colour backgrounds for pass/fail indicators */
+  .bg-emerald-50,
+  .bg-red-50,
+  .bg-blue-50,
+  .bg-amber-50,
+  .bg-gray-50 {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Page breaks */
+  .border {
+    break-inside: avoid;
+  }
+
+  /* Score rings / charts keep their colours */
+  svg {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

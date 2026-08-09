@@ -1,4 +1,4 @@
-import { getPublishedServices, type SiteService } from "@/lib/firestore";
+import { getPublishedServices, getSiteContent, type SiteService } from "@/lib/firestore";
 
 const FALLBACK_OFFER: SiteService[] = [
   { id: "1", title: "Fully Interactive Classes", description: "Engage in real-time with whiteboards, live chat and screen sharing.", icon: "🖥️", section: "offer", published: true, order: 0 },
@@ -9,7 +9,7 @@ const FALLBACK_OFFER: SiteService[] = [
   { id: "6", title: "Expert Tutors", description: "All tutors are qualified educators with proven track records.", icon: "🏆", section: "offer", published: true, order: 5 },
 ];
 
-const REQUIREMENTS = [
+const DEFAULT_REQUIREMENTS = [
   { icon: "💻", label: "Computer or Tablet" },
   { icon: "📷", label: "Webcam" },
   { icon: "🌐", label: "Stable Internet" },
@@ -18,8 +18,18 @@ const REQUIREMENTS = [
 
 async function Offer() {
   let items: SiteService[] = [];
+  let req = DEFAULT_REQUIREMENTS;
+
   try { items = await getPublishedServices("offer"); } catch { }
   if (items.length === 0) items = FALLBACK_OFFER;
+
+  // "What You Need" section editable via admin → siteContent "requirements"
+  try {
+    const d = await getSiteContent("requirements");
+    if (d && Array.isArray((d as Record<string, unknown>).items)) {
+      req = (d as { items: typeof DEFAULT_REQUIREMENTS }).items;
+    }
+  } catch { }
 
   return (
     <section className="py-16 sm:py-20 bg-gray-50">
@@ -51,7 +61,7 @@ async function Offer() {
         <div className="bg-secondary-color p-8 sm:p-10">
           <h3 className="text-white font-bold text-xl sm:text-2xl mb-6 text-center">What You Need to Get Started</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-            {REQUIREMENTS.map((r) => (
+            {req.map((r) => (
               <div key={r.label} className="text-center">
                 <div className="text-4xl mb-2">{r.icon}</div>
                 <p className="text-white/80 text-sm font-medium">{r.label}</p>

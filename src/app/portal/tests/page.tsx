@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import Link from "next/link";
 import PortalLayout from "@/components/PortalLayout";
 import { useStudentAuth } from "@/lib/studentAuth";
 import {
@@ -16,7 +17,184 @@ import {
 import {
   MdQuiz, MdTimer, MdCheckCircle, MdCancel, MdPending,
   MdLock, MdArrowBack, MdArrowForward, MdSend, MdMenuBook,
+  MdExpandMore, MdExpandLess, MdAutoAwesome, MdPrint,
 } from "react-icons/md";
+
+// ── Worked Solution Viewer ─────────────────────────────────────────────────
+
+function AttemptResultPanel({
+  attempt,
+  test,
+  studentId,
+}: {
+  attempt: TestAttempt;
+  test: Test;
+  studentId: string;
+}) {
+  const [expandedQ, setExpandedQ] = useState<string | null>(null);
+  const [creatingSimFor, setCreatingSimFor] = useState<string | null>(null);
+  const [simError, setSimError] = useState("");
+
+  async function handleCreateSimilar(q: Question) {
+    setCreatingSimFor(q.id);
+    setSimError("");
+    try {
+      const res = await fetch("/api/create-similar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: { ...q, topic: test.subject, subtopic: q.id, difficulty: "Core" }, count: 3 }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed");
+      // Store in sessionStorage so Practice page can pick them up
+      const existing = JSON.parse(sessionStorage.getItem("practiceQuestions") ?? "[]");
+      sessionStorage.setItem("practiceQuestions", JSON.stringify([...existing, ...data.questions]));
+      sessionStorage.setItem("practiceMeta", JSON.stringify({ subject: test.subject, topic: q.id, difficulty: "Core", studentId }));
+      window.location.href = "/portal/practice";
+    } catch (err: unknown) {
+      setSimError(err instanceof Error ? err.message : "Could not create similar questions");
+    } finally {
+      setCreatingSimFor(null);
+    }
+  }
+
+  const isCorrect = (q: Question) => {
+    const given = attempt.answers[q.id]?.trim().toLowerCase() ?? "";
+    const correct = q.correctAnswer.trim().toLowerCase();
+    if (q.type === "short_answer") return given.includes(correct);
+    return given === correct;
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Summary */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-white border border-gray-200 p-4 text-center">
+          <p className={`text-3xl font-black ${attempt.passed ? "text-emerald-600" : "text-red-500"}`}>{attempt.percentage}%</p>
+          <p className="text-xs text-gray-500 mt-0.5">Score</p>
+        </div>
+        <div className="bg-white border border-gray-200 p-4 text-center">
+          <p className="text-3xl font-black text-gray-900">{attempt.score}/{attempt.totalPoints}</p>
+          <p className="text-xs text-gray-500 mt-0.5">Points</p>
+        </div>
+        <div className={`border p-4 text-center ${attempt.passed ? "bg-emerald-50 border-emerald-300" : "bg-red-50 border-red-200"}`}>
+          <p className={`text-xl font-black ${attempt.passed ? "text-emerald-700" : "text-red-600"}`}>
+            {attempt.passed ? "PASSED" : "FAILED"}
+          </p>
+          <p className="text-xs text-gray-500 mt-0.5">Pass mark: {test.passMark}%</p>
+        </div>
+      </div>
+
+      {simError && (
+        <div className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{simError}</div>
+      )}
+
+      {/* Per-question breakdown */}
+      <div>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Question Breakdown</p>
+        <div className="space-y-3">
+          {test.questions.map((q, i) => {
+            const correct = isCorrect(q);
+            const studentAnswer = attempt.answers[q.id];
+            const expanded = expandedQ === q.id;
+
+            return (
+              <div key={q.id} className={`border overflow-hidden ${correct ? "border-emerald-200" : "border-red-200"}`}>
+                <div className={`px-4 py-3 flex items-start justify-between gap-3 ${correct ? "bg-emerald-50" : "bg-red-50"}`}>
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className={`w-7 h-7 flex items-center justify-center text-xs font-bold shrink-0 ${correct ? "bg-emerald-500 text-white" : "bg-red-500 text-white"}`}>
+                      {i + 1}
+                    </div>
+                    <p className="text-sm font-medium text-gray-800 leading-snug line-clamp-2">{q.text}</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {!correct && (
+                      <button
+                        onClick={() => handleCreateSimilar(q)}
+                        disabled={creatingSimFor === q.id}
+                        title="Practice similar questions"
+                        className="flex items-center gap-1 text-xs bg-purple-100 text-purple-700 font-semibold px-2 py-1 hover:bg-purple-200 transition-colors disabled:opacity-50"
+                      >
+                        {creatingSimFor === q.id
+                          ? <><div className="w-3 h-3 border border-purple-600 border-t-transparent rounded-full animate-spin" />…</>
+                          : <><MdAutoAwesome size={12} />Practice</>}
+                      </button>
+                    )}
+                    <button onClick={() => setExpandedQ(expanded ? null : q.id)}
+                      className="text-gray-400 hover:text-gray-600">
+                      {expanded ? <MdExpandLess size={18} /> : <MdExpandMore size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                {expanded && (
+                  <div className="px-4 py-4 bg-white space-y-3">
+                    {/* Student answer */}
+                    <div>
+                      <p className="text-xs font-semibold text-gray-500 mb-1">Your answer:</p>
+                      <p className={`text-sm px-3 py-1.5 border ${correct ? "border-emerald-300 bg-emerald-50 text-emerald-800" : "border-red-200 bg-red-50 text-red-700"}`}>
+                        {studentAnswer || <em className="text-gray-400">Not answered</em>}
+                        {correct ? " ✓" : " ✗"}
+                      </p>
+                    </div>
+
+                    {/* Correct answer */}
+                    {!correct && (
+                      <div>
+                        <p className="text-xs font-semibold text-gray-500 mb-1">Correct answer:</p>
+                        <p className="text-sm px-3 py-1.5 border border-emerald-300 bg-emerald-50 text-emerald-800 font-semibold">
+                          {q.correctAnswer} ✓
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Explanation */}
+                    {(q as Question & { explanation?: string }).explanation && (
+                      <div className="bg-blue-50 border border-blue-100 px-3 py-2">
+                        <p className="text-xs font-semibold text-blue-700 mb-0.5">Explanation</p>
+                        <p className="text-xs text-blue-700">{(q as Question & { explanation?: string }).explanation}</p>
+                      </div>
+                    )}
+
+                    {/* Worked solution */}
+                    {(q as Question & { workedSolution?: string }).workedSolution && (
+                      <div className="bg-gray-50 border border-gray-200 px-3 py-2">
+                        <p className="text-xs font-semibold text-gray-600 mb-0.5">Worked Solution</p>
+                        <p className="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed">
+                          {(q as Question & { workedSolution?: string }).workedSolution}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Teacher feedback */}
+      {attempt.adminComment && (
+        <div className="bg-secondary-color/5 border border-secondary-color/20 p-4">
+          <p className="text-xs font-semibold text-secondary-color mb-1">Teacher Feedback</p>
+          <p className="text-sm text-gray-700">{attempt.adminComment}</p>
+        </div>
+      )}
+
+      {/* Print button */}
+      <div className="flex gap-3">
+        <button onClick={() => window.print()}
+          className="flex items-center gap-2 text-sm btn-secondary py-2">
+          <MdPrint size={15} /> Print / Save as PDF
+        </button>
+        <Link href="/portal/practice"
+          className="flex items-center gap-2 text-sm bg-purple-600 text-white font-semibold px-4 py-2 hover:bg-purple-700 transition-colors">
+          <MdAutoAwesome size={15} /> Go to Practice
+        </Link>
+      </div>
+    </div>
+  );
+}
 
 // ── Test Runner ──────────────────────────────────────────────
 
@@ -180,6 +358,7 @@ export default function TestsPage() {
   const [activeTest, setActiveTest] = useState<Test | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [viewingResult, setViewingResult] = useState<{ attempt: TestAttempt; test: Test } | null>(null);
 
   async function loadData() {
     if (!student?.grade || !student?.id) return;
@@ -227,6 +406,31 @@ export default function TestsPage() {
             test={activeTest} studentId={student!.id!} studentUid={user!.uid}
             attemptNumber={attemptsForTest(activeTest.id!).length + 1}
             onSubmit={() => { setSubmitted(true); setActiveTest(null); loadData(); }}
+          />
+        </div>
+      </PortalLayout>
+    );
+  }
+
+  // Viewing a specific approved result
+  if (viewingResult) {
+    return (
+      <PortalLayout>
+        <div className="max-w-3xl mx-auto space-y-5">
+          <button onClick={() => setViewingResult(null)} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700">
+            <MdArrowBack size={16} /> Back to Tests
+          </button>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">{viewingResult.test.title}</h1>
+            <p className="text-gray-500 text-sm mt-0.5">
+              {viewingResult.test.subject} · Grade {viewingResult.test.grade} ·
+              Attempt #{viewingResult.attempt.attemptNumber}
+            </p>
+          </div>
+          <AttemptResultPanel
+            attempt={viewingResult.attempt}
+            test={viewingResult.test}
+            studentId={student!.id!}
           />
         </div>
       </PortalLayout>
@@ -333,12 +537,16 @@ export default function TestsPage() {
                         <div className="flex flex-wrap gap-2">
                           {myAttempts.map((att) => (
                             <div key={att.id} className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold ${att.status === "approved" ? (att.passed ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700")
-                                : att.status === "pending_review" ? "bg-amber-100 text-amber-700"
-                                  : "bg-gray-100 text-gray-500"}`}>
+                              : att.status === "pending_review" ? "bg-amber-100 text-amber-700"
+                                : "bg-gray-100 text-gray-500"}`}>
                               {att.status === "approved" ? (att.passed ? <MdCheckCircle size={12} /> : <MdCancel size={12} />) : <MdPending size={12} />}
                               Attempt {att.attemptNumber}
                               {att.status === "approved" && ` · ${att.percentage}%`}
                               {att.status === "pending_review" && " · Pending"}
+                              {att.status === "approved" && (
+                                <button onClick={() => setViewingResult({ attempt: att, test })}
+                                  className="ml-1.5 underline text-[10px] hover:opacity-70">View result</button>
+                              )}
                             </div>
                           ))}
                         </div>
