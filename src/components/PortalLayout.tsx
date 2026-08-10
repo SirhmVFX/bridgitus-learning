@@ -23,7 +23,7 @@ const NAV = [
   { href: "/portal/account", label: "My Account", icon: MdPerson },
 ];
 
-const FREE_PATHS = ["/portal/login", "/portal/payment"];
+const FREE_PATHS = ["/portal/login", "/portal/payment", "/portal/suspended"];
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const { user, student, loading, signOut } = useStudentAuth();
@@ -35,14 +35,20 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const notifRef = useRef<HTMLDivElement>(null);
 
   const isPaid = student?.paymentStatus === "paid" || student?.paymentStatus === "waived";
+  const isSuspended = student?.status === "suspended" || student?.status === "inactive";
 
   useEffect(() => {
     if (loading) return;
     if (!user) { router.replace("/portal/login"); return; }
-    if (student && !isPaid && !FREE_PATHS.some((p) => pathname.startsWith(p))) {
+    // Suspended / inactive students can only reach the suspended page or login
+    if (student && isSuspended && !pathname.startsWith("/portal/suspended") && !pathname.startsWith("/portal/login")) {
+      router.replace("/portal/suspended");
+      return;
+    }
+    if (student && !isSuspended && !isPaid && !FREE_PATHS.some((p) => pathname.startsWith(p))) {
       router.replace("/portal/payment");
     }
-  }, [user, student, loading, isPaid, pathname, router]);
+  }, [user, student, loading, isPaid, isSuspended, pathname, router]);
 
   // Load announcements for the notification bell
   useEffect(() => {

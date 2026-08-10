@@ -4,54 +4,104 @@ import { useEffect, useState } from "react";
 import PortalLayout from "@/components/PortalLayout";
 import { useStudentAuth } from "@/lib/studentAuth";
 import {
-  getAssignmentsForStudent, getSubmission, upsertSubmission,
-  getMaterialCompletions, getMaterialById, isMaterialCompleted,
+  getAssignmentsForStudent,
+  getSubmission,
+  upsertSubmission,
+  getMaterialCompletions,
+  getMaterialById,
+  isMaterialCompleted,
   upsertStudentProgress,
-  type Assignment, type AssignmentSubmission, type MaterialCompletion,
+  type Assignment,
+  type AssignmentSubmission,
+  type MaterialCompletion,
 } from "@/lib/firestore";
 import {
-  MdAssignment, MdOpenInNew, MdCheckCircle, MdCalendarToday,
-  MdLock, MdLink, MdMenuBook,
+  MdAssignment,
+  MdOpenInNew,
+  MdCheckCircle,
+  MdCalendarToday,
+  MdLock,
+  MdLink,
+  MdMenuBook,
 } from "react-icons/md";
 
 const TYPE_LABELS: Record<string, string> = {
-  ixl: "IXL", deltamath: "DeltaMath", custom: "Custom", document: "Document",
+  ixl: "IXL",
+  deltamath: "DeltaMath",
+  custom: "Custom",
+  document: "Document",
+  quiz: "Quiz",
 };
 
 function AssignmentCard({
-  assignment, studentId, studentUid, isUnlocked, prerequisiteTitle,
+  assignment,
+  studentId,
+  studentUid,
+  isUnlocked,
+  prerequisiteTitle,
+  onStartQuiz,
+  refreshToken,
 }: {
-  assignment: Assignment; studentId: string; studentUid: string;
-  isUnlocked: boolean; prerequisiteTitle?: string;
+  assignment: Assignment;
+  studentId: string;
+  studentUid: string;
+  isUnlocked: boolean;
+  prerequisiteTitle?: string;
+  onStartQuiz?: (assignment: Assignment) => void;
+  refreshToken: number;
 }) {
   const [submission, setSubmission] = useState<AssignmentSubmission | null>(null);
   const [marking, setMarking] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
-    getSubmission(assignment.id!, studentId).then(setSubmission);
-  }, [assignment.id, studentId]);
+    if (!assignment.id) return;
+    getSubmission(assignment.id, studentId).then(setSubmission);
+  }, [assignment.id, studentId, refreshToken]);
 
   async function markStarted() {
-    if (!isUnlocked) return;
+    if (!isUnlocked || !assignment.id) return;
     setMarking(true);
     try {
-      await upsertSubmission({ assignmentId: assignment.id!, studentId, studentUid, status: "in_progress" });
-      setSubmission({ assignmentId: assignment.id!, studentId, studentUid, status: "in_progress" });
-    } finally { setMarking(false); }
+      await upsertSubmission({
+        assignmentId: assignment.id,
+        studentId,
+        studentUid,
+        status: "in_progress",
+      });
+      setSubmission({
+        assignmentId: assignment.id,
+        studentId,
+        studentUid,
+        status: "in_progress",
+      });
+    } finally {
+      setMarking(false);
+    }
   }
 
   async function markSubmitted() {
+    if (!assignment.id) return;
     setMarking(true);
     try {
-      await upsertSubmission({ assignmentId: assignment.id!, studentId, studentUid, status: "submitted" });
-      await upsertStudentProgress(studentId, assignment.grade, assignment.subject, { assignmentCompleted: true });
-      setSubmission((s) => s ? { ...s, status: "submitted" } : null);
-    } finally { setMarking(false); }
+      await upsertSubmission({
+        assignmentId: assignment.id,
+        studentId,
+        studentUid,
+        status: "submitted",
+      });
+      await upsertStudentProgress(studentId, assignment.grade, assignment.subject, {
+        assignmentCompleted: true,
+      });
+      setSubmission((current) => current ? { ...current, status: "submitted" } : null);
+    } finally {
+      setMarking(false);
+    }
   }
 
   const status = submission?.status ?? "not_started";
-  const isOverdue = assignment.dueDate && new Date(assignment.dueDate) < new Date();
+  const isOverdue = assignment.dueDate ? new Date(assignment.dueDate) < new Date() : false;
+  const hasQuiz = (assignment.questions?.length ?? 0) > 0 || assignment.type === "quiz";
 
   const statusStyle: Record<string, string> = {
     not_started: "bg-gray-100 text-gray-600",
@@ -59,12 +109,19 @@ function AssignmentCard({
     submitted: "bg-blue-100 text-blue-700",
     graded: "bg-emerald-100 text-emerald-700",
   };
+
   const statusLabel: Record<string, string> = {
-    not_started: "Not Started", in_progress: "In Progress",
-    submitted: "Submitted", graded: "Graded",
+    not_started: "Not Started",
+    in_progress: "In Progress",
+    submitted: "Submitted",
+    graded: "Graded",
   };
 
-  const platformColor = assignment.type === "ixl" ? "bg-orange-500" : assignment.type === "deltamath" ? "bg-blue-600" : "bg-gray-500";
+  const platformColor = assignment.type === "ixl"
+    ? "bg-orange-500"
+    : assignment.type === "deltamath"
+      ? "bg-blue-600"
+      : "bg-secondary-color";
 
   return (
     <div className={`bg-white border overflow-hidden transition-all ${!isUnlocked ? "opacity-65 border-gray-200" : isOverdue && status === "not_started" ? "border-red-200" : "border-gray-200"}`}>
@@ -78,14 +135,19 @@ function AssignmentCard({
               </span>
               <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5">{assignment.subject}</span>
               <span className={`text-xs px-2 py-0.5 font-medium ${statusStyle[status]}`}>{statusLabel[status]}</span>
-              {!isUnlocked && <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 font-semibold flex items-center gap-0.5"><MdLock size={11} /> Locked</span>}
-              {isOverdue && status === "not_started" && isUnlocked && <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 font-semibold">Overdue</span>}
+              {!isUnlocked && (
+                <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 font-semibold flex items-center gap-0.5">
+                  <MdLock size={11} /> Locked
+                </span>
+              )}
+              {isOverdue && status === "not_started" && isUnlocked && (
+                <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 font-semibold">Overdue</span>
+              )}
             </div>
 
             <h3 className={`font-semibold text-lg ${!isUnlocked ? "text-gray-400" : "text-gray-900"}`}>{assignment.title}</h3>
             {assignment.description && <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{assignment.description}</p>}
 
-            {/* Prerequisite notice */}
             {!isUnlocked && prerequisiteTitle && (
               <div className="mt-2 flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 px-3 py-2">
                 <MdMenuBook size={15} className="shrink-0" />
@@ -114,26 +176,49 @@ function AssignmentCard({
             )}
           </div>
 
-          {/* Actions */}
           {isUnlocked && (
             <div className="flex flex-col items-end gap-2 shrink-0">
               {assignment.platformUrl && (
-                <a href={assignment.platformUrl} target="_blank" rel="noopener noreferrer"
-                  onClick={status === "not_started" ? markStarted : undefined}
-                  className={`inline-flex items-center gap-1.5 text-white text-xs font-bold px-3 py-2 transition-colors ${assignment.type === "ixl" ? "bg-orange-500 hover:bg-orange-600" : "bg-blue-600 hover:bg-blue-700"}`}>
+                <a
+                  href={assignment.platformUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={status === "not_started" && !hasQuiz ? markStarted : undefined}
+                  className={`inline-flex items-center gap-1.5 text-white text-xs font-bold px-3 py-2 transition-colors ${assignment.type === "ixl" ? "bg-orange-500 hover:bg-orange-600" : "bg-blue-600 hover:bg-blue-700"}`}
+                >
                   <MdOpenInNew size={13} />
                   Open in {assignment.type === "ixl" ? "IXL" : "DeltaMath"}
                 </a>
               )}
-              {status === "in_progress" && (
-                <button onClick={markSubmitted} disabled={marking}
-                  className="flex items-center gap-1.5 text-sm text-blue-600 font-medium hover:underline disabled:opacity-60">
+
+              {hasQuiz && status !== "graded" && onStartQuiz && (
+                <button
+                  type="button"
+                  onClick={() => onStartQuiz(assignment)}
+                  className="bg-secondary-color text-white text-xs font-bold px-3 py-2 hover:bg-secondary-color/90 transition-colors"
+                >
+                  Take Quiz
+                </button>
+              )}
+
+              {status === "in_progress" && !hasQuiz && (
+                <button
+                  type="button"
+                  onClick={markSubmitted}
+                  disabled={marking}
+                  className="flex items-center gap-1.5 text-sm text-blue-600 font-medium hover:underline disabled:opacity-60"
+                >
                   <MdCheckCircle size={15} /> Mark as Done
                 </button>
               )}
-              {status === "not_started" && !assignment.platformUrl && (
-                <button onClick={markStarted} disabled={marking}
-                  className="bg-secondary-color text-white text-xs font-bold px-3 py-2 hover:bg-secondary-color/90 transition-colors disabled:opacity-60">
+
+              {status === "not_started" && !assignment.platformUrl && !hasQuiz && (
+                <button
+                  type="button"
+                  onClick={markStarted}
+                  disabled={marking}
+                  className="bg-secondary-color text-white text-xs font-bold px-3 py-2 hover:bg-secondary-color/90 transition-colors disabled:opacity-60"
+                >
                   Start
                 </button>
               )}
@@ -143,16 +228,27 @@ function AssignmentCard({
 
         {isUnlocked && (assignment.content || assignment.fileUrl) && (
           <div className="mt-4 border-t border-gray-100 pt-4">
-            <button onClick={() => setExpanded(!expanded)} className="text-xs text-secondary-color font-medium hover:underline mb-3">
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              className="text-xs text-secondary-color font-medium hover:underline mb-3"
+            >
               {expanded ? "Hide instructions ↑" : "Show instructions ↓"}
             </button>
             {expanded && (
               <div>
-                {assignment.content && <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: assignment.content }} />}
+                {assignment.content && (
+                  <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: assignment.content }} />
+                )}
                 {assignment.fileUrl && (
-                  <a href={assignment.fileUrl} target="_blank" rel="noopener noreferrer"
-                    className="mt-3 inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 text-xs font-semibold px-3 py-2 hover:bg-gray-200 transition-colors">
-                    <MdLink size={13} />{assignment.fileName ?? "Download file"}
+                  <a
+                    href={assignment.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 text-xs font-semibold px-3 py-2 hover:bg-gray-200 transition-colors"
+                  >
+                    <MdLink size={13} />
+                    {assignment.fileName ?? "Download file"}
                   </a>
                 )}
               </div>
@@ -164,32 +260,212 @@ function AssignmentCard({
   );
 }
 
+function QuizRunner({
+  assignment,
+  studentId,
+  studentUid,
+  onCancel,
+  onComplete,
+}: {
+  assignment: Assignment;
+  studentId: string;
+  studentUid: string;
+  onCancel: () => void;
+  onComplete: (assignment: Assignment, submission: AssignmentSubmission) => void;
+}) {
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const questions = assignment.questions ?? [];
+  const totalPoints = assignment.totalPoints ?? questions.reduce((sum, q) => sum + (q.points ?? 0), 0);
+
+  function handleAnswer(questionId: string, value: string) {
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+  }
+
+  function grade() {
+    let score = 0;
+    for (const q of questions) {
+      const given = answers[q.id]?.trim().toLowerCase() ?? "";
+      const correct = q.correctAnswer.trim().toLowerCase();
+      if (q.type === "multiple_choice" || q.type === "true_false") {
+        if (given === correct) score += q.points;
+      } else {
+        if (given && correct && given.includes(correct)) score += q.points;
+      }
+    }
+    const percentage = totalPoints > 0 ? Math.round((score / totalPoints) * 100) : 0;
+    return {
+      score,
+      percentage,
+      passed: assignment.passMark !== undefined ? percentage >= assignment.passMark : true,
+    };
+  }
+
+  async function handleSubmit() {
+    if (!assignment.id) {
+      setError("Assignment is not available.");
+      return;
+    }
+
+    setSubmitting(true);
+    setError("");
+
+    try {
+      const { score, percentage, passed } = grade();
+      const submission: AssignmentSubmission = {
+        assignmentId: assignment.id,
+        studentId,
+        studentUid,
+        status: "graded",
+        answers,
+        score,
+        totalPoints,
+        percentage,
+        passed,
+        attemptNumber: 1,
+      };
+
+      await upsertSubmission(submission);
+      onComplete(assignment, submission);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to submit quiz.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (!questions.length) {
+    return (
+      <div className="bg-white border border-gray-200 p-8 text-center">
+        <p className="text-gray-600">This quiz is not configured yet. Please contact your teacher.</p>
+        <button type="button" onClick={onCancel} className="mt-4 text-sm font-semibold text-secondary-color hover:underline">
+          Back to assignments
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-5 bg-white border border-gray-200 p-6">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900">{assignment.title}</h2>
+          <p className="text-sm text-gray-500 mt-1">{assignment.description}</p>
+          <p className="text-xs text-gray-400 mt-2">{questions.length} questions · {totalPoints} points total</p>
+        </div>
+        <button type="button" onClick={onCancel} className="text-xs text-gray-500 hover:text-gray-700">Cancel</button>
+      </div>
+
+      {error && <div className="p-3 bg-red-50 border border-red-200 text-sm text-red-700">{error}</div>}
+
+      <div className="space-y-4">
+        {questions.map((question, index) => (
+          <div key={question.id} className="border rounded-xl p-4">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <p className="text-sm font-semibold text-gray-900">Question {index + 1}</p>
+              <span className="text-xs text-gray-500">{question.points} points</span>
+            </div>
+            <p className="text-sm text-gray-700 mb-3">{question.text}</p>
+
+            {question.type === "multiple_choice" && question.options?.map((option) => (
+              <label key={option} className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 cursor-pointer hover:border-secondary-color">
+                <input
+                  type="radio"
+                  name={question.id}
+                  value={option}
+                  checked={answers[question.id] === option}
+                  onChange={() => handleAnswer(question.id, option)}
+                  className="form-radio text-secondary-color"
+                />
+                <span className="text-sm text-gray-700">{option}</span>
+              </label>
+            ))}
+
+            {question.type === "true_false" && ["True", "False"].map((option) => (
+              <label key={option} className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 cursor-pointer hover:border-secondary-color">
+                <input
+                  type="radio"
+                  name={question.id}
+                  value={option.toLowerCase()}
+                  checked={answers[question.id] === option.toLowerCase()}
+                  onChange={() => handleAnswer(question.id, option.toLowerCase())}
+                  className="form-radio text-secondary-color"
+                />
+                <span className="text-sm text-gray-700">{option}</span>
+              </label>
+            ))}
+
+            {question.type === "short_answer" && (
+              <textarea
+                value={answers[question.id] ?? ""}
+                onChange={(e) => handleAnswer(question.id, e.target.value)}
+                rows={3}
+                className="w-full rounded-lg border border-gray-200 p-3 text-sm text-gray-700 focus:border-secondary-color focus:ring-secondary-color/20"
+                placeholder="Type your answer here"
+              />
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap gap-3 items-center">
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={submitting}
+          className="bg-secondary-color text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-secondary-color/90 disabled:opacity-60"
+        >
+          {submitting ? "Submitting…" : "Submit Quiz"}
+        </button>
+        <button type="button" onClick={onCancel} className="text-sm text-gray-500 hover:underline">
+          Back to assignments
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function AssignmentsPage() {
   const { student, user } = useStudentAuth();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [completions, setCompletions] = useState<MaterialCompletion[]>([]);
   const [materialTitles, setMaterialTitles] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "ixl" | "deltamath" | "custom" | "document">("all");
+  const [filter, setFilter] = useState<"all" | "ixl" | "deltamath" | "custom" | "document" | "quiz">("all");
+  const [activeQuiz, setActiveQuiz] = useState<Assignment | null>(null);
+  const [refreshToken, setRefreshToken] = useState(0);
 
-  useEffect(() => {
+  async function loadAssignments() {
     if (!student?.grade || !student?.id) return;
-    async function load() {
+    setLoading(true);
+    try {
       const [ass, comps] = await Promise.all([
-        getAssignmentsForStudent(student!.grade, student!.id!),
-        getMaterialCompletions(student!.id!, student!.grade),
+        getAssignmentsForStudent(student.grade, student.id),
+        getMaterialCompletions(student.id, student.grade),
       ]);
-      setAssignments(ass); setCompletions(comps);
+
+      setAssignments(ass);
+      setCompletions(comps);
+
       const ids = [...new Set(ass.map((a) => a.linkedMaterialId).filter(Boolean) as string[])];
       const titles: Record<string, string> = {};
       await Promise.all(ids.map(async (id) => {
-        const m = await getMaterialById(id);
-        if (m) titles[id] = m.title;
+        const material = await getMaterialById(id);
+        if (material) titles[id] = material.title;
       }));
       setMaterialTitles(titles);
+      setRefreshToken((token) => token + 1);
+    } catch (error) {
+      console.error("Assignments load error:", error);
+    } finally {
       setLoading(false);
     }
-    load();
+  }
+
+  useEffect(() => {
+    loadAssignments();
   }, [student]);
 
   const filtered = filter === "all" ? assignments : assignments.filter((a) => a.type === filter);
@@ -201,6 +477,12 @@ export default function AssignmentsPage() {
     return isMaterialCompleted(completions, a.linkedMaterialId);
   }
 
+  async function handleCompleteQuiz(assignment: Assignment, submission: AssignmentSubmission) {
+    setActiveQuiz(null);
+    await upsertStudentProgress(submission.studentId, assignment.grade, assignment.subject, { assignmentCompleted: true });
+    await loadAssignments();
+  }
+
   return (
     <PortalLayout>
       <div className="max-w-4xl mx-auto space-y-5">
@@ -209,45 +491,64 @@ export default function AssignmentsPage() {
           <p className="text-gray-500 text-sm mt-0.5">Your tasks, IXL exercises, and DeltaMath practice</p>
         </div>
 
-        {/* Platform quick links */}
         <div className="grid sm:grid-cols-2 gap-4">
-          <a href="https://www.ixl.com" target="_blank" rel="noopener noreferrer"
-            className="bg-orange-500 text-white p-4 flex items-center justify-between hover:bg-orange-600 transition-colors">
-            <div><p className="font-bold text-lg">IXL Learning</p><p className="text-white/80 text-sm">{ixlCount} assignment{ixlCount !== 1 ? "s" : ""} assigned</p></div>
+          <a href="https://www.ixl.com" target="_blank" rel="noopener noreferrer" className="bg-orange-500 text-white p-4 flex items-center justify-between hover:bg-orange-600 transition-colors">
+            <div>
+              <p className="font-bold text-lg">IXL Learning</p>
+              <p className="text-white/80 text-sm">{ixlCount} assignment{ixlCount !== 1 ? "s" : ""} assigned</p>
+            </div>
             <MdOpenInNew size={22} className="text-white/70" />
           </a>
-          <a href="https://www.deltamath.com" target="_blank" rel="noopener noreferrer"
-            className="bg-blue-600 text-white p-4 flex items-center justify-between hover:bg-blue-700 transition-colors">
-            <div><p className="font-bold text-lg">DeltaMath</p><p className="text-white/80 text-sm">{deltaMathCount} assignment{deltaMathCount !== 1 ? "s" : ""} assigned</p></div>
+          <a href="https://www.deltamath.com" target="_blank" rel="noopener noreferrer" className="bg-blue-600 text-white p-4 flex items-center justify-between hover:bg-blue-700 transition-colors">
+            <div>
+              <p className="font-bold text-lg">DeltaMath</p>
+              <p className="text-white/80 text-sm">{deltaMathCount} assignment{deltaMathCount !== 1 ? "s" : ""} assigned</p>
+            </div>
             <MdOpenInNew size={22} className="text-white/70" />
           </a>
         </div>
 
-        {/* Filter tabs */}
         <div className="flex gap-2 flex-wrap">
-          {(["all", "ixl", "deltamath", "custom", "document"] as const).map((f) => (
-            <button key={f} onClick={() => setFilter(f)}
-              className={`px-4 py-1.5 text-sm font-medium transition-all border ${filter === f ? "bg-secondary-color text-white border-secondary-color" : "bg-white border-gray-200 text-gray-600 hover:border-secondary-color"}`}>
-              {f === "all" ? "All" : TYPE_LABELS[f]}
+          {(["all", "ixl", "deltamath", "quiz", "custom", "document"] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setFilter(value)}
+              className={`px-4 py-1.5 text-sm font-medium transition-all border ${filter === value ? "bg-secondary-color text-white border-secondary-color" : "bg-white border-gray-200 text-gray-600 hover:border-secondary-color"}`}
+            >
+              {value === "all" ? "All" : TYPE_LABELS[value]}
             </button>
           ))}
           <span className="ml-auto text-xs text-gray-400 self-center">{filtered.length} assignment{filtered.length !== 1 ? "s" : ""}</span>
         </div>
 
         {loading ? (
-          <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="bg-white border h-32 animate-pulse" />)}</div>
+          <div className="space-y-3">{[...Array(3)].map((_, index) => <div key={index} className="bg-white border h-32 animate-pulse" />)}</div>
         ) : filtered.length === 0 ? (
           <div className="bg-white border border-gray-200 p-16 text-center">
             <MdAssignment size={48} className="mx-auto text-gray-300 mb-3" />
             <p className="text-gray-500 font-medium">No assignments yet.</p>
           </div>
+        ) : activeQuiz ? (
+          <QuizRunner
+            assignment={activeQuiz}
+            studentId={student!.id!}
+            studentUid={user!.uid}
+            onCancel={() => setActiveQuiz(null)}
+            onComplete={handleCompleteQuiz}
+          />
         ) : (
           <div className="space-y-4">
-            {filtered.map((a) => (
-              <AssignmentCard key={a.id} assignment={a}
-                studentId={student!.id!} studentUid={user!.uid}
-                isUnlocked={isAssignmentUnlocked(a)}
-                prerequisiteTitle={a.linkedMaterialId ? materialTitles[a.linkedMaterialId] : undefined}
+            {filtered.map((assignment) => (
+              <AssignmentCard
+                key={assignment.id}
+                assignment={assignment}
+                studentId={student!.id!}
+                studentUid={user!.uid}
+                isUnlocked={isAssignmentUnlocked(assignment)}
+                prerequisiteTitle={assignment.linkedMaterialId ? materialTitles[assignment.linkedMaterialId] : undefined}
+                refreshToken={refreshToken}
+                onStartQuiz={(assignment) => setActiveQuiz(assignment)}
               />
             ))}
           </div>

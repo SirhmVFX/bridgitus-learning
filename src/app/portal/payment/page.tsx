@@ -80,8 +80,7 @@ export default function PaymentPage() {
   useEffect(() => {
     getPublishedPricingPlans()
       .then((data) => {
-        const withAmount = data.filter((p) => (p.amountKobo ?? 0) > 0);
-        setPlans(withAmount.length > 0 ? withAmount : FALLBACK_PLANS);
+        setPlans(data.length > 0 ? data : FALLBACK_PLANS);
       })
       .catch(() => setPlans(FALLBACK_PLANS))
       .finally(() => setPlansLoading(false));
@@ -296,7 +295,7 @@ export default function PaymentPage() {
 
                 <button
                   onClick={() => openPaystack(selectedPlan)}
-                  disabled={verifying || !scriptReady}
+                  disabled={verifying || !scriptReady || !((selectedPlan.amountKobo ?? 0) > 0)}
                   className="w-full bg-secondary-color hover:bg-secondary-color/90 disabled:opacity-50 text-white font-bold py-4 text-base flex items-center justify-center gap-2 transition-colors"
                 >
                   {verifying ? (
@@ -307,6 +306,11 @@ export default function PaymentPage() {
                     <><MdPayment size={20} />Pay {selectedPlan.price} with Paystack</>
                   )}
                 </button>
+                {!(selectedPlan.amountKobo ?? 0) && (
+                  <div className="border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800 mt-3">
+                    This plan is not yet configured for online payment. Contact support to complete enrollment.
+                  </div>
+                )}
 
                 <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400">
                   <MdLock size={12} /> Secured by Paystack · 256-bit SSL
@@ -418,14 +422,23 @@ export default function PaymentPage() {
 
                     {/* Select button */}
                     <div className="mt-auto pt-2">
-                      <button
-                        onClick={() => { setSelectedPlan(plan); setError(""); }}
-                        className={`w-full py-3 font-bold text-sm transition-colors ${plan.highlighted
-                            ? "bg-secondary-color text-white hover:bg-secondary-color/90"
-                            : "border border-secondary-color text-secondary-color hover:bg-secondary-color hover:text-white"
-                          }`}>
-                        Select {plan.title}
-                      </button>
+                      {((plan.amountKobo ?? 0) > 0) ? (
+                        <button
+                          onClick={() => { setSelectedPlan(plan); setError(""); }}
+                          className={`w-full py-3 font-bold text-sm transition-colors ${plan.highlighted
+                              ? "bg-secondary-color text-white hover:bg-secondary-color/90"
+                              : "border border-secondary-color text-secondary-color hover:bg-secondary-color hover:text-white"
+                            }`}>
+                          Select {plan.title}
+                        </button>
+                      ) : (
+                        <button
+                          disabled
+                          className="w-full py-3 font-bold text-sm border border-gray-300 text-gray-500 bg-gray-50 cursor-not-allowed"
+                        >
+                          Not available for online payment
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

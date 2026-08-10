@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import PortalLayout from "@/components/PortalLayout";
 import { useStudentAuth } from "@/lib/studentAuth";
-import { updateStudent } from "@/lib/firestore";
+import { updateStudent, getPricingPlanById, type SitePricingPlan } from "@/lib/firestore";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import {
   MdPerson, MdEdit, MdSave, MdLock, MdBadge,
@@ -15,7 +15,14 @@ export default function AccountPage() {
   const { student, user, changePassword, refreshStudent, loading } = useStudentAuth();
 
   const [editing, setEditing] = useState(false);
+  const [firstName, setFirstName] = useState(student?.firstName ?? "");
+  const [lastName, setLastName] = useState(student?.lastName ?? "");
   const [bio, setBio] = useState(student?.bio ?? "");
+  const [dateOfBirth, setDateOfBirth] = useState(student?.dateOfBirth ?? "");
+  const [gender, setGender] = useState(student?.gender ?? "");
+  const [school, setSchool] = useState(student?.school ?? "");
+  const [subjects, setSubjects] = useState(student?.subjects?.join(", ") ?? "");
+  const [postcode, setPostcode] = useState(student?.postcode ?? "");
   const [saving, setSaving] = useState(false);
   const [saveOk, setSaveOk] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -23,17 +30,51 @@ export default function AccountPage() {
   const [currentPw, setCurrentPw] = useState("");
   const [newPw, setNewPw] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
+  const [currentPlan, setCurrentPlan] = useState<SitePricingPlan | null>(null);
   const [pwError, setPwError] = useState("");
   const [pwOk, setPwOk] = useState(false);
   const [pwSaving, setPwSaving] = useState(false);
 
-  useEffect(() => { if (student) setBio(student.bio ?? ""); }, [student]);
+  useEffect(() => {
+    if (student) {
+      setFirstName(student.firstName ?? "");
+      setLastName(student.lastName ?? "");
+      setBio(student.bio ?? "");
+      setDateOfBirth(student.dateOfBirth ?? "");
+      setGender(student.gender ?? "");
+      setSchool(student.school ?? "");
+      setSubjects(student.subjects?.join(", ") ?? "");
+      setPostcode(student.postcode ?? "");
+    }
+  }, [student]);
+
+  useEffect(() => {
+    if (!student?.planId) {
+      setCurrentPlan(null);
+      return;
+    }
+
+    getPricingPlanById(student.planId)
+      .then((plan) => {
+        if (plan) setCurrentPlan(plan);
+      })
+      .catch(() => setCurrentPlan(null));
+  }, [student?.planId]);
 
   async function handleSaveProfile() {
     if (!student?.id) return;
     setSaving(true);
     try {
-      await updateStudent(student.id, { bio });
+      await updateStudent(student.id, {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        bio,
+        dateOfBirth: dateOfBirth.trim(),
+        gender: gender.trim(),
+        school: school.trim(),
+        subjects: subjects.split(",").map((sub) => sub.trim()).filter(Boolean),
+        postcode: postcode.trim(),
+      });
       await refreshStudent();
       setEditing(false); setSaveOk(true);
       setTimeout(() => setSaveOk(false), 3000);
@@ -99,11 +140,13 @@ export default function AccountPage() {
     student.paymentStatus === "paid" ? "bg-emerald-100 text-emerald-700" :
       student.paymentStatus === "waived" ? "bg-blue-100 text-blue-700" :
         student.paymentStatus === "failed" ? "bg-red-100 text-red-700" :
-          "bg-amber-100 text-amber-700";
+          student.paymentStatus === "expired" ? "bg-red-100 text-red-700" :
+            "bg-amber-100 text-amber-700";
   const paymentLabel =
     student.paymentStatus === "paid" ? "✓ Paid" :
       student.paymentStatus === "waived" ? "Waived" :
-        student.paymentStatus === "failed" ? "Failed" : "Pending Payment";
+        student.paymentStatus === "failed" ? "Failed" :
+          student.paymentStatus === "expired" ? "⚠ Expired" : "Pending Payment";
 
   const inputCls = "w-full px-4 py-2.5 border border-gray-200 text-sm outline-none focus:border-secondary-color transition-colors";
 
@@ -120,7 +163,7 @@ export default function AccountPage() {
           <div className="flex items-start gap-5">
             {/* Avatar */}
             <div className="relative shrink-0">
-              <div className="w-18 h-18 w-16 h-16 bg-secondary-color flex items-center justify-center overflow-hidden">
+              <div className="w-16 h-16 bg-secondary-color flex items-center justify-center overflow-hidden rounded-full">
                 {student.avatar
                   ? <img src={student.avatar} alt="avatar" className="w-full h-full object-cover" /> // eslint-disable-line @next/next/no-img-element
                   : <span className="text-white text-xl font-bold">{initials}</span>}
@@ -135,7 +178,16 @@ export default function AccountPage() {
 
             {/* Name + badges */}
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-gray-900">{student.firstName} {student.lastName}</h2>
+              <h2 className="text-xl font-bold text-gray-900">
+                {editing ? (
+                  <span className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="admin-input py-2" placeholder="First name" />
+                    <input value={lastName} onChange={(e) => setLastName(e.target.value)} className="admin-input py-2" placeholder="Last name" />
+                  </span>
+                ) : (
+                  <>{student.firstName} {student.lastName}</>
+                )}
+              </h2>
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                 <span className="inline-flex items-center gap-1 bg-secondary-color/10 text-secondary-color text-xs font-bold px-2 py-0.5">
                   <MdBadge size={12} /> {student.studentId}
@@ -189,21 +241,58 @@ export default function AccountPage() {
             <MdPerson size={16} className="text-secondary-color" /> Student Information
           </h3>
           <div className="grid sm:grid-cols-2 gap-4 text-sm">
-            {[
-              { label: "First Name", value: student.firstName },
-              { label: "Last Name", value: student.lastName },
-              { label: "Date of Birth", value: student.dateOfBirth },
-              { label: "Gender", value: student.gender },
-              { label: "School", value: student.school },
-              { label: "Grade", value: student.grade },
-              { label: "Subjects", value: student.subjects?.join(", ") || "—" },
-              { label: "Postcode", value: student.postcode },
-            ].map(({ label, value }) => (
-              <div key={label}>
-                <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-0.5">{label}</p>
-                <p className="text-gray-800 font-medium">{value || "—"}</p>
-              </div>
-            ))}
+            {editing ? (
+              <>
+                <div>
+                  <label className="admin-label">First Name</label>
+                  <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputCls} />
+                </div>
+                <div>
+                  <label className="admin-label">Last Name</label>
+                  <input value={lastName} onChange={(e) => setLastName(e.target.value)} className={inputCls} />
+                </div>
+                <div>
+                  <label className="admin-label">Date of Birth</label>
+                  <input type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} className={inputCls} />
+                </div>
+                <div>
+                  <label className="admin-label">Gender</label>
+                  <input value={gender} onChange={(e) => setGender(e.target.value)} className={inputCls} placeholder="e.g. Female" />
+                </div>
+                <div>
+                  <label className="admin-label">School</label>
+                  <input value={school} onChange={(e) => setSchool(e.target.value)} className={inputCls} />
+                </div>
+                <div>
+                  <label className="admin-label">Grade</label>
+                  <input value={student.grade} disabled className={inputCls} />
+                </div>
+                <div>
+                  <label className="admin-label">Subjects</label>
+                  <input value={subjects} onChange={(e) => setSubjects(e.target.value)} className={inputCls} placeholder="e.g. Maths, Science" />
+                </div>
+                <div>
+                  <label className="admin-label">Postcode</label>
+                  <input value={postcode} onChange={(e) => setPostcode(e.target.value)} className={inputCls} />
+                </div>
+              </>
+            ) : (
+              [
+                { label: "First Name", value: student.firstName },
+                { label: "Last Name", value: student.lastName },
+                { label: "Date of Birth", value: student.dateOfBirth },
+                { label: "Gender", value: student.gender },
+                { label: "School", value: student.school },
+                { label: "Grade", value: student.grade },
+                { label: "Subjects", value: student.subjects?.join(", ") || "—" },
+                { label: "Postcode", value: student.postcode },
+              ].map(({ label, value }) => (
+                <div key={label}>
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-0.5">{label}</p>
+                  <p className="text-gray-800 font-medium">{value || "—"}</p>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -227,23 +316,104 @@ export default function AccountPage() {
         </div>
 
         {/* Payment status */}
-        <div className={`border p-5 ${student.paymentStatus === "paid" || student.paymentStatus === "waived" ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"}`}>
-          <p className="text-xs font-semibold uppercase tracking-wide mb-2 flex items-center gap-1.5">
-            <MdPayment size={14} /> Payment Status
+        <div className={`border p-5 ${student.paymentStatus === "paid" || student.paymentStatus === "waived" ? "bg-emerald-50 border-emerald-200" : student.paymentStatus === "expired" ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"}`}>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-3 flex items-center gap-1.5">
+            <MdPayment size={14} /> Payment & Plan Status
           </p>
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <div>
+
+          {/* Status + plan info */}
+          <div className="flex items-start justify-between flex-wrap gap-4">
+            <div className="space-y-2">
               <span className={`text-sm font-bold px-3 py-1 ${paymentColor}`}>{paymentLabel}</span>
+
+              {currentPlan ? (
+                <>
+                  <p className="text-sm font-semibold text-gray-800 mt-2">{currentPlan.title}</p>
+                  <p className="text-xs text-gray-500">{currentPlan.tagline} · {currentPlan.per}</p>
+                  <p className="text-xs text-gray-500 mt-1">{currentPlan.price}</p>
+                </>
+              ) : student.planTitle ? (
+                <p className="text-sm font-semibold text-gray-800 mt-2">{student.planTitle}</p>
+              ) : null}
+
+              {student.paidAt && (
+                <p className="text-xs text-gray-500">
+                  Paid on:{" "}
+                  <span className="font-medium">
+                    {(student.paidAt as unknown as { toDate: () => Date })?.toDate?.()?.toLocaleDateString("en-AU", {
+                      day: "numeric", month: "short", year: "numeric",
+                    }) ?? "—"}
+                  </span>
+                </p>
+              )}
+
+              {student.planExpiresAt && (() => {
+                const expiresDate = (student.planExpiresAt as unknown as { toDate: () => Date })?.toDate?.();
+                if (!expiresDate) return null;
+                const now = new Date();
+                const msLeft = expiresDate.getTime() - now.getTime();
+                const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
+                const expired = daysLeft <= 0;
+                const urgent = !expired && daysLeft <= 7;
+
+                return (
+                  <div className={`mt-2 p-3 border ${expired ? "bg-red-50 border-red-300" : urgent ? "bg-amber-50 border-amber-300" : "bg-emerald-50 border-emerald-200"}`}>
+                    <p className={`text-xs font-semibold mb-1 ${expired ? "text-red-700" : urgent ? "text-amber-700" : "text-emerald-700"}`}>
+                      Plan Expiry
+                    </p>
+                    <p className="text-sm font-bold text-gray-900">
+                      {expiresDate.toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" })}
+                    </p>
+                    {expired ? (
+                      <p className="text-xs text-red-600 font-semibold mt-1">⚠ Your plan has expired. Please renew to restore access.</p>
+                    ) : (
+                      <div className="mt-2">
+                        {/* Countdown bar */}
+                        {student.paidAt && (() => {
+                          const paidDate = (student.paidAt as unknown as { toDate: () => Date })?.toDate?.();
+                          if (!paidDate) return null;
+                          const totalMs = expiresDate.getTime() - paidDate.getTime();
+                          const usedMs = now.getTime() - paidDate.getTime();
+                          const pct = Math.max(0, Math.min(100, Math.round((usedMs / totalMs) * 100)));
+                          const remaining = 100 - pct;
+                          return (
+                            <div>
+                              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full transition-all ${remaining > 30 ? "bg-emerald-500" : remaining > 10 ? "bg-amber-500" : "bg-red-500"}`}
+                                  style={{ width: `${remaining}%` }}
+                                />
+                              </div>
+                              <p className={`text-xs mt-1 font-medium ${urgent ? "text-amber-600" : "text-gray-500"}`}>
+                                {daysLeft} day{daysLeft !== 1 ? "s" : ""} remaining · {remaining}% of plan left
+                              </p>
+                            </div>
+                          );
+                        })()}
+                        {!student.paidAt && (
+                          <p className={`text-xs font-medium ${urgent ? "text-amber-600" : "text-gray-500"}`}>
+                            {daysLeft} day{daysLeft !== 1 ? "s" : ""} remaining
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
               {student.paymentReference && (
-                <p className="text-xs text-gray-500 mt-1.5">Ref: <span className="font-mono">{student.paymentReference}</span></p>
+                <p className="text-xs text-gray-500 mt-1">Ref: <span className="font-mono">{student.paymentReference}</span></p>
               )}
             </div>
-            {student.paymentStatus === "pending" && (
-              <a href="/portal/payment"
-                className="bg-secondary-color text-white text-sm font-semibold px-4 py-2 hover:bg-secondary-color/90 transition-colors">
-                Complete Payment →
-              </a>
-            )}
+
+            <div className="flex flex-col gap-2">
+              {(student.paymentStatus === "pending" || student.paymentStatus === "expired") && (
+                <a href="/portal/payment"
+                  className="bg-secondary-color text-white text-sm font-semibold px-4 py-2 hover:bg-secondary-color/90 transition-colors text-center">
+                  {student.paymentStatus === "expired" ? "Renew Plan →" : "Complete Payment →"}
+                </a>
+              )}
+            </div>
           </div>
         </div>
 
