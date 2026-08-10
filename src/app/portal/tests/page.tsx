@@ -7,6 +7,7 @@ import { useStudentAuth } from "@/lib/studentAuth";
 import {
   getTestsByGrade,
   getAllStudentAttempts,
+  getTestAttemptById,
   submitTestAttempt,
   getMaterialCompletions,
   getMaterialById,
@@ -202,7 +203,7 @@ function TestRunner({
   test, studentId, studentUid, attemptNumber, onSubmit,
 }: {
   test: Test; studentId: string; studentUid: string;
-  attemptNumber: number; onSubmit: () => void;
+  attemptNumber: number; onSubmit: (attempt: TestAttempt | null) => void;
 }) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [current, setCurrent] = useState(0);
@@ -243,17 +244,18 @@ function TestRunner({
     setSubmitting(true);
     try {
       const { score, percentage, passed } = grade();
-      await submitTestAttempt({
+      const attemptId = await submitTestAttempt({
         testId: test.id!, testTitle: test.title,
         studentId, studentUid, answers, score,
         totalPoints: test.totalPoints, percentage, passed,
-        attemptNumber, status: "pending_review",
+        attemptNumber, status: "approved",
       });
       // Auto-write progress
       await upsertStudentProgress(studentId, test.grade, test.subject, {
         scoreToAdd: percentage, passed,
       });
-      onSubmit();
+      const createdAttempt = await getTestAttemptById(attemptId);
+      onSubmit(createdAttempt);
     } finally { setSubmitting(false); }
   }
 
@@ -405,7 +407,12 @@ export default function TestsPage() {
           <TestRunner
             test={activeTest} studentId={student!.id!} studentUid={user!.uid}
             attemptNumber={attemptsForTest(activeTest.id!).length + 1}
-            onSubmit={() => { setSubmitted(true); setActiveTest(null); loadData(); }}
+            onSubmit={(attempt) => {
+              setSubmitted(false);
+              setActiveTest(null);
+              if (attempt) setViewingResult({ attempt, test: activeTest });
+              loadData();
+            }}
           />
         </div>
       </PortalLayout>

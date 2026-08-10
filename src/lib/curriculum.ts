@@ -381,6 +381,16 @@ export function getSubtopics(curriculumId: string, subject: string, year: string
     .find(t => t.name === topic)?.subtopics ?? [];
 }
 
+// All Australian school year levels — used by the AI generator dropdown
+export const ALL_YEARS = [
+  "Foundation",
+  "Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6",
+  "Year 7", "Year 8", "Year 9", "Year 10",
+  "Year 11", "Year 12",
+  "VCE Unit 1/2", "VCE Unit 3/4",
+  "NAPLAN Year 3", "NAPLAN Year 5", "NAPLAN Year 7", "NAPLAN Year 9",
+] as const;
+
 export const DIFFICULTY_LEVELS = ["Support", "Core", "Extension"] as const;
 export type DifficultyLevel = typeof DIFFICULTY_LEVELS[number];
 

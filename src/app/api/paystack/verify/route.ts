@@ -61,17 +61,49 @@ export async function POST(request: Request) {
       );
     }
 
-    // Update student payment status using the client-side Firestore SDK
-    // Note: This runs on the server (Next.js API route), so it will succeed
-    // as long as Firestore security rules allow authenticated writes OR
-    // the student's own auth token is passed.
-    // For server-side writes we use the client SDK with the student's doc ID directly.
+    // Extract plan info from Paystack metadata
+    const metadata = data.data.metadata ?? {};
+    const planId: string = metadata.planId ?? "";
+    const planTitle: string = metadata.planTitle ?? "";
+
+    // Calculate expiry date from plan durationDays if available
+    // Fetch plan from Firestore to get durationDays
+    let planExpiresAt: Date | null = null;
+    if (planId) {
+      try {
+        const { getDocs, query, collection, where } = await import("firebase/firestore");
+        const plansSnap = await getDocs(
+          query(collection(db, "sitePricingPlans"), where("id", "==", planId))
+        );
+        // fallback: try by doc id
+        if (plansSnap.empty) {
+          const { getDoc, doc: firestoreDoc } = await import("firebase/firestore");
+          const planDoc = await getDoc(firestoreDoc(db, "sitePricingPlans", planId));
+          if (planDoc.exists()) {
+            const plan = planDoc.data();
+            if (plan.durationDays && plan.durationDays > 0) {
+              planExpiresAt = new Date(Date.now() + plan.durationDays * 24 * 60 * 60 * 1000);
+            }
+          }
+        } else {
+          const plan = plansSnap.docs[0].data();
+          if (plan.durationDays && plan.durationDays > 0) {
+            planExpiresAt = new Date(Date.now() + plan.durationDays * 24 * 60 * 60 * 1000);
+          }
+        }
+      } catch { /* best-effort */ }
+    }
+
+    // Update student payment status
     const studentRef = doc(db, "students", studentId);
     await updateDoc(studentRef, {
       paymentStatus: "paid",
       paymentReference: reference,
       paymentAmount: data.data.amount,
+      planId: planId || null,
+      planTitle: planTitle || null,
       paidAt: serverTimestamp(),
+      ...(planExpiresAt ? { planExpiresAt } : {}),
       updatedAt: serverTimestamp(),
     });
 

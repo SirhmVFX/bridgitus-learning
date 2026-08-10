@@ -17,8 +17,9 @@ export interface Student {
   parentEmail: string; parentPhone: string; postcode: string;
   enrolledAt?: Timestamp; status: "active" | "inactive" | "suspended";
   avatar?: string; bio?: string; credentialsSent?: boolean;
-  paymentStatus: "pending" | "paid" | "failed" | "waived";
+  paymentStatus: "pending" | "paid" | "failed" | "waived" | "expired";
   paymentReference?: string; paymentAmount?: number; paidAt?: Timestamp;
+  planId?: string; planTitle?: string; planExpiresAt?: Timestamp;
   createdAt?: Timestamp; updatedAt?: Timestamp;
 }
 
@@ -36,7 +37,8 @@ export interface LearningMaterial {
 export type QuestionType = "multiple_choice" | "true_false" | "short_answer";
 export interface Question {
   id: string; type: QuestionType; text: string;
-  options?: string[]; correctAnswer: string; points: number; explanation?: string;
+  options?: string[]; correctAnswer: string; points: number;
+  explanation?: string; workedSolution?: string;
 }
 
 export interface Test {
@@ -59,10 +61,12 @@ export interface TestAttempt {
 export interface Assignment {
   id?: string; title: string; description: string;
   grade: string; subject: string;
-  type: "ixl" | "deltamath" | "custom" | "document";
+  type: "ixl" | "deltamath" | "custom" | "document" | "quiz";
   platformUrl?: string; platform?: "ixl" | "deltamath" | "other";
   content?: string; fileUrl?: string; fileName?: string;
   dueDate?: string; maxScore?: number; linkedMaterialId?: string;
+  questions?: Question[]; totalPoints?: number; passMark?: number;
+  timeLimit?: number; maxAttempts?: number;
   targetGrades: string[]; targetStudentIds?: string[];
   published: boolean; createdAt?: Timestamp; updatedAt?: Timestamp;
 }
@@ -70,7 +74,9 @@ export interface Assignment {
 export interface AssignmentSubmission {
   id?: string; assignmentId: string; studentId: string; studentUid: string;
   status: "not_started" | "in_progress" | "submitted" | "graded";
-  score?: number; feedback?: string; submittedAt?: Timestamp; gradedAt?: Timestamp;
+  answers?: Record<string, string>; score?: number; totalPoints?: number;
+  percentage?: number; passed?: boolean; attemptNumber?: number;
+  feedback?: string; submittedAt?: Timestamp; gradedAt?: Timestamp;
 }
 
 export interface StudentProgress {
@@ -118,6 +124,7 @@ export interface SitePricingPlan {
   order: number;
   published: boolean;
   amountKobo?: number;
+  durationDays?: number;  // plan duration — used for expiry countdown
   createdAt?: Timestamp;
 }
 export interface SiteFaq {
@@ -224,8 +231,21 @@ export async function getAllStudentAttempts(studentId: string): Promise<TestAtte
     .sort((a, b) => (b.submittedAt as Timestamp)?.toMillis() - (a.submittedAt as Timestamp)?.toMillis() || 0);
 }
 
-export async function submitTestAttempt(attempt: Omit<TestAttempt, "id">): Promise<string> {
-  const ref = await addDoc(collection(db, "testAttempts"), { ...attempt, submittedAt: serverTimestamp() });
+export async function getTestAttemptById(id: string): Promise<TestAttempt | null> {
+  const snap = await getDoc(doc(db, "testAttempts", id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...(snap.data() as TestAttempt) };
+}
+
+export async function submitTestAttempt(attempt: Omit<TestAttempt, "id" | "submittedAt" | "reviewedAt">): Promise<string> {
+  const payload: Omit<TestAttempt, "id" | "submittedAt" | "reviewedAt"> & { submittedAt: ReturnType<typeof serverTimestamp>; reviewedAt?: ReturnType<typeof serverTimestamp> } = {
+    ...attempt,
+    submittedAt: serverTimestamp(),
+  };
+  if (attempt.status === "approved" || attempt.status === "rejected") {
+    payload.reviewedAt = serverTimestamp();
+  }
+  const ref = await addDoc(collection(db, "testAttempts"), payload);
   return ref.id;
 }
 
@@ -384,6 +404,17 @@ export async function getPublishedPricingPlans(): Promise<SitePricingPlan[]> {
   return snap.docs
     .map(d => ({ id: d.id, ...(d.data() as SitePricingPlan) }))
     .sort((a, b) => a.order - b.order);
+}
+
+export async function getPricingPlanById(id: string): Promise<SitePricingPlan | null> {
+  const snap = await getDocs(query(collection(db, "sitePricingPlans"), where("id", "==", id), limit(1)));
+  if (!snap.empty) {
+    return { id: snap.docs[0].id, ...(snap.docs[0].data() as SitePricingPlan) };
+  }
+
+  const docSnap = await getDoc(doc(db, "sitePricingPlans", id));
+  if (!docSnap.exists()) return null;
+  return { id: docSnap.id, ...(docSnap.data() as SitePricingPlan) };
 }
 
 export async function getPublishedFaqs(): Promise<SiteFaq[]> {

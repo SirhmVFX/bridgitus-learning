@@ -124,7 +124,7 @@ export default async function Pricing() {
         </div>
 
         {/* Plans grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-6">
           {plans.map((plan) => (
             <PricingCard key={plan.id} plan={plan} />
           ))}

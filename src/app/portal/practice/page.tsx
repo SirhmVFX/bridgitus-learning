@@ -366,6 +366,7 @@ export default function PracticePage() {
   const [finalAnswers, setFinalAnswers] = useState<Record<string, string>>({});
   const [generatingFor, setGeneratingFor] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const DEFAULT_PRACTICE_COUNT = 10;
 
   // On mount: check sessionStorage first, then load gaps
   useEffect(() => {
@@ -407,7 +408,7 @@ export default function PracticePage() {
           year: student.grade ? `Year ${student.grade}` : "Year 7",
           topic: gap.topic,
           subtopic: gap.subtopic ?? "",
-          count: 5,
+          count: DEFAULT_PRACTICE_COUNT,
           difficulty: gap.accuracy < 40 ? "Support" : "Core",
           format: "Mixed",
           context: "General",
