@@ -723,3 +723,59 @@ export async function getPracticeAttempts(studentId: string): Promise<PracticeAt
     })
     .sort((a, b) => (b.submittedAt as Timestamp)?.toMillis() - (a.submittedAt as Timestamp)?.toMillis() || 0);
 }
+
+// ── Online Sessions (Microsoft Teams) ────────────────────────────────────
+
+export interface OnlineSession {
+  id?: string;
+  title: string;
+  teamsUrl: string;
+  startsAt: string;
+  durationMinutes: number;
+  endsAt: string;
+  targetGrades: string[];
+  createdBy?: string;
+  notified?: boolean;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
+}
+
+export function isOnlineSessionLive(session: OnlineSession, now = new Date()): boolean {
+  const start = new Date(session.startsAt).getTime();
+  const end = new Date(session.endsAt).getTime();
+  const t = now.getTime();
+  return t >= start && t <= end;
+}
+
+export async function getActiveOnlineSession(grade?: string): Promise<OnlineSession | null> {
+  const snap = await getDocs(collection(db, "onlineSessions"));
+  const sessions = snap.docs.map(d => ({ id: d.id, ...(d.data() as OnlineSession) }));
+  const now = new Date();
+  return sessions.find(s => {
+    if (!isOnlineSessionLive(s, now)) return false;
+    if (!s.targetGrades?.length) return true;
+    if (!grade) return true;
+    return s.targetGrades.includes(grade);
+  }) ?? null;
+}
+
+/** Upcoming or live session for dashboard (live now, or starting within 24 hours). */
+export async function getUpcomingOnlineSession(grade?: string): Promise<OnlineSession | null> {
+  const snap = await getDocs(collection(db, "onlineSessions"));
+  const sessions = snap.docs
+    .map(d => ({ id: d.id, ...(d.data() as OnlineSession) }))
+    .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
+  const now = Date.now();
+  const day = 24 * 60 * 60 * 1000;
+  return sessions.find(s => {
+    const start = new Date(s.startsAt).getTime();
+    const end = new Date(s.endsAt).getTime();
+    if (end < now) return false; // already finished
+    const live = now >= start && now <= end;
+    const soon = start > now && start - now <= day;
+    if (!live && !soon) return false;
+    if (!s.targetGrades?.length) return true;
+    if (!grade) return true;
+    return s.targetGrades.includes(grade);
+  }) ?? null;
+}

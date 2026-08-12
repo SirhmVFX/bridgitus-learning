@@ -14,18 +14,21 @@ import {
   getAnnouncementsForStudent,
   getStudySessions,
   formatStudyTime,
+  getUpcomingOnlineSession,
+  isOnlineSessionLive,
   type TestAttempt,
   type Assignment,
   type StudentProgress,
   type LearningMaterial,
   type Announcement,
   type StudySession,
+  type OnlineSession,
 } from "@/lib/firestore";
 import {
   MdMenuBook, MdQuiz, MdAssignment, MdBarChart,
   MdCheckCircle, MdPending, MdTrendingUp, MdStar,
   MdPushPin, MdCampaign, MdArrowForward, MdTimer,
-  MdLock, MdOndemandVideo,
+  MdLock, MdOndemandVideo, MdVideocam,
 } from "react-icons/md";
 
 const YOUTUBE_URL = "https://youtube.com/@BridgitusLearning";
@@ -46,13 +49,14 @@ export default function DashboardPage() {
   const [completions, setCompletions] = useState<ReturnType<typeof getMaterialCompletions> extends Promise<infer T> ? T : never>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [studySessions, setStudySessions] = useState<StudySession[]>([]);
+  const [onlineSession, setOnlineSession] = useState<OnlineSession | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!student?.id || !student?.grade) return;
     async function load() {
       try {
-        const [att, ass, prog, mats, comps, ann, sessions] = await Promise.all([
+        const [att, ass, prog, mats, comps, ann, sessions, online] = await Promise.all([
           getAllStudentAttempts(student!.id!),
           getAssignmentsForStudent(student!.grade, student!.id!),
           getStudentProgress(student!.id!),
@@ -60,13 +64,20 @@ export default function DashboardPage() {
           getMaterialCompletions(student!.id!, student!.grade),
           getAnnouncementsForStudent(student!.grade),
           getStudySessions(student!.id!, 7),
+          getUpcomingOnlineSession(student!.grade),
         ]);
         setAttempts(att); setAssignments(ass); setProgress(prog);
         setMaterials(mats); setCompletions(comps as typeof completions); setAnnouncements(ann);
         setStudySessions(sessions);
+        setOnlineSession(online);
       } finally { setLoading(false); }
     }
     load();
+    // Refresh live status every 30s
+    const t = setInterval(() => {
+      getUpcomingOnlineSession(student!.grade).then(setOnlineSession).catch(() => {});
+    }, 30_000);
+    return () => clearInterval(t);
   }, [student]);
 
   const approvedAttempts = attempts.filter((a) => a.status === "approved");
@@ -97,6 +108,7 @@ export default function DashboardPage() {
   })();
   const secondsToday = studySessions.find((s) => s.date === todayKey)?.seconds ?? 0;
   const secondsWeek = studySessions.reduce((sum, s) => sum + (s.seconds ?? 0), 0);
+  const teamsLive = onlineSession ? isOnlineSessionLive(onlineSession) : false;
 
   return (
     <PortalLayout>
@@ -118,6 +130,21 @@ export default function DashboardPage() {
               className="bg-red-500/90 hover:bg-red-500 text-white text-sm font-medium px-4 py-2 transition-colors inline-flex items-center gap-1.5">
               <MdOndemandVideo size={16} /> YouTube Channel
             </a>
+            {onlineSession && (
+              teamsLive ? (
+                <a href={onlineSession.teamsUrl} target="_blank" rel="noopener noreferrer"
+                  className="relative bg-[#5B5FC7] hover:bg-[#4B4FB7] text-white text-sm font-bold px-4 py-2 transition-colors inline-flex items-center gap-1.5 ring-2 ring-white/60 animate-pulse shadow-[0_0_20px_rgba(91,95,199,0.7)]">
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping" />
+                  <MdVideocam size={16} /> Join Teams Class — Live
+                </a>
+              ) : (
+                <a href={onlineSession.teamsUrl} target="_blank" rel="noopener noreferrer"
+                  className="bg-[#5B5FC7]/70 hover:bg-[#5B5FC7] text-white text-sm font-medium px-4 py-2 transition-colors inline-flex items-center gap-1.5 opacity-80">
+                  <MdVideocam size={16} /> Teams Class · starts{" "}
+                  {new Date(onlineSession.startsAt).toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit" })}
+                </a>
+              )
+            )}
           </div>
         </div>
 

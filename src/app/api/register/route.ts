@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-// import sgMail from "@sendgrid/mail";  // ← uncomment when email subscription is renewed
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -13,8 +12,7 @@ import {
   where,
   serverTimestamp,
 } from "firebase/firestore";
-
-// sgMail.setApiKey(process.env.SENDGRID_API_KEY || "");  // ← uncomment when email subscription is renewed
+import { sendEmail, isSesConfigured } from "@/lib/email";
 
 // ── Helpers ────────────────────────────────────────────────
 
@@ -157,9 +155,13 @@ export async function POST(request: Request) {
     const { registerData }: { registerData: RegisterData } = await request.json();
     console.log("Registration data received:", JSON.stringify(registerData, null, 2));
 
-    const portalUrl = process.env.NEXT_PUBLIC_PORTAL_URL || "https://bridgitus.com/portal/login"; // eslint-disable-line @typescript-eslint/no-unused-vars
-    const fromEmail = process.env.EMAIL_FROM || "noreply@bridgitus.com"; // eslint-disable-line @typescript-eslint/no-unused-vars
-    const adminEmail = process.env.ADMIN_EMAIL || "admin@bridgitus.com"; // eslint-disable-line @typescript-eslint/no-unused-vars
+    const portalUrl = process.env.NEXT_PUBLIC_PORTAL_URL || "https://bridgitus.com/portal/login";
+    const fromEmail = process.env.EMAIL_FROM || "noreply@bridgitus.com";
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@bridgitus.com";
+    const emailReady = isSesConfigured();
+    if (!emailReady) {
+      console.warn("AWS SES is not fully configured — registration will continue without sending emails.");
+    }
 
     const createdStudents: Array<{
       name: string; studentId: string; email: string;
@@ -239,29 +241,34 @@ export async function POST(request: Request) {
         updatedAt: serverTimestamp(),
       });
 
-      // Send credentials email to student
-      // await sgMail.send({
-      //   to: studentEmail,
-      //   from: fromEmail,
-      //   subject: `🎓 Your Bridgitus Learning Portal Credentials — ${student.firstName}`,
-      //   html: credentialsEmail(
-      //     `${student.firstName} ${student.lastName}`,
-      //     studentId, studentEmail, password, student.grade, portalUrl
-      //   ),
-      // });
+      // Send credentials email to student (and parent if different)
+      if (emailReady) {
+        try {
+          await sendEmail({
+            to: studentEmail,
+            from: fromEmail,
+            subject: `Your Bridgitus Learning Portal Credentials — ${student.firstName}`,
+            html: credentialsEmail(
+              `${student.firstName} ${student.lastName}`,
+              studentId, studentEmail, password, student.grade, portalUrl
+            ),
+          });
 
-      // CC parent if different
-      // if (studentEmail !== registerData.parentEmail) {
-      //   await sgMail.send({
-      //     to: registerData.parentEmail,
-      //     from: fromEmail,
-      //     subject: `🎓 Bridgitus Credentials for ${student.firstName} ${student.lastName}`,
-      //     html: credentialsEmail(
-      //       `${student.firstName} ${student.lastName}`,
-      //       studentId, studentEmail, password, student.grade, portalUrl
-      //     ),
-      //   });
-      // }
+          if (studentEmail !== registerData.parentEmail) {
+            await sendEmail({
+              to: registerData.parentEmail,
+              from: fromEmail,
+              subject: `Bridgitus Credentials for ${student.firstName} ${student.lastName}`,
+              html: credentialsEmail(
+                `${student.firstName} ${student.lastName}`,
+                studentId, studentEmail, password, student.grade, portalUrl
+              ),
+            });
+          }
+        } catch (mailErr) {
+          console.error(`Failed to send credentials email for ${studentEmail}:`, mailErr);
+        }
+      }
 
       createdStudents.push({
         name: `${student.firstName} ${student.lastName}`,
@@ -273,28 +280,35 @@ export async function POST(request: Request) {
 
     console.log("All createdStudents:", JSON.stringify(createdStudents, null, 2));
 
-    // Parent confirmation
-    // if (createdStudents.length > 0) {
-    //   await sgMail.send({
-    //     to: registerData.parentEmail,
-    //     from: fromEmail,
-    //     subject: `✅ Registration Confirmed — Bridgitus Learning`,
-    //     html: parentConfirmationEmail(
-    //       `${registerData.parentFirstName} ${registerData.parentLastName}`,
-    //       createdStudents
-    //     ),
-    //   });
+    // Parent confirmation + admin notification
+    if (emailReady && createdStudents.length > 0) {
+      try {
+        await sendEmail({
+          to: registerData.parentEmail,
+          from: fromEmail,
+          subject: `Registration Confirmed — Bridgitus Learning`,
+          html: parentConfirmationEmail(
+            `${registerData.parentFirstName} ${registerData.parentLastName}`,
+            createdStudents
+          ),
+        });
+      } catch (mailErr) {
+        console.error("Failed to send parent confirmation email:", mailErr);
+      }
 
-    //   // Admin notification
-    //   await sgMail.send({
-    //     to: adminEmail,
-    //     from: fromEmail,
-    //     subject: `🎓 New Registration — ${registerData.parentFirstName} ${registerData.parentLastName} (${createdStudents.length} student${createdStudents.length > 1 ? "s" : ""})`,
-    //     html: `<p>New registration from <strong>${registerData.parentFirstName} ${registerData.parentLastName}</strong> (${registerData.parentEmail}).</p>
-    //            <p>${createdStudents.length} student account${createdStudents.length > 1 ? "s" : ""} created.</p>
-    //            <ul>${createdStudents.map(s => `<li>${s.name} — ${s.studentId} — Grade ${s.grade}</li>`).join("")}</ul>`,
-    //   });
-    // }
+      try {
+        await sendEmail({
+          to: adminEmail,
+          from: fromEmail,
+          subject: `New Registration — ${registerData.parentFirstName} ${registerData.parentLastName} (${createdStudents.length} student${createdStudents.length > 1 ? "s" : ""})`,
+          html: `<p>New registration from <strong>${registerData.parentFirstName} ${registerData.parentLastName}</strong> (${registerData.parentEmail}).</p>
+                 <p>${createdStudents.length} student account${createdStudents.length > 1 ? "s" : ""} created.</p>
+                 <ul>${createdStudents.map(s => `<li>${s.name} — ${s.studentId} — Grade ${s.grade}</li>`).join("")}</ul>`,
+        });
+      } catch (mailErr) {
+        console.error("Failed to send admin registration notification:", mailErr);
+      }
+    }
 
     return NextResponse.json(
       {

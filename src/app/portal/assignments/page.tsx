@@ -23,7 +23,12 @@ import {
   MdLock,
   MdLink,
   MdMenuBook,
+  MdExpandMore,
+  MdExpandLess,
+  MdAutoAwesome,
+  MdPrint,
 } from "react-icons/md";
+import type { Question } from "@/lib/firestore";
 
 const TYPE_LABELS: Record<string, string> = {
   ixl: "IXL",
@@ -40,6 +45,7 @@ function AssignmentCard({
   isUnlocked,
   prerequisiteTitle,
   onStartQuiz,
+  onViewResults,
   refreshToken,
 }: {
   assignment: Assignment;
@@ -48,6 +54,7 @@ function AssignmentCard({
   isUnlocked: boolean;
   prerequisiteTitle?: string;
   onStartQuiz?: (assignment: Assignment) => void;
+  onViewResults?: (assignment: Assignment, submission: AssignmentSubmission) => void;
   refreshToken: number;
 }) {
   const [submission, setSubmission] = useState<AssignmentSubmission | null>(null);
@@ -201,6 +208,26 @@ function AssignmentCard({
                 </button>
               )}
 
+              {hasQuiz && status === "graded" && submission && onViewResults && (
+                <button
+                  type="button"
+                  onClick={() => onViewResults(assignment, submission)}
+                  className="bg-emerald-600 text-white text-xs font-bold px-3 py-2 hover:bg-emerald-700 transition-colors"
+                >
+                  View Results
+                </button>
+              )}
+
+              {hasQuiz && status === "graded" && onStartQuiz && (
+                <button
+                  type="button"
+                  onClick={() => onStartQuiz(assignment)}
+                  className="border border-secondary-color text-secondary-color text-xs font-bold px-3 py-2 hover:bg-secondary-color hover:text-white transition-colors"
+                >
+                  Retake Quiz
+                </button>
+              )}
+
               {status === "in_progress" && !hasQuiz && (
                 <button
                   type="button"
@@ -255,6 +282,182 @@ function AssignmentCard({
             )}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function QuizResultPanel({
+  assignment,
+  submission,
+  studentId,
+  onBack,
+}: {
+  assignment: Assignment;
+  submission: AssignmentSubmission;
+  studentId: string;
+  onBack: () => void;
+}) {
+  const [expandedQ, setExpandedQ] = useState<string | null>(null);
+  const [creatingSimFor, setCreatingSimFor] = useState<string | null>(null);
+  const [simError, setSimError] = useState("");
+  const questions = assignment.questions ?? [];
+
+  async function handleCreateSimilar(q: Question) {
+    setCreatingSimFor(q.id);
+    setSimError("");
+    const topicLabel = assignment.title || assignment.subject;
+    try {
+      const res = await fetch("/api/create-similar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: {
+            ...q,
+            topic: topicLabel,
+            subtopic: assignment.subject,
+            difficulty: "Core",
+          },
+          count: 3,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed");
+      const existing = JSON.parse(sessionStorage.getItem("practiceQuestions") ?? "[]");
+      sessionStorage.setItem("practiceQuestions", JSON.stringify([...existing, ...data.questions]));
+      sessionStorage.setItem(
+        "practiceMeta",
+        JSON.stringify({
+          subject: assignment.subject,
+          topic: topicLabel,
+          difficulty: "Core",
+          studentId,
+        })
+      );
+      window.location.href = "/portal/practice";
+    } catch (err: unknown) {
+      setSimError(err instanceof Error ? err.message : "Could not create similar questions");
+    } finally {
+      setCreatingSimFor(null);
+    }
+  }
+
+  const isCorrect = (q: Question) => {
+    const given = submission.answers?.[q.id]?.trim().toLowerCase() ?? "";
+    const correct = q.correctAnswer.trim().toLowerCase();
+    if (q.type === "short_answer") return given.includes(correct);
+    return given === correct;
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-white border border-gray-200 p-4 text-center">
+          <p className={`text-3xl font-black ${(submission.passed ?? true) ? "text-emerald-600" : "text-red-500"}`}>
+            {submission.percentage ?? 0}%
+          </p>
+          <p className="text-xs text-gray-500 mt-0.5">Score</p>
+        </div>
+        <div className="bg-white border border-gray-200 p-4 text-center">
+          <p className="text-3xl font-black text-gray-900">
+            {submission.score ?? 0}/{submission.totalPoints ?? 0}
+          </p>
+          <p className="text-xs text-gray-500 mt-0.5">Points</p>
+        </div>
+        <div className="bg-white border border-gray-200 p-4 text-center">
+          <p className={`text-lg font-bold ${(submission.passed ?? true) ? "text-emerald-600" : "text-red-500"}`}>
+            {(submission.passed ?? true) ? "Passed" : "Needs practice"}
+          </p>
+          <p className="text-xs text-gray-500 mt-0.5">{assignment.title}</p>
+        </div>
+      </div>
+
+      {simError && <p className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2">{simError}</p>}
+
+      <div className="bg-white border border-gray-200 overflow-hidden">
+        <div className="px-4 py-3 border-b border-gray-100 font-semibold text-gray-900 text-sm">
+          Question breakdown
+        </div>
+        <div className="divide-y divide-gray-50">
+          {questions.map((q, i) => {
+            const correct = isCorrect(q);
+            const expanded = expandedQ === q.id;
+            return (
+              <div key={q.id}>
+                <div className={`px-4 py-3 flex items-start justify-between gap-3 ${correct ? "bg-emerald-50/50" : "bg-red-50/40"}`}>
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className={`w-7 h-7 flex items-center justify-center text-xs font-bold shrink-0 ${correct ? "bg-emerald-500 text-white" : "bg-red-500 text-white"}`}>
+                      {i + 1}
+                    </div>
+                    <p className="text-sm font-medium text-gray-800 leading-snug">{q.text}</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {!correct && (
+                      <button
+                        onClick={() => handleCreateSimilar(q)}
+                        disabled={creatingSimFor === q.id}
+                        className="text-xs font-semibold text-purple-700 hover:underline flex items-center gap-1 disabled:opacity-50"
+                      >
+                        <MdAutoAwesome size={13} />
+                        {creatingSimFor === q.id ? "…" : "Practice"}
+                      </button>
+                    )}
+                    <button onClick={() => setExpandedQ(expanded ? null : q.id)} className="text-gray-400 hover:text-gray-600">
+                      {expanded ? <MdExpandLess size={18} /> : <MdExpandMore size={18} />}
+                    </button>
+                  </div>
+                </div>
+                {expanded && (
+                  <div className="px-4 py-4 bg-white space-y-3 border-t border-gray-100">
+                    {q.imageUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={q.imageUrl} alt="Question diagram" className="max-h-48 border border-gray-200 object-contain" />
+                    )}
+                    <div>
+                      <p className="text-xs font-semibold text-gray-500 mb-1">Your answer:</p>
+                      <p className={`text-sm px-3 py-1.5 border ${correct ? "border-emerald-300 bg-emerald-50 text-emerald-800" : "border-red-200 bg-red-50 text-red-700"}`}>
+                        {submission.answers?.[q.id] || <em className="text-gray-400">Not answered</em>}
+                        {correct ? " ✓" : " ✗"}
+                      </p>
+                    </div>
+                    {!correct && (
+                      <div>
+                        <p className="text-xs font-semibold text-gray-500 mb-1">Correct answer:</p>
+                        <p className="text-sm px-3 py-1.5 border border-emerald-300 bg-emerald-50 text-emerald-800 font-semibold">
+                          {q.correctAnswer} ✓
+                        </p>
+                      </div>
+                    )}
+                    {q.explanation && (
+                      <div className="bg-blue-50 border border-blue-100 px-3 py-2">
+                        <p className="text-xs font-semibold text-blue-700 mb-0.5">Explanation</p>
+                        <p className="text-xs text-blue-700">{q.explanation}</p>
+                      </div>
+                    )}
+                    {q.workedSolution && (
+                      <div className="bg-gray-50 border border-gray-200 px-3 py-2">
+                        <p className="text-xs font-semibold text-gray-600 mb-0.5">Worked Solution</p>
+                        <p className="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed">{q.workedSolution}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <button onClick={onBack} className="px-4 py-2 border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+          Back to assignments
+        </button>
+        <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+          <MdPrint size={15} /> Print
+        </button>
+        <a href="/portal/practice" className="flex items-center gap-2 px-4 py-2 bg-purple-700 text-white text-sm font-semibold hover:bg-purple-800">
+          <MdAutoAwesome size={15} /> Go to AI Practice
+        </a>
       </div>
     </div>
   );
@@ -368,6 +571,11 @@ function QuizRunner({
               <span className="text-xs text-gray-500">{question.points} points</span>
             </div>
             <p className="text-sm text-gray-700 mb-3">{question.text}</p>
+            {question.imageUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={question.imageUrl} alt="Question diagram"
+                className="max-h-56 border border-gray-200 object-contain mb-3" />
+            )}
 
             {question.type === "multiple_choice" && question.options?.map((option) => (
               <label key={option} className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 cursor-pointer hover:border-secondary-color">
@@ -435,6 +643,7 @@ export default function AssignmentsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "ixl" | "deltamath" | "custom" | "document" | "quiz">("all");
   const [activeQuiz, setActiveQuiz] = useState<Assignment | null>(null);
+  const [resultView, setResultView] = useState<{ assignment: Assignment; submission: AssignmentSubmission } | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
 
   async function loadAssignments() {
@@ -479,6 +688,7 @@ export default function AssignmentsPage() {
 
   async function handleCompleteQuiz(assignment: Assignment, submission: AssignmentSubmission) {
     setActiveQuiz(null);
+    setResultView({ assignment, submission });
     await upsertStudentProgress(submission.studentId, assignment.grade, assignment.subject, { assignmentCompleted: true });
     await loadAssignments();
   }
@@ -529,6 +739,13 @@ export default function AssignmentsPage() {
             <MdAssignment size={48} className="mx-auto text-gray-300 mb-3" />
             <p className="text-gray-500 font-medium">No assignments yet.</p>
           </div>
+        ) : resultView ? (
+          <QuizResultPanel
+            assignment={resultView.assignment}
+            submission={resultView.submission}
+            studentId={student!.id!}
+            onBack={() => setResultView(null)}
+          />
         ) : activeQuiz ? (
           <QuizRunner
             assignment={activeQuiz}
@@ -548,7 +765,8 @@ export default function AssignmentsPage() {
                 isUnlocked={isAssignmentUnlocked(assignment)}
                 prerequisiteTitle={assignment.linkedMaterialId ? materialTitles[assignment.linkedMaterialId] : undefined}
                 refreshToken={refreshToken}
-                onStartQuiz={(assignment) => setActiveQuiz(assignment)}
+                onStartQuiz={(a) => { setResultView(null); setActiveQuiz(a); }}
+                onViewResults={(a, s) => setResultView({ assignment: a, submission: s })}
               />
             ))}
           </div>
