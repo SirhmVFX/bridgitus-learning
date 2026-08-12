@@ -98,7 +98,13 @@ function PracticeRunner({
             {q.difficulty && ` · ${q.difficulty}`}
           </span>
         </div>
-        <p className="text-gray-800 font-medium text-base mb-6 leading-relaxed">{q.text}</p>
+        <p className="text-gray-800 font-medium text-base mb-4 leading-relaxed">{q.text}</p>
+
+        {q.imageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={q.imageUrl} alt="Question diagram"
+            className="max-h-72 border border-gray-200 object-contain mb-6" />
+        )}
 
         {q.type === "multiple_choice" && q.options && (
           <div className="space-y-3">
@@ -247,6 +253,11 @@ function ResultsPanel({
                 </div>
                 {expanded && (
                   <div className="px-4 py-4 bg-white space-y-3">
+                    {q.imageUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={q.imageUrl} alt="Question diagram"
+                        className="max-h-56 border border-gray-200 object-contain" />
+                    )}
                     <div>
                       <p className="text-xs font-semibold text-gray-500 mb-1">Your answer:</p>
                       <p className={`text-sm px-3 py-1.5 border ${correct ? "border-emerald-300 bg-emerald-50 text-emerald-800" : "border-red-200 bg-red-50 text-red-700"}`}>

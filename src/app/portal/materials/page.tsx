@@ -46,6 +46,20 @@ function formatTime(mins: number): string {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
+/**
+ * Builds a forced-download URL. Cloudinary serves files inline by default
+ * (PDFs open in the browser or are blocked); the `fl_attachment` flag makes
+ * Cloudinary send a Content-Disposition: attachment header instead.
+ */
+function toDownloadUrl(url: string, fileName?: string): string {
+  if (url.includes("res.cloudinary.com") && url.includes("/upload/") && !url.includes("fl_attachment")) {
+    const name = fileName ? fileName.replace(/\.[^.]+$/, "").replace(/[^\w-]+/g, "_") : "";
+    const flag = name ? `fl_attachment:${name}` : "fl_attachment";
+    return url.replace("/upload/", `/upload/${flag}/`);
+  }
+  return url;
+}
+
 // ── Material Card ─────────────────────────────────────────
 
 function MaterialCard({
@@ -152,17 +166,26 @@ function MaterialCard({
                     </button>
                   )}
                   {material.fileUrl && (
-                    <a
-                      href={material.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 bg-secondary-color text-white text-xs font-semibold px-3 py-1.5 hover:bg-secondary-color/90 transition-colors"
-                    >
-                      <MdDownload size={13} />
-                      {material.type === "pdf" ? "Open PDF" :
-                        material.type === "image" ? "View Image" :
-                          material.type === "video" ? "Watch Video" : "Download"}
-                    </a>
+                    <>
+                      <a
+                        href={material.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 bg-secondary-color text-white text-xs font-semibold px-3 py-1.5 hover:bg-secondary-color/90 transition-colors"
+                      >
+                        <MdOpenInNew size={13} />
+                        {material.type === "pdf" ? "Open PDF" :
+                          material.type === "image" ? "View Image" :
+                            material.type === "video" ? "Watch Video" : "Open File"}
+                      </a>
+                      <a
+                        href={toDownloadUrl(material.fileUrl, material.fileName)}
+                        download={material.fileName ?? ""}
+                        className="inline-flex items-center gap-1.5 border border-secondary-color text-secondary-color text-xs font-semibold px-3 py-1.5 hover:bg-secondary-color hover:text-white transition-colors"
+                      >
+                        <MdDownload size={13} /> Download
+                      </a>
+                    </>
                   )}
                   {material.linkUrl && (
                     <a

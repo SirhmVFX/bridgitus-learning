@@ -1,71 +1,114 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useStudentAuth } from "@/lib/studentAuth";
-import { getPublishedPricingPlans, type SitePricingPlan } from "@/lib/firestore";
+import {
+  getPublishedPricingPlans,
+  getPlanAmountCents,
+  type SitePricingPlan,
+} from "@/lib/firestore";
 import {
   MdPayment, MdCheckCircle, MdLock, MdSchool, MdLogout,
   MdArrowBack, MdCheck,
 } from "react-icons/md";
 
-declare global {
-  interface Window {
-    PaystackPop: {
-      setup: (opts: Record<string, unknown>) => { openIframe: () => void };
-    };
-  }
-}
-
-const CURRENCY = process.env.NEXT_PUBLIC_PAYMENT_CURRENCY || "NGN";
-
-// Fallback plans if Firestore has none yet
+/** Same AUD plans as the public website — used when Firestore has none yet. */
 const FALLBACK_PLANS: SitePricingPlan[] = [
   {
-    id: "basic", title: "Basic Plan", tagline: "Pay as you go", price: "₦50,000", per: "/hour lesson",
-    perks: [{ desc: "Flexible Scheduling" }, { desc: "No long-term commitment" }, { desc: "Perfect for trial lessons" }],
+    id: "1",
+    title: "Basic Plan",
+    tagline: "Pay as you go",
+    price: "$50",
+    per: "/hour lesson",
+    badge: "1 Student",
+    perks: [
+      { desc: "Flexible Scheduling" },
+      { desc: "No long-term commitment" },
+      { desc: "Perfect for casual learning" },
+    ],
     freePerks: ["One-on-one tutoring", "Flexible scheduling", "Free initial consultation"],
-    highlighted: false, order: 0, published: true, amountKobo: 5000000,
+    highlighted: false,
+    order: 0,
+    published: true,
+    amountCents: 5000,
+    durationDays: 7,
   },
   {
-    id: "standard", title: "Standard Plan", tagline: "Growth Plan", price: "₦955,000", per: "20 classes",
-    perks: [{ desc: "2 classes per week (10 weeks)" }, { desc: "Structured learning" }, { desc: "Progress tracking & Feedback" }],
+    id: "2",
+    title: "Standard Plan",
+    tagline: "Growth Plan",
+    price: "$955",
+    per: "20 classes at $47.75/hr",
+    badge: "10 Weeks",
+    perks: [
+      { desc: "2 classes per week (10 weeks)" },
+      { desc: "Structured learning with consistency" },
+      { desc: "Progress tracking & Feedback" },
+    ],
     freePerks: ["One-on-one tutoring", "Flexible scheduling", "Free initial consultation"],
-    highlighted: true, order: 1, published: true, amountKobo: 95500000,
+    highlighted: true,
+    order: 1,
+    published: true,
+    amountCents: 95500,
+    durationDays: 70,
   },
   {
-    id: "premium", title: "Premium Plan", tagline: "Success Plan", price: "₦1,365,000", per: "30 classes",
-    perks: [{ desc: "2 classes per week (15 weeks)" }, { desc: "Strong foundation & measurable improvements" }, { desc: "Best value" }],
+    id: "3",
+    title: "Premium Plan",
+    tagline: "Success Plan",
+    price: "$1,365",
+    per: "30 classes at $45.50/hr",
+    badge: "15 Weeks",
+    perks: [
+      { desc: "2 classes per week (15 weeks)" },
+      { desc: "Strong foundation & measurable improvements" },
+      { desc: "Best value for long-term learning" },
+    ],
     freePerks: ["One-on-one tutoring", "Flexible scheduling", "Free initial consultation"],
-    highlighted: false, order: 2, published: true, amountKobo: 136500000,
+    highlighted: false,
+    order: 2,
+    published: true,
+    amountCents: 136500,
+    durationDays: 105,
+  },
+  {
+    id: "4",
+    title: "Family Plan",
+    tagline: "Best Value for Families",
+    price: "$49.99",
+    per: "/week",
+    badge: "1 to 3 Children",
+    perks: [
+      { desc: "Up to 3 children included" },
+      { desc: "Unlimited weekly access" },
+      { desc: "One flat weekly price" },
+    ],
+    freePerks: ["One-on-one tutoring per child", "Flexible scheduling", "Free initial consultation"],
+    highlighted: false,
+    order: 3,
+    published: true,
+    amountCents: 4999,
+    durationDays: 7,
   },
 ];
 
-function formatAmount(kobo: number, currency: string) {
-  const major = kobo / 100;
-  try {
-    return new Intl.NumberFormat("en", { style: "currency", currency, minimumFractionDigits: 0 }).format(major);
-  } catch {
-    return `${currency} ${major.toLocaleString()}`;
-  }
-}
-
-export default function PaymentPage() {
+function PaymentPageInner() {
   const { student, loading: authLoading, signOut, refreshStudent } = useStudentAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [plans, setPlans] = useState<SitePricingPlan[]>([]);
   const [plansLoading, setPlansLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<SitePricingPlan | null>(null);
-  const [scriptReady, setScriptReady] = useState(false);
+  const [paying, setPaying] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY ?? "";
-  const isConfigured = publicKey.startsWith("pk_");
+  const stripeConfigured = Boolean(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.startsWith("pk_"));
 
   // Auth guard
   useEffect(() => {
@@ -76,7 +119,7 @@ export default function PaymentPage() {
     }
   }, [student, authLoading, router]);
 
-  // Load plans from Firestore
+  // Load same published plans as the website
   useEffect(() => {
     getPublishedPricingPlans()
       .then((data) => {
@@ -86,85 +129,76 @@ export default function PaymentPage() {
       .finally(() => setPlansLoading(false));
   }, []);
 
-  // Load Paystack script
+  // Verify Stripe Checkout return
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (window.PaystackPop) { setScriptReady(true); return; }
-    const existing = document.getElementById("paystack-script");
-    if (existing) { existing.addEventListener("load", () => setScriptReady(true)); return; }
-    const s = document.createElement("script");
-    s.id = "paystack-script";
-    s.src = "https://js.paystack.co/v1/inline.js";
-    s.onload = () => setScriptReady(true);
-    s.onerror = () => setError("Payment service could not load. Check your internet connection.");
-    document.body.appendChild(s);
-    const t = setTimeout(() => setScriptReady(true), 8000);
-    return () => clearTimeout(t);
-  }, []);
-
-  async function handleVerify(reference: string) {
-    setVerifying(true); setError("");
-    try {
-      const res = await fetch("/api/paystack/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reference, studentId: student!.id }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Verification failed");
-      setSuccess(true);
-      await refreshStudent();
-      setTimeout(() => router.replace("/portal/dashboard"), 2500);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Payment verification failed. Please contact support.");
-    } finally { setVerifying(false); }
-  }
-
-  function openPaystack(plan: SitePricingPlan) {
-    if (!student) return;
-    if (!isConfigured) {
-      setError("Payment is not yet configured. Contact info@bridgitus.com to complete enrollment.");
+    const sessionId = searchParams.get("session_id");
+    const cancelled = searchParams.get("cancelled");
+    if (cancelled) {
+      setError("Payment was cancelled. You can try again when ready.");
       return;
     }
-    if (!window.PaystackPop) {
-      setError("Payment service is still loading. Please wait and try again.");
-      return;
-    }
-    const amount = plan.amountKobo ?? 0;
-    if (amount === 0) {
+    if (!sessionId || !student?.id || verifying || success) return;
+
+    setVerifying(true);
+    setError("");
+    fetch("/api/stripe/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId, studentId: student.id }),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Verification failed");
+        setSuccess(true);
+        await refreshStudent();
+        setTimeout(() => router.replace("/portal/dashboard"), 2500);
+      })
+      .catch((err: unknown) => {
+        setError(err instanceof Error ? err.message : "Payment verification failed. Please contact support.");
+      })
+      .finally(() => setVerifying(false));
+  }, [searchParams, student?.id, verifying, success, refreshStudent, router]);
+
+  async function startCheckout(plan: SitePricingPlan) {
+    if (!student?.id) return;
+    const amountCents = getPlanAmountCents(plan);
+    if (amountCents <= 0) {
       setError("This plan has no payment amount set. Contact info@bridgitus.com.");
       return;
     }
-    setError("");
-    const handler = window.PaystackPop.setup({
-      key: publicKey,
-      email: student.email,
-      amount,
-      currency: CURRENCY,
-      ref: `BRG-${student.studentId}-${plan.id}-${Date.now()}`,
-      metadata: {
-        studentId: student.id,
-        studentName: `${student.firstName} ${student.lastName}`,
-        studentIdCode: student.studentId,
-        planId: plan.id,
-        planTitle: plan.title,
-      },
-      callback: (response: { reference: string }) => { handleVerify(response.reference); },
-      onClose: () => { },
-    });
-    handler.openIframe();
+    if (!stripeConfigured) {
+      setError("Payment is not yet configured. Contact info@bridgitus.com to complete enrollment.");
+      return;
+    }
+    setPaying(true); setError("");
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId: student.id,
+          planId: plan.id,
+          planTitle: plan.title,
+          amountCents,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.message || "Could not start checkout");
+      window.location.href = data.url as string;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Could not start payment.");
+      setPaying(false);
+    }
   }
 
   async function handleSignOut() { await signOut(); router.replace("/portal/login"); }
 
-  // ── Loading states ──────────────────────────────────────
-
-  if (authLoading) {
+  if (authLoading || verifying) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f4f6fb]">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-secondary-color border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-gray-500">Loading your account…</p>
+          <p className="text-sm text-gray-500">{verifying ? "Confirming your payment…" : "Loading your account…"}</p>
         </div>
       </div>
     );
@@ -177,8 +211,6 @@ export default function PaymentPage() {
       </div>
     );
   }
-
-  // ── Success ─────────────────────────────────────────────
 
   if (success) {
     return (
@@ -195,8 +227,6 @@ export default function PaymentPage() {
     );
   }
 
-  // ── Header (shared) ─────────────────────────────────────
-
   const Header = () => (
     <header className="bg-secondary-color px-4 sm:px-6 py-4 flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -210,9 +240,8 @@ export default function PaymentPage() {
     </header>
   );
 
-  // ── Checkout view (plan selected) ───────────────────────
-
   if (selectedPlan) {
+    const amountCents = getPlanAmountCents(selectedPlan);
     return (
       <div className="min-h-screen bg-[#f4f6fb] flex flex-col">
         <Header />
@@ -234,7 +263,6 @@ export default function PaymentPage() {
               </div>
 
               <div className="px-6 sm:px-8 py-6 space-y-5">
-                {/* Student */}
                 <div className="border border-gray-200 p-4 bg-gray-50">
                   <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-2">Enrolled Student</p>
                   <div className="flex items-center gap-3">
@@ -248,7 +276,6 @@ export default function PaymentPage() {
                   </div>
                 </div>
 
-                {/* Selected plan summary */}
                 <div className="border border-secondary-color/30 bg-secondary-color/5 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -257,6 +284,7 @@ export default function PaymentPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-black text-secondary-color">{selectedPlan.price}</p>
+                      <p className="text-[11px] text-gray-400">AUD</p>
                     </div>
                   </div>
                   <div className="mt-3 space-y-1">
@@ -268,7 +296,6 @@ export default function PaymentPage() {
                   </div>
                 </div>
 
-                {/* What's included */}
                 <div>
                   <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-2">Portal access includes</p>
                   <ul className="space-y-1.5 text-sm text-gray-700">
@@ -282,7 +309,7 @@ export default function PaymentPage() {
                   </ul>
                 </div>
 
-                {!isConfigured && (
+                {!stripeConfigured && (
                   <div className="border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
                     <strong>Note:</strong> Payment gateway pending setup. Contact{" "}
                     <a href="mailto:info@bridgitus.com" className="underline">info@bridgitus.com</a>.
@@ -294,26 +321,25 @@ export default function PaymentPage() {
                 )}
 
                 <button
-                  onClick={() => openPaystack(selectedPlan)}
-                  disabled={verifying || !scriptReady || !((selectedPlan.amountKobo ?? 0) > 0)}
+                  onClick={() => startCheckout(selectedPlan)}
+                  disabled={paying || amountCents <= 0}
                   className="w-full bg-secondary-color hover:bg-secondary-color/90 disabled:opacity-50 text-white font-bold py-4 text-base flex items-center justify-center gap-2 transition-colors"
                 >
-                  {verifying ? (
-                    <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Verifying…</>
-                  ) : !scriptReady ? (
-                    <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Loading…</>
+                  {paying ? (
+                    <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Redirecting to Stripe…</>
                   ) : (
-                    <><MdPayment size={20} />Pay {selectedPlan.price} with Paystack</>
+                    <><MdPayment size={20} />Pay {selectedPlan.price} AUD with Stripe</>
                   )}
                 </button>
-                {!(selectedPlan.amountKobo ?? 0) && (
+
+                {amountCents <= 0 && (
                   <div className="border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800 mt-3">
                     This plan is not yet configured for online payment. Contact support to complete enrollment.
                   </div>
                 )}
 
                 <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400">
-                  <MdLock size={12} /> Secured by Paystack · 256-bit SSL
+                  <MdLock size={12} /> Secured by Stripe · AUD · 256-bit SSL
                 </div>
 
                 <p className="text-center text-xs text-gray-400">
@@ -330,15 +356,12 @@ export default function PaymentPage() {
     );
   }
 
-  // ── Plan selection view ─────────────────────────────────
-
   return (
     <div className="min-h-screen bg-[#f4f6fb] flex flex-col">
       <Header />
 
       <div className="flex-1 py-8 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
-          {/* Page heading */}
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
               <Image src="/assets/FullLogo.png" alt="Bridgitus" width={120} height={44}
@@ -348,11 +371,10 @@ export default function PaymentPage() {
               Choose Your Learning Plan
             </h1>
             <p className="text-gray-500 text-sm max-w-md mx-auto">
-              Hi {student.firstName} 👋 — select the plan that works best for you.
-              Payment activates your full portal access immediately.
+              Hi {student.firstName} — select the same plans shown on our website.
+              All prices are in AUD. Payment activates your full portal access immediately.
             </p>
 
-            {/* Student info pill */}
             <div className="inline-flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 mt-4 text-sm text-gray-600">
               <div className="w-6 h-6 bg-secondary-color flex items-center justify-center shrink-0">
                 <span className="text-white text-xs font-bold">{student.firstName[0]}</span>
@@ -361,95 +383,103 @@ export default function PaymentPage() {
             </div>
           </div>
 
-          {/* Plans grid */}
+          {error && (
+            <div className="max-w-xl mx-auto mb-6 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 text-center">
+              {error}
+            </div>
+          )}
+
           {plansLoading ? (
             <div className="flex justify-center py-16">
               <div className="w-8 h-8 border-4 border-secondary-color border-t-transparent rounded-full animate-spin" />
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {plans.map((plan) => (
-                <div key={plan.id}
-                  className={`relative bg-white border flex flex-col transition-all ${plan.highlighted
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {plans.map((plan) => {
+                const amountCents = getPlanAmountCents(plan);
+                return (
+                  <div key={plan.id}
+                    className={`relative bg-white border flex flex-col transition-all ${plan.highlighted
                       ? "border-secondary-color"
                       : "border-gray-200 hover:border-secondary-color/50"
-                    }`}>
-
-                  {/* Popular badge */}
-                  {plan.highlighted && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-secondary-color text-white text-xs font-bold px-3 py-1">
-                      MOST POPULAR
-                    </div>
-                  )}
-
-                  <div className={`px-6 pt-8 pb-5 ${plan.highlighted ? "bg-secondary-color/5" : ""}`}>
-                    <h2 className="text-lg font-bold text-gray-900">{plan.title}</h2>
-                    <p className="text-gray-500 text-xs mt-0.5">{plan.tagline}</p>
-                    <div className="mt-4">
-                      <span className="text-4xl font-black text-gray-900">{plan.price}</span>
-                      <span className="text-gray-400 text-sm ml-1">{plan.per}</span>
-                    </div>
-                  </div>
-
-                  <div className="px-6 pb-6 flex flex-col flex-1 gap-4">
-                    {/* Key perks */}
-                    <ul className="space-y-2">
-                      {plan.perks.map((perk, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                          <MdCheck size={16} className="text-secondary-color shrink-0 mt-0.5" />
-                          {perk.desc}
-                        </li>
-                      ))}
-                    </ul>
-
-                    {/* Divider + free perks */}
-                    {plan.freePerks.filter(Boolean).length > 0 && (
-                      <>
-                        <div className="h-px bg-gray-100" />
-                        <div>
-                          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Included free</p>
-                          <ul className="space-y-1.5">
-                            {plan.freePerks.filter(Boolean).map((fp, i) => (
-                              <li key={i} className="flex items-start gap-2 text-xs text-gray-500">
-                                <MdCheckCircle size={13} className="text-emerald-500 shrink-0 mt-0.5" />
-                                {fp}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </>
+                      }`}>
+                    {plan.highlighted && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-secondary-color text-white text-xs font-bold px-3 py-1">
+                        MOST POPULAR
+                      </div>
                     )}
 
-                    {/* Select button */}
-                    <div className="mt-auto pt-2">
-                      {((plan.amountKobo ?? 0) > 0) ? (
-                        <button
-                          onClick={() => { setSelectedPlan(plan); setError(""); }}
-                          className={`w-full py-3 font-bold text-sm transition-colors ${plan.highlighted
+                    <div className={`px-6 pt-8 pb-5 ${plan.highlighted ? "bg-secondary-color/5" : ""}`}>
+                      {plan.badge && (
+                        <span className="inline-block text-[10px] font-bold uppercase tracking-wide text-secondary-color bg-secondary-color/10 px-2 py-0.5 mb-2">
+                          {plan.badge}
+                        </span>
+                      )}
+                      <h2 className="text-lg font-bold text-gray-900">{plan.title}</h2>
+                      <p className="text-gray-500 text-xs mt-0.5">{plan.tagline}</p>
+                      <div className="mt-4">
+                        <span className="text-4xl font-black text-gray-900">{plan.price}</span>
+                        <span className="text-gray-400 text-sm ml-1">{plan.per}</span>
+                      </div>
+                      <p className="text-[11px] text-gray-400 mt-1">AUD</p>
+                    </div>
+
+                    <div className="px-6 pb-6 flex flex-col flex-1 gap-4">
+                      <ul className="space-y-2">
+                        {plan.perks.map((perk, i) => (
+                          <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                            <MdCheck size={16} className="text-secondary-color shrink-0 mt-0.5" />
+                            {perk.desc}
+                          </li>
+                        ))}
+                      </ul>
+
+                      {plan.freePerks.filter(Boolean).length > 0 && (
+                        <>
+                          <div className="h-px bg-gray-100" />
+                          <div>
+                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Included free</p>
+                            <ul className="space-y-1.5">
+                              {plan.freePerks.filter(Boolean).map((fp, i) => (
+                                <li key={i} className="flex items-start gap-2 text-xs text-gray-500">
+                                  <MdCheckCircle size={13} className="text-emerald-500 shrink-0 mt-0.5" />
+                                  {fp}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </>
+                      )}
+
+                      <div className="mt-auto pt-2">
+                        {amountCents > 0 ? (
+                          <button
+                            onClick={() => { setSelectedPlan(plan); setError(""); }}
+                            className={`w-full py-3 font-bold text-sm transition-colors ${plan.highlighted
                               ? "bg-secondary-color text-white hover:bg-secondary-color/90"
                               : "border border-secondary-color text-secondary-color hover:bg-secondary-color hover:text-white"
-                            }`}>
-                          Select {plan.title}
-                        </button>
-                      ) : (
-                        <button
-                          disabled
-                          className="w-full py-3 font-bold text-sm border border-gray-300 text-gray-500 bg-gray-50 cursor-not-allowed"
-                        >
-                          Not available for online payment
-                        </button>
-                      )}
+                              }`}>
+                            Select {plan.title}
+                          </button>
+                        ) : (
+                          <button
+                            disabled
+                            className="w-full py-3 font-bold text-sm border border-gray-300 text-gray-500 bg-gray-50 cursor-not-allowed"
+                          >
+                            Not available for online payment
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
-          {/* Security note */}
           <div className="flex items-center justify-center gap-2 mt-6 text-xs text-gray-400">
             <MdLock size={13} />
-            All payments secured by Paystack · 256-bit SSL encryption
+            All payments secured by Stripe · AUD · 256-bit SSL encryption
           </div>
 
           <p className="text-center text-xs text-gray-400 mt-2">
@@ -459,5 +489,17 @@ export default function PaymentPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[#f4f6fb]">
+        <div className="w-10 h-10 border-4 border-secondary-color border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <PaymentPageInner />
+    </Suspense>
   );
 }

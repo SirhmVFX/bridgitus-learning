@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Facebook, Instagram, Linkedin, Mail, Phone } from "./Icons";
+import { Facebook, Instagram, Linkedin, Youtube, Mail, Phone } from "./Icons";
 import Image from "next/image";
 import { getSiteContent } from "@/lib/firestore";
 
@@ -8,6 +8,7 @@ const DEFAULTS = {
   abn: "16146552112", facebook: "https://www.facebook.com/profile.php?id=61579279874406",
   instagram: "https://www.instagram.com/bridgitus/",
   linkedin: "https://www.linkedin.com/in/bridgitus-learning-538390383",
+  youtube: "https://youtube.com/@BridgitusLearning",
 };
 
 async function Footer() {
@@ -68,6 +69,7 @@ async function Footer() {
               { url: c.facebook, icon: <Facebook /> },
               { url: c.instagram, icon: <Instagram /> },
               { url: c.linkedin, icon: <Linkedin /> },
+              { url: c.youtube, icon: <Youtube /> },
             ].filter((s) => s.url).map((s, i) => (
               <Link key={i} href={s.url} target="_blank" rel="noopener noreferrer"
                 className="bg-white/10 p-2 hover:bg-white/20 transition-colors">{s.icon}</Link>

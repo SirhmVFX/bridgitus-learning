@@ -12,18 +12,23 @@ import {
   getMaterialCompletions,
   isMaterialCompleted,
   getAnnouncementsForStudent,
+  getStudySessions,
+  formatStudyTime,
   type TestAttempt,
   type Assignment,
   type StudentProgress,
   type LearningMaterial,
   type Announcement,
+  type StudySession,
 } from "@/lib/firestore";
 import {
   MdMenuBook, MdQuiz, MdAssignment, MdBarChart,
   MdCheckCircle, MdPending, MdTrendingUp, MdStar,
   MdPushPin, MdCampaign, MdArrowForward, MdTimer,
-  MdLock,
+  MdLock, MdOndemandVideo,
 } from "react-icons/md";
+
+const YOUTUBE_URL = "https://youtube.com/@BridgitusLearning";
 
 function greeting() {
   const h = new Date().getHours();
@@ -40,22 +45,25 @@ export default function DashboardPage() {
   const [materials, setMaterials] = useState<LearningMaterial[]>([]);
   const [completions, setCompletions] = useState<ReturnType<typeof getMaterialCompletions> extends Promise<infer T> ? T : never>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [studySessions, setStudySessions] = useState<StudySession[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!student?.id || !student?.grade) return;
     async function load() {
       try {
-        const [att, ass, prog, mats, comps, ann] = await Promise.all([
+        const [att, ass, prog, mats, comps, ann, sessions] = await Promise.all([
           getAllStudentAttempts(student!.id!),
           getAssignmentsForStudent(student!.grade, student!.id!),
           getStudentProgress(student!.id!),
           getMaterialsByGrade(student!.grade),
           getMaterialCompletions(student!.id!, student!.grade),
           getAnnouncementsForStudent(student!.grade),
+          getStudySessions(student!.id!, 7),
         ]);
         setAttempts(att); setAssignments(ass); setProgress(prog);
         setMaterials(mats); setCompletions(comps as typeof completions); setAnnouncements(ann);
+        setStudySessions(sessions);
       } finally { setLoading(false); }
     }
     load();
@@ -82,6 +90,14 @@ export default function DashboardPage() {
   // Due assignments
   const dueAssignments = assignments.filter((a) => a.dueDate && new Date(a.dueDate) >= new Date());
 
+  // Time-online stats
+  const todayKey = (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  })();
+  const secondsToday = studySessions.find((s) => s.date === todayKey)?.seconds ?? 0;
+  const secondsWeek = studySessions.reduce((sum, s) => sum + (s.seconds ?? 0), 0);
+
   return (
     <PortalLayout>
       <div className="max-w-5xl mx-auto space-y-5">
@@ -98,6 +114,10 @@ export default function DashboardPage() {
             <Link href="/portal/tests" className="bg-white/20 hover:bg-white/30 text-white text-sm font-medium px-4 py-2 transition-colors">
               Take a Test →
             </Link>
+            <a href={YOUTUBE_URL} target="_blank" rel="noopener noreferrer"
+              className="bg-red-500/90 hover:bg-red-500 text-white text-sm font-medium px-4 py-2 transition-colors inline-flex items-center gap-1.5">
+              <MdOndemandVideo size={16} /> YouTube Channel
+            </a>
           </div>
         </div>
 
@@ -140,6 +160,29 @@ export default function DashboardPage() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Time online tracker */}
+        {!loading && (
+          <div className="bg-white border border-gray-200 p-5 flex flex-wrap items-center gap-5">
+            <div className="w-10 h-10 bg-cyan-50 flex items-center justify-center shrink-0">
+              <MdTimer size={20} className="text-cyan-600" />
+            </div>
+            <div className="flex-1 min-w-40">
+              <p className="text-sm font-semibold text-gray-900">Time Spent Learning</p>
+              <p className="text-xs text-gray-400">Tracked automatically while you use the portal</p>
+            </div>
+            <div className="flex gap-8">
+              <div className="text-right">
+                <p className="text-xl font-bold text-gray-900">{formatStudyTime(secondsToday)}</p>
+                <p className="text-xs text-gray-400">Today</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xl font-bold text-gray-900">{formatStudyTime(secondsWeek)}</p>
+                <p className="text-xs text-gray-400">Last 7 days</p>
+              </div>
+            </div>
           </div>
         )}
 
