@@ -94,6 +94,11 @@ export async function POST(request: Request) {
       } catch { /* best-effort */ }
     }
 
+    // Capture the reusable card authorization + customer code so the admin
+    // can set up automatic (weekly/monthly) recurring payments later.
+    const authorization = data.data.authorization ?? {};
+    const customer = data.data.customer ?? {};
+
     // Update student payment status
     const studentRef = doc(db, "students", studentId);
     await updateDoc(studentRef, {
@@ -104,6 +109,19 @@ export async function POST(request: Request) {
       planTitle: planTitle || null,
       paidAt: serverTimestamp(),
       ...(planExpiresAt ? { planExpiresAt } : {}),
+      ...(customer.customer_code ? { paystackCustomerCode: customer.customer_code } : {}),
+      ...(authorization.authorization_code && authorization.reusable !== false
+        ? {
+          paystackAuthorization: {
+            authorizationCode: authorization.authorization_code,
+            last4: authorization.last4 ?? "",
+            cardType: authorization.card_type ?? "",
+            expMonth: authorization.exp_month ?? "",
+            expYear: authorization.exp_year ?? "",
+            bank: authorization.bank ?? "",
+          },
+        }
+        : {}),
       updatedAt: serverTimestamp(),
     });
 

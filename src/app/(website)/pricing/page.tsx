@@ -26,6 +26,8 @@ const FALLBACK_PLANS: SitePricingPlan[] = [
     highlighted: false,
     order: 0,
     published: true,
+    amountCents: 5000,
+    durationDays: 7,
   },
   {
     id: "2",
@@ -51,6 +53,8 @@ const FALLBACK_PLANS: SitePricingPlan[] = [
     highlighted: true,
     order: 1,
     published: true,
+    amountCents: 95500,
+    durationDays: 70,
   },
   {
     id: "3",
@@ -76,6 +80,8 @@ const FALLBACK_PLANS: SitePricingPlan[] = [
     highlighted: false,
     order: 2,
     published: true,
+    amountCents: 136500,
+    durationDays: 105,
   },
   {
     id: "4",
@@ -83,12 +89,12 @@ const FALLBACK_PLANS: SitePricingPlan[] = [
     tagline: "Best Value for Families",
     price: "$49.99",
     per: "/week",
-    badge: "1 to 4 Children",
-    description: "Unlimited access for up to 4 children. One low price. More progress together.",
+    badge: "1 to 3 Children",
+    description: "Unlimited access for up to 3 children. One low price. More progress together.",
     icon: "👨‍👩‍👧‍👦",
     ctaLabel: "Book your family plan now",
     ctaHref: "/register",
-    perks: [{ desc: "Up to 4 children included" }, { desc: "Unlimited weekly access" }, { desc: "One flat weekly price" }],
+    perks: [{ desc: "Up to 3 children included" }, { desc: "Unlimited weekly access" }, { desc: "One flat weekly price" }],
     freePerks: ["One-on-one tutoring per child", "Flexible scheduling", "Free initial consultation"],
     features: [
       { icon: "👥", title: "Structured learning", desc: "With consistency & routine" },
@@ -102,6 +108,8 @@ const FALLBACK_PLANS: SitePricingPlan[] = [
     highlighted: false,
     order: 3,
     published: true,
+    amountCents: 4999,
+    durationDays: 7,
   },
 ];
 

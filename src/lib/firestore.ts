@@ -1,6 +1,6 @@
 import {
   collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc,
-  query, where, serverTimestamp, Timestamp, limit,
+  setDoc, increment, query, where, serverTimestamp, Timestamp, limit,
 } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -20,6 +20,29 @@ export interface Student {
   paymentStatus: "pending" | "paid" | "failed" | "waived" | "expired";
   paymentReference?: string; paymentAmount?: number; paidAt?: Timestamp;
   planId?: string; planTitle?: string; planExpiresAt?: Timestamp;
+  // Stripe payment data (captured on successful Checkout)
+  stripeCustomerId?: string;
+  stripePaymentMethod?: {
+    paymentMethodId: string; last4?: string; brand?: string;
+    expMonth?: string; expYear?: string;
+  };
+  // Legacy Paystack fields (kept for older records)
+  paystackCustomerCode?: string;
+  paystackAuthorization?: {
+    authorizationCode: string; last4?: string; cardType?: string;
+    expMonth?: string; expYear?: string; bank?: string;
+  };
+  autoPay?: {
+    interval: "weekly" | "monthly";
+    amountCents?: number;
+    amountKobo?: number; // legacy alias for amountCents
+    subscriptionId?: string;
+    planCode?: string;
+    subscriptionCode?: string;
+    emailToken?: string;
+    status: "active" | "cancelled";
+    createdAt?: Timestamp; cancelledAt?: Timestamp;
+  };
   createdAt?: Timestamp; updatedAt?: Timestamp;
 }
 
@@ -39,6 +62,7 @@ export interface Question {
   id: string; type: QuestionType; text: string;
   options?: string[]; correctAnswer: string; points: number;
   explanation?: string; workedSolution?: string;
+  imageUrl?: string;        // optional diagram/illustration for the question
 }
 
 export interface Test {
@@ -123,9 +147,28 @@ export interface SitePricingPlan {
   highlighted: boolean;
   order: number;
   published: boolean;
+  /** Charge amount in cents (AUD). Prefer this for Stripe. */
+  amountCents?: number;
+  /** @deprecated Legacy Paystack field — treated as amountCents when amountCents is missing. */
   amountKobo?: number;
   durationDays?: number;  // plan duration — used for expiry countdown
   createdAt?: Timestamp;
+}
+
+/** Stripe charge amount in cents for a pricing plan. */
+export function getPlanAmountCents(plan: Pick<SitePricingPlan, "amountCents" | "amountKobo" | "price">): number {
+  if (typeof plan.amountCents === "number" && plan.amountCents > 0) return plan.amountCents;
+  // Parse display prices like "$50", "$1,365", "$49.99"
+  const raw = (plan.price ?? "").replace(/[^0-9.]/g, "");
+  if (raw) {
+    const dollars = parseFloat(raw);
+    if (!isNaN(dollars) && dollars > 0) return Math.round(dollars * 100);
+  }
+  // Legacy amountKobo only if it looks like cents (not old NGN kobo millions)
+  if (typeof plan.amountKobo === "number" && plan.amountKobo > 0 && plan.amountKobo < 1_000_000) {
+    return plan.amountKobo;
+  }
+  return 0;
 }
 export interface SiteFaq {
   id?: string; question: string; answer: string;
@@ -462,6 +505,7 @@ export interface AIQuestion {
   topic?: string;
   subtopic?: string;
   difficulty?: string;
+  imageUrl?: string;        // optional diagram/illustration for the question
 }
 
 export interface QuestionSet {
@@ -521,14 +565,60 @@ export async function getQuestionSetById(id: string): Promise<QuestionSet | null
 
 // ── Learning Gaps ────────────────────────────────────────────────────────
 
+// Matches internal machine ids that older records mistakenly stored as
+// topic/subtopic labels: "q3", "q12-sim1", UUIDs like
+// "9f8cb890-228c-4b20-b0bd-ee853947d531" (optionally with a -sim suffix),
+// and other long digit-containing ids (e.g. Firestore document ids).
+const ID_LIKE_LABEL = new RegExp(
+  [
+    /^q\d+([-_]?sim\d*)?$/.source,
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}([-_]?sim\d*)?$/.source,
+    /^(?=.*\d)[A-Za-z0-9_-]{18,}$/.source,
+  ].join("|"),
+  "i"
+);
+
+/** Returns a human-readable topic label, replacing internal question ids. */
+export function displayTopic(topic: string | undefined, subject?: string): string {
+  const t = (topic ?? "").trim();
+  if (!t || ID_LIKE_LABEL.test(t)) {
+    return subject ? `${subject} — General Practice` : "General Practice";
+  }
+  return t;
+}
+
 export async function getLearningGaps(studentId: string): Promise<LearningGap[]> {
   const snap = await getDocs(query(
     collection(db, "learningGaps"),
     where("studentId", "==", studentId),
     where("resolved", "==", false)
   ));
-  return snap.docs.map(d => ({ id: d.id, ...(d.data() as LearningGap) }))
-    .sort((a, b) => a.accuracy - b.accuracy);  // worst gaps first
+  return snap.docs.map(d => {
+    const data = d.data() as LearningGap;
+    return {
+      ...data,
+      id: d.id,
+      topic: displayTopic(data.topic, data.subject),
+      subtopic: data.subtopic && ID_LIKE_LABEL.test(data.subtopic) ? undefined : data.subtopic,
+    };
+  }).sort((a, b) => a.accuracy - b.accuracy);  // worst gaps first
+}
+
+/** All topic records for a student — including resolved ones (used for skill-progress analytics). */
+export async function getAllLearningGapsForStudent(studentId: string): Promise<LearningGap[]> {
+  const snap = await getDocs(query(
+    collection(db, "learningGaps"),
+    where("studentId", "==", studentId)
+  ));
+  return snap.docs.map(d => {
+    const data = d.data() as LearningGap;
+    return {
+      ...data,
+      id: d.id,
+      topic: displayTopic(data.topic, data.subject),
+      subtopic: data.subtopic && ID_LIKE_LABEL.test(data.subtopic) ? undefined : data.subtopic,
+    };
+  }).sort((a, b) => b.accuracy - a.accuracy);
 }
 
 export async function upsertLearningGap(
@@ -560,6 +650,58 @@ export async function upsertLearningGap(
   }
 }
 
+// ── Study Sessions (time-online tracking) ────────────────────────────────
+// One document per student per day: studySessions/{studentId}_{YYYY-MM-DD}
+
+export interface StudySession {
+  id?: string;
+  studentId: string;
+  date: string;             // "YYYY-MM-DD" (local)
+  seconds: number;          // accumulated active seconds for that day
+  updatedAt?: Timestamp;
+}
+
+function localDateKey(d = new Date()): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/** Adds active seconds to today's study session for the student. */
+export async function recordStudyTime(studentId: string, seconds: number): Promise<void> {
+  if (seconds <= 0) return;
+  const date = localDateKey();
+  await setDoc(doc(db, "studySessions", `${studentId}_${date}`), {
+    studentId, date,
+    seconds: increment(seconds),
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
+}
+
+/** Study sessions for the last `days` days (including today), newest first. */
+export async function getStudySessions(studentId: string, days = 30): Promise<StudySession[]> {
+  const cutoff = localDateKey(new Date(Date.now() - (days - 1) * 24 * 60 * 60 * 1000));
+  const snap = await getDocs(query(
+    collection(db, "studySessions"),
+    where("studentId", "==", studentId)
+  ));
+  return snap.docs
+    .map(d => ({ id: d.id, ...(d.data() as StudySession) }))
+    .filter(s => s.date >= cutoff)
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+/** Formats seconds as e.g. "2 hr 8 min" or "45 min". */
+export function formatStudyTime(totalSeconds: number): string {
+  const mins = Math.round(totalSeconds / 60);
+  if (mins < 1) return "< 1 min";
+  if (mins < 60) return `${mins} min`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m > 0 ? `${h} hr ${m} min` : `${h} hr`;
+}
+
 // ── Practice Attempts ────────────────────────────────────────────────────
 
 export async function savePracticeAttempt(attempt: Omit<PracticeAttempt, "id">): Promise<string> {
@@ -575,6 +717,9 @@ export async function getPracticeAttempts(studentId: string): Promise<PracticeAt
     where("studentId", "==", studentId)
   ));
   return snap.docs
-    .map(d => ({ id: d.id, ...(d.data() as PracticeAttempt) }))
+    .map(d => {
+      const data = d.data() as PracticeAttempt;
+      return { ...data, id: d.id, topic: displayTopic(data.topic, data.subject) };
+    })
     .sort((a, b) => (b.submittedAt as Timestamp)?.toMillis() - (a.submittedAt as Timestamp)?.toMillis() || 0);
 }
