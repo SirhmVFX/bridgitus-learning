@@ -10,7 +10,12 @@ import { db } from "./firebase";
 
 export interface Student {
   id?: string;
-  studentId: string; email: string;
+  uid?: string;
+  studentId: string;
+  /** Parent / contact email — shared across siblings. Not used for login. */
+  email: string;
+  /** Internal Firebase Auth email (unique per student). Used only for auth. */
+  authEmail?: string;
   firstName: string; lastName: string; dateOfBirth: string;
   gender: string; school: string; grade: string; subjects: string[];
   parentFirstName: string; parentLastName: string;

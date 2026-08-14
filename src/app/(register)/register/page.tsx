@@ -360,14 +360,9 @@ function Register() {
                               </div>
                               <div className="flex items-center justify-between bg-white border border-gray-200 px-3 py-2">
                                 <div>
-                                  <p className="text-xs text-gray-400">Email</p>
+                                  <p className="text-xs text-gray-400">Parent / contact email</p>
                                   <p className="font-medium text-gray-800 break-all">{s.email}</p>
                                 </div>
-                                <button
-                                  type="button"
-                                  onClick={() => navigator.clipboard.writeText(s.email).then(() => alert("Email copied!"))}
-                                  className="text-xs text-secondary-color border border-secondary-color px-2 py-1 hover:bg-secondary-color hover:text-white transition-colors ml-2 shrink-0"
-                                >Copy</button>
                               </div>
                               {s.password ? (
                                 <div className="flex items-center justify-between bg-amber-50 border border-amber-300 px-3 py-2">
@@ -399,11 +394,12 @@ function Register() {
                   <div className="bg-amber-50 border border-amber-300 px-4 py-3">
                     <p className="text-xs text-amber-800 leading-relaxed font-semibold mb-1">Save your credentials now!</p>
                     <p className="text-xs text-amber-700 leading-relaxed">
-                      Copy your <strong>Student ID</strong>, <strong>Email</strong>, and <strong>Password</strong> above — the password is only shown once.
+                      Copy each child&apos;s <strong>Student ID</strong> and <strong>Password</strong> above — passwords are only shown once.
+                      Log in at the portal with <strong>Student ID + password</strong> (not email).
                       {credentialsEmailed
                         ? " A copy was also sent to your email."
-                        : " Email delivery is temporarily unavailable, so this screen is the only place to get the password."}
-                      {" "}Log in with your Student ID or email, then complete payment to unlock portal features.
+                        : " Email delivery is temporarily unavailable, so this screen is the only place to get the passwords."}
+                      {" "}Then complete payment to unlock portal features.
                     </p>
                   </div>
 

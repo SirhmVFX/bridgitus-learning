@@ -24,7 +24,8 @@ interface StudentAuthContextType {
   user: User | null;
   student: Student | null;
   loading: boolean;
-  signIn: (emailOrStudentId: string, password: string) => Promise<void>;
+  /** Login with Student ID + password only (not email). */
+  signIn: (studentId: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   refreshStudent: () => Promise<void>;
@@ -32,26 +33,29 @@ interface StudentAuthContextType {
 
 const StudentAuthContext = createContext<StudentAuthContextType | null>(null);
 
+const STUDENT_ID_RE = /^BRG-\d{4}-\d{4}$/i;
+const ACTIVE_STUDENT_KEY = "bridgitus_active_student_id";
+
 async function fetchStudentByUid(uid: string): Promise<Student | null> {
   const q = query(collection(db, "students"), where("uid", "==", uid));
   const snap = await getDocs(q);
   if (snap.empty) return null;
-  const d = snap.docs[0];
+  // Prefer the Student ID chosen at login when multiple docs exist (legacy edge cases)
+  const preferred = typeof window !== "undefined" ? localStorage.getItem(ACTIVE_STUDENT_KEY) : null;
+  const match = preferred
+    ? snap.docs.find((d) => (d.data() as Student).studentId === preferred)
+    : undefined;
+  const d = match ?? snap.docs[0];
   return { id: d.id, ...(d.data() as Student) };
 }
 
-async function resolveEmail(emailOrStudentId: string): Promise<string> {
-  // If it looks like a student ID (BRG-YYYY-NNNN), look up their email
-  if (/^BRG-\d{4}-\d{4}$/i.test(emailOrStudentId.trim())) {
-    const q = query(
-      collection(db, "students"),
-      where("studentId", "==", emailOrStudentId.trim().toUpperCase())
-    );
-    const snap = await getDocs(q);
-    if (snap.empty) throw new Error("Student ID not found.");
-    return (snap.docs[0].data() as Student).email;
-  }
-  return emailOrStudentId.trim();
+async function fetchStudentByStudentId(studentId: string): Promise<Student | null> {
+  const id = studentId.trim().toUpperCase();
+  const q = query(collection(db, "students"), where("studentId", "==", id));
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+  const d = snap.docs[0];
+  return { id: d.id, ...(d.data() as Student) };
 }
 
 export function StudentAuthProvider({ children }: { children: ReactNode }) {
@@ -67,23 +71,41 @@ export function StudentAuthProvider({ children }: { children: ReactNode }) {
         setStudent(s);
       } else {
         setStudent(null);
+        if (typeof window !== "undefined") localStorage.removeItem(ACTIVE_STUDENT_KEY);
       }
       setLoading(false);
     });
     return unsub;
   }, []);
 
-  async function signIn(emailOrStudentId: string, password: string) {
-    const email = await resolveEmail(emailOrStudentId);
-    await signInWithEmailAndPassword(auth, email, password);
+  async function signIn(studentIdInput: string, password: string) {
+    const studentId = studentIdInput.trim().toUpperCase();
+    if (!STUDENT_ID_RE.test(studentId)) {
+      throw new Error("Enter your Student ID (e.g. BRG-2026-0001). Email login is not supported.");
+    }
+
+    const record = await fetchStudentByStudentId(studentId);
+    if (!record) throw new Error("Student ID not found.");
+
+    // New accounts use authEmail; older accounts used contact email for Auth
+    const authEmail = record.authEmail || record.email;
+    if (!authEmail) throw new Error("This student account is missing login details. Contact support.");
+
+    await signInWithEmailAndPassword(auth, authEmail, password);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(ACTIVE_STUDENT_KEY, studentId);
+    }
+    // Ensure the correct student profile is loaded immediately
+    setStudent(record);
   }
 
   async function signOut() {
+    if (typeof window !== "undefined") localStorage.removeItem(ACTIVE_STUDENT_KEY);
     await firebaseSignOut(auth);
   }
 
   async function changePassword(currentPassword: string, newPassword: string) {
-    if (!user || !user.email) throw new Error("Not authenticated");
+    if (!user?.email) throw new Error("Not authenticated");
     const cred = EmailAuthProvider.credential(user.email, currentPassword);
     await reauthenticateWithCredential(user, cred);
     await updatePassword(user, newPassword);
