@@ -197,7 +197,7 @@ function PricingCard({ plan }: { plan: SitePricingPlan }) {
 
         {/* CTA button */}
         <Link
-          href={plan.ctaHref ?? "/register"}
+          href={`/register?plan=${encodeURIComponent(plan.title)}`}
           className={`w-full py-3.5 text-sm font-bold text-center transition-colors ${plan.highlighted
               ? "bg-secondary-color text-white hover:bg-secondary-color/90"
               : "bg-[#001f5b] text-white hover:bg-[#001040]"

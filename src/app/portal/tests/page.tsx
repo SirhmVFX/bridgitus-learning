@@ -259,7 +259,7 @@ function AttemptResultPanel({
                         <p className="text-xs font-semibold text-gray-600 mb-0.5">
                           Worked Solution
                         </p>
-                        <p className="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed">
+                        <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed tracking-[0.01em] font-[family-name:var(--font-solution),ui-serif,Georgia,serif]">
                           {
                             (q as Question & { workedSolution?: string })
                               .workedSolution

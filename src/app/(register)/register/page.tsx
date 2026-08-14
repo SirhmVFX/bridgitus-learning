@@ -1,13 +1,46 @@
 "use client";
 
 import Button from "@/components/Button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { format, isSameDay } from "date-fns";
 import CalendarSelector from "@/components/CalendarSelector";
 import { SelectedSlot } from "@/types/calendar";
 import Link from "next/link";
+import { getPublishedPricingPlans, type SitePricingPlan } from "@/lib/firestore";
+import {
+  FALLBACK_PLANS,
+  enrichPlans,
+  findPlanMatch,
+  getPlanAmountCents,
+  isFamilyPlan,
+  maxStudentsForPlan,
+} from "@/lib/pricingPlans";
+
+const emptyStudent = () => ({
+  firstName: "",
+  lastName: "",
+  age: "",
+  gender: "",
+  school: "",
+  grade: "",
+  subjectHelpNeeded: "",
+  expectingResult: "",
+  helpComment: "",
+  currentPerformance: "",
+  schoolAttitude: "",
+  mind: "",
+  personality: "",
+  favouriteThingsToDo: "",
+  lessonType: "",
+  location: "",
+  startPreference: "",
+  startDate: "",
+  selectedTimeSlots: [] as SelectedSlot[],
+});
 
 function Register() {
+  const searchParams = useSearchParams();
   const [registerData, setRegisterData] = useState({
     organizingFor: "",
     parentFirstName: "",
@@ -17,31 +50,13 @@ function Register() {
     parentPostcode: "",
     parentReferredBy: "",
     noOfStudents: "1",
+    planId: "",
+    planTitle: "",
+    planAmountCents: 0,
+    planDurationDays: 0,
     startPreference: "",
     startDate: "",
-    students: [
-      {
-        firstName: "",
-        lastName: "",
-        age: "",
-        gender: "",
-        school: "",
-        grade: "",
-        subjectHelpNeeded: "",
-        expectingResult: "",
-        helpComment: "",
-        currentPerformance: "",
-        schoolAttitude: "",
-        mind: "",
-        personality: "",
-        favouriteThingsToDo: "",
-        lessonType: "",
-        location: "",
-        startPreference: "",
-        startDate: "",
-        selectedTimeSlots: [] as SelectedSlot[],
-      },
-    ],
+    students: [emptyStudent()],
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,7 +73,11 @@ function Register() {
     {}
   );
 
-  const [step1, setStep1] = useState(true);
+  const [plans, setPlans] = useState<SitePricingPlan[]>(FALLBACK_PLANS);
+  const [plansLoading, setPlansLoading] = useState(true);
+  const [selectedPlan, setSelectedPlan] = useState<SitePricingPlan | null>(null);
+  const [stepPlan, setStepPlan] = useState(true);
+  const [step1, setStep1] = useState(false);
   const [step2, setStep2] = useState(false);
   const [step3, setStep3] = useState(false);
   const [step4, setStep4] = useState(false);
@@ -68,6 +87,7 @@ function Register() {
   const [registerSuccess, setRegisterSuccess] = useState(false);
 
   const [currentStudentIndex, setCurrentStudentIndex] = useState(0);
+  const familyPlanSelected = isFamilyPlan(selectedPlan);
 
   const toggleDay = (id: number) => {
     setOpenDays((prev) => ({
@@ -106,40 +126,69 @@ function Register() {
   };
 
   useEffect(() => {
-    if (
-      registerData.noOfStudents &&
-      registerData.students.length < parseInt(registerData.noOfStudents)
-    ) {
-      const newStudents = [...registerData.students];
-      while (newStudents.length < parseInt(registerData.noOfStudents)) {
-        newStudents.push({
-          firstName: "",
-          lastName: "",
-          age: "",
-          gender: "",
-          school: "",
-          grade: "",
-          subjectHelpNeeded: "",
-          expectingResult: "",
-          helpComment: "",
-          currentPerformance: "",
-          schoolAttitude: "",
-          mind: "",
-          personality: "",
-          favouriteThingsToDo: "",
-          lessonType: "",
-          location: "",
-          startPreference: "",
-          startDate: "",
-          selectedTimeSlots: [] as SelectedSlot[],
-        });
-      }
-      setRegisterData((prev) => ({
-        ...prev,
-        students: newStudents,
-      }));
+    getPublishedPricingPlans()
+      .then((data) => setPlans(enrichPlans(data)))
+      .catch(() => setPlans(FALLBACK_PLANS))
+      .finally(() => setPlansLoading(false));
+  }, []);
+
+  const applyPlan = (plan: SitePricingPlan, advance = true) => {
+    const family = isFamilyPlan(plan);
+    setSelectedPlan(plan);
+    setRegisterData((prev) => ({
+      ...prev,
+      planId: plan.id || plan.title,
+      planTitle: plan.title,
+      planAmountCents: getPlanAmountCents(plan),
+      planDurationDays: plan.durationDays ?? 0,
+      noOfStudents: family ? prev.noOfStudents || "1" : "1",
+      students: family
+        ? prev.students.length
+          ? prev.students
+          : [emptyStudent()]
+        : [prev.students[0] || emptyStudent()],
+    }));
+    setCurrentStudentIndex(0);
+    if (advance) {
+      setStepPlan(false);
+      setStep1(true);
+      setStep2(false);
+      setStep3(false);
+      setStep4(false);
+      setStep5(false);
+      setStep6(false);
     }
-  }, [registerData.noOfStudents]);
+  };
+
+  // Prefill plan from pricing page (?plan=Family%20Plan or plan id)
+  useEffect(() => {
+    if (plansLoading || selectedPlan) return;
+    const q = searchParams.get("plan");
+    if (!q) return;
+    const match = findPlanMatch(plans, { planId: q, planTitle: q });
+    if (match) applyPlan(match, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plansLoading, plans, searchParams]);
+
+  useEffect(() => {
+    if (!registerData.noOfStudents) return;
+    const target = parseInt(registerData.noOfStudents, 10);
+    const max = maxStudentsForPlan(selectedPlan);
+    const capped = Math.min(Math.max(target, 1), max);
+    setRegisterData((prev) => {
+      let students = [...prev.students];
+      while (students.length < capped) students.push(emptyStudent());
+      if (students.length > capped) students = students.slice(0, capped);
+      const noOfStudents = String(capped);
+      if (
+        prev.noOfStudents === noOfStudents &&
+        prev.students.length === students.length
+      ) {
+        return prev;
+      }
+      return { ...prev, noOfStudents, students };
+    });
+  }, [registerData.noOfStudents, selectedPlan]);
 
   const handleNextStudent = () => {
     const currentStudent = registerData.students[currentStudentIndex];
@@ -264,35 +313,19 @@ function Register() {
           parentPostcode: "",
           parentReferredBy: "",
           noOfStudents: "1",
+          planId: "",
+          planTitle: "",
+          planAmountCents: 0,
+          planDurationDays: 0,
           startPreference: "",
           startDate: "",
-          students: [
-            {
-              firstName: "",
-              lastName: "",
-              age: "",
-              gender: "",
-              school: "",
-              grade: "",
-              subjectHelpNeeded: "",
-              expectingResult: "",
-              helpComment: "",
-              currentPerformance: "",
-              schoolAttitude: "",
-              mind: "",
-              personality: "",
-              favouriteThingsToDo: "",
-              lessonType: "",
-              location: "",
-              startPreference: "",
-              startDate: "",
-              selectedTimeSlots: [] as SelectedSlot[],
-            },
-          ],
+          students: [emptyStudent()],
         });
 
+        setSelectedPlan(null);
         setRegisterSuccess(true);
-        setStep1(true);
+        setStepPlan(true);
+        setStep1(false);
         setStep6(false);
       } else {
         throw new Error(data.message || "Failed to send message");
@@ -421,7 +454,77 @@ function Register() {
             ""
           )}
         </div>
-        {step1 ? (
+        {stepPlan ? (
+          <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-2 items-center text-center">
+              <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
+                Choose your pricing plan
+              </h1>
+              <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-gray-600 max-w-xl">
+                Select a plan to continue registration. Non-family plans register one student;
+                the Family Plan allows up to three students.
+              </p>
+              {selectedPlan && (
+                <p className="text-sm text-secondary-color font-semibold">
+                  Selected: {selectedPlan.title}
+                </p>
+              )}
+            </div>
+
+            {plansLoading ? (
+              <div className="flex justify-center py-12">
+                <div className="w-8 h-8 border-4 border-secondary-color border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {plans.map((plan) => {
+                  const family = isFamilyPlan(plan);
+                  const active = selectedPlan?.id === plan.id;
+                  return (
+                    <button
+                      key={plan.id}
+                      type="button"
+                      onClick={() => applyPlan(plan, true)}
+                      className={`text-left bg-white p-5 border transition-colors ${
+                        active
+                          ? "border-secondary-color ring-2 ring-secondary-color/30"
+                          : plan.highlighted
+                            ? "border-secondary-color"
+                            : "border-gray-300 hover:border-secondary-color/60"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div>
+                          <h2 className="text-lg font-bold text-gray-900">{plan.title}</h2>
+                          <p className="text-xs text-gray-500">({plan.tagline})</p>
+                        </div>
+                        {plan.icon && <span className="text-2xl">{plan.icon}</span>}
+                      </div>
+                      <div className="flex items-end gap-1 mb-2">
+                        <span className="text-3xl font-black text-gray-900">{plan.price}</span>
+                        <span className="text-sm text-gray-500 mb-0.5">{plan.per}</span>
+                      </div>
+                      {plan.badge && (
+                        <span className="inline-block bg-secondary-color text-white text-xs font-bold px-3 py-1 mb-3">
+                          {plan.badge}
+                        </span>
+                      )}
+                      {plan.description && (
+                        <p className="text-sm text-gray-600 mb-3">{plan.description}</p>
+                      )}
+                      <p className="text-xs font-semibold text-secondary-color">
+                        {family ? "Register up to 3 students" : "Register 1 student"}
+                      </p>
+                      <span className="mt-4 inline-block w-full text-center py-2.5 text-sm font-bold bg-secondary-color text-white">
+                        {plan.ctaLabel ?? `Select ${plan.title}`}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : step1 ? (
           <div className="flex flex-col items-center gap-10">
             <div className="flex flex-col gap-2 items-center">
               <h1 className="md:text-[20px] lg:text-[22px] xl:text-[24px] font-bold">
@@ -513,6 +616,17 @@ function Register() {
             >
               Get Started
             </Button>
+            <button
+              type="button"
+              onClick={() => {
+                setStep1(false);
+                setStepPlan(true);
+              }}
+              className="text-sm text-secondary-color font-medium underline"
+            >
+              Change pricing plan
+              {selectedPlan ? ` (${selectedPlan.title})` : ""}
+            </button>
           </div>
         ) : step2 ? (
           <form
@@ -747,56 +861,80 @@ function Register() {
             className="flex flex-col gap-10"
           >
             <div className="grid grid-cols-3 gap-4">
-              <div className="flex flex-col gap-2 items-center justify-center p-10 border border-gray-300 rounded-md">
-                <input
-                  type="radio"
-                  value="1"
-                  checked={registerData.noOfStudents === "1"}
-                  onChange={(e) =>
-                    setRegisterData({
-                      ...registerData,
-                      noOfStudents: e.target.value,
-                    })
-                  }
-                />
-                <label htmlFor="" className="text-[12px]  font-medium">
-                  One Student
-                </label>
-              </div>
+              {familyPlanSelected ? (
+                <>
+                  <div className="flex flex-col gap-2 items-center justify-center p-10 border border-gray-300 rounded-md">
+                    <input
+                      type="radio"
+                      value="1"
+                      checked={registerData.noOfStudents === "1"}
+                      onChange={(e) =>
+                        setRegisterData({
+                          ...registerData,
+                          noOfStudents: e.target.value,
+                        })
+                      }
+                    />
+                    <label htmlFor="" className="text-[12px]  font-medium">
+                      One Student
+                    </label>
+                  </div>
 
-              <div className="flex flex-col gap-2 items-center justify-center p-10 border border-gray-300 rounded-md">
-                <input
-                  type="radio"
-                  value="2"
-                  checked={registerData.noOfStudents === "2"}
-                  onChange={(e) =>
-                    setRegisterData({
-                      ...registerData,
-                      noOfStudents: e.target.value,
-                    })
-                  }
-                />
-                <label htmlFor="" className="text-[12px]  font-medium">
-                  Two Students
-                </label>
-              </div>
+                  <div className="flex flex-col gap-2 items-center justify-center p-10 border border-gray-300 rounded-md">
+                    <input
+                      type="radio"
+                      value="2"
+                      checked={registerData.noOfStudents === "2"}
+                      onChange={(e) =>
+                        setRegisterData({
+                          ...registerData,
+                          noOfStudents: e.target.value,
+                        })
+                      }
+                    />
+                    <label htmlFor="" className="text-[12px]  font-medium">
+                      Two Students
+                    </label>
+                  </div>
 
-              <div className="flex flex-col gap-2 items-center justify-center p-10 border border-gray-300 rounded-md">
-                <input
-                  type="radio"
-                  value="3"
-                  checked={registerData.noOfStudents === "3"}
-                  onChange={(e) =>
-                    setRegisterData({
-                      ...registerData,
-                      noOfStudents: e.target.value,
-                    })
-                  }
-                />
-                <label htmlFor="" className="text-[12px]  font-medium">
-                  Three Students
-                </label>
-              </div>
+                  <div className="flex flex-col gap-2 items-center justify-center p-10 border border-gray-300 rounded-md">
+                    <input
+                      type="radio"
+                      value="3"
+                      checked={registerData.noOfStudents === "3"}
+                      onChange={(e) =>
+                        setRegisterData({
+                          ...registerData,
+                          noOfStudents: e.target.value,
+                        })
+                      }
+                    />
+                    <label htmlFor="" className="text-[12px]  font-medium">
+                      Three Students
+                    </label>
+                  </div>
+                </>
+              ) : (
+                <div className="col-span-3 flex flex-col gap-2 items-center justify-center p-8 border border-gray-300 rounded-md bg-black/[0.02]">
+                  <p className="text-sm font-semibold text-gray-900">
+                    One student registration
+                  </p>
+                  <p className="text-xs text-gray-600 text-center max-w-md">
+                    Your selected plan ({registerData.planTitle || "current plan"}) allows one student.
+                    Choose the Family Plan if you need to register up to three children.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep4(false);
+                      setStepPlan(true);
+                    }}
+                    className="text-xs text-secondary-color font-medium underline mt-1"
+                  >
+                    Change plan
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col gap-4">
@@ -1698,6 +1836,18 @@ function Register() {
 
             <div className="bg-white p-6 rounded-lg shadow">
               <h2 className="text-lg font-semibold mb-4">
+                Selected plan
+              </h2>
+              <p className="font-medium">{registerData.planTitle || "—"}</p>
+              {selectedPlan?.price && (
+                <p className="text-sm text-gray-600 mt-1">
+                  {selectedPlan.price} {selectedPlan.per}
+                </p>
+              )}
+            </div>
+
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h2 className="text-lg font-semibold mb-4">
                 Parent/Guardian Information
               </h2>
               <div className="grid md:grid-cols-2 gap-4">
@@ -1801,4 +1951,10 @@ function Register() {
   );
 }
 
-export default Register;
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center text-sm text-gray-500">Loading registration…</div>}>
+      <Register />
+    </Suspense>
+  );
+}
