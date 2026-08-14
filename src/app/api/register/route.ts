@@ -7,6 +7,7 @@ import { auth, db } from "@/lib/firebase";
 import {
   collection,
   addDoc,
+  updateDoc,
   getDocs,
   query,
   where,
@@ -167,6 +168,8 @@ export async function POST(request: Request) {
       name: string; studentId: string; email: string;
       grade: string; password: string; firebaseUid: string;
     }> = [];
+    let emailsSent = 0;
+    let emailsFailed = 0;
 
     for (const student of registerData.students) {
       console.log(`Processing student: ${student.firstName} ${student.lastName}`);
@@ -202,7 +205,7 @@ export async function POST(request: Request) {
       }
 
       // Save student record to Firestore using client SDK
-      await addDoc(collection(db, "students"), {
+      const studentDocRef = await addDoc(collection(db, "students"), {
         uid: firebaseUid,
         studentId,
         email: studentEmail,
@@ -235,13 +238,15 @@ export async function POST(request: Request) {
         selectedTimeSlots: student.selectedTimeSlots,
         status: "active",
         paymentStatus: "pending",
-        credentialsSent: true,
+        // Set true only after a successful send below
+        credentialsSent: false,
         enrolledAt: serverTimestamp(),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
 
-      // Send credentials email to student (and parent if different)
+      // Email is optional — accounts are always created even if SES fails (sandbox / pending production).
+      let studentMailOk = false;
       if (emailReady) {
         try {
           await sendEmail({
@@ -253,21 +258,34 @@ export async function POST(request: Request) {
               studentId, studentEmail, password, student.grade, portalUrl
             ),
           });
+          studentMailOk = true;
+          emailsSent++;
 
           if (studentEmail !== registerData.parentEmail) {
-            await sendEmail({
-              to: registerData.parentEmail,
-              from: fromEmail,
-              subject: `Bridgitus Credentials for ${student.firstName} ${student.lastName}`,
-              html: credentialsEmail(
-                `${student.firstName} ${student.lastName}`,
-                studentId, studentEmail, password, student.grade, portalUrl
-              ),
-            });
+            try {
+              await sendEmail({
+                to: registerData.parentEmail,
+                from: fromEmail,
+                subject: `Bridgitus Credentials for ${student.firstName} ${student.lastName}`,
+                html: credentialsEmail(
+                  `${student.firstName} ${student.lastName}`,
+                  studentId, studentEmail, password, student.grade, portalUrl
+                ),
+              });
+              emailsSent++;
+            } catch (mailErr) {
+              emailsFailed++;
+              console.error(`Failed to send parent copy for ${studentEmail}:`, mailErr);
+            }
           }
         } catch (mailErr) {
+          emailsFailed++;
           console.error(`Failed to send credentials email for ${studentEmail}:`, mailErr);
         }
+      }
+
+      if (studentMailOk) {
+        await updateDoc(studentDocRef, { credentialsSent: true, updatedAt: serverTimestamp() });
       }
 
       createdStudents.push({
@@ -275,12 +293,12 @@ export async function POST(request: Request) {
         studentId, email: studentEmail, grade: student.grade,
         password, firebaseUid,
       });
-      console.log(`Created student: ${student.firstName} ${student.lastName}, ID: ${studentId}, Email: ${studentEmail}`);
+      console.log(`Created student: ${student.firstName} ${student.lastName}, ID: ${studentId}, Email: ${studentEmail}, mailed=${studentMailOk}`);
     }
 
-    console.log("All createdStudents:", JSON.stringify(createdStudents, null, 2));
+    console.log("All createdStudents:", JSON.stringify(createdStudents.map(({ password: _p, ...rest }) => rest), null, 2));
 
-    // Parent confirmation + admin notification
+    // Parent confirmation + admin notification (best-effort)
     if (emailReady && createdStudents.length > 0) {
       try {
         await sendEmail({
@@ -292,7 +310,9 @@ export async function POST(request: Request) {
             createdStudents
           ),
         });
+        emailsSent++;
       } catch (mailErr) {
+        emailsFailed++;
         console.error("Failed to send parent confirmation email:", mailErr);
       }
 
@@ -303,17 +323,25 @@ export async function POST(request: Request) {
           subject: `New Registration — ${registerData.parentFirstName} ${registerData.parentLastName} (${createdStudents.length} student${createdStudents.length > 1 ? "s" : ""})`,
           html: `<p>New registration from <strong>${registerData.parentFirstName} ${registerData.parentLastName}</strong> (${registerData.parentEmail}).</p>
                  <p>${createdStudents.length} student account${createdStudents.length > 1 ? "s" : ""} created.</p>
-                 <ul>${createdStudents.map(s => `<li>${s.name} — ${s.studentId} — Grade ${s.grade}</li>`).join("")}</ul>`,
+                 <ul>${createdStudents.map(s => `<li>${s.name} — ${s.studentId} — Grade ${s.grade} — temp password: ${s.password}</li>`).join("")}</ul>`,
         });
+        emailsSent++;
       } catch (mailErr) {
+        emailsFailed++;
         console.error("Failed to send admin registration notification:", mailErr);
       }
     }
+
+    const emailed = emailsSent > 0 && emailsFailed === 0;
 
     return NextResponse.json(
       {
         message: "Registration successful",
         studentsCreated: createdStudents.length,
+        emailsSent,
+        emailsFailed,
+        emailed,
+        // Always return credentials so the UI can show them when email is unavailable
         students: createdStudents.map((s) => ({
           name: s.name,
           studentId: s.studentId,

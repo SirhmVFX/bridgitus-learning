@@ -50,6 +50,8 @@ function Register() {
     message: string;
   } | null>(null);
   const [createdStudents, setCreatedStudents] = useState<Array<{ name: string; studentId: string; email: string; grade: string; password?: string }>>([]);
+  const [registeredParent, setRegisteredParent] = useState({ firstName: "", lastName: "", email: "" });
+  const [credentialsEmailed, setCredentialsEmailed] = useState(false);
 
   const [openDays, setOpenDays] = useState<Record<number, boolean>>({});
   const [selectedTimes, setSelectedTimes] = useState<Record<string, boolean>>(
@@ -237,8 +239,15 @@ function Register() {
         console.log("Students from API:", data.students);
         setSubmitStatus({
           success: true,
-          message: "Message sent successfully! We'll get back to you soon.",
+          message: "Registration successful!",
         });
+        // Capture parent + credentials BEFORE resetting the form (reset was wiping the success screen)
+        setRegisteredParent({
+          firstName: registerData.parentFirstName,
+          lastName: registerData.parentLastName,
+          email: registerData.parentEmail,
+        });
+        setCredentialsEmailed(Boolean(data.emailed));
         if (data.students && data.students.length > 0) {
           console.log("Setting createdStudents:", data.students);
           setCreatedStudents(data.students);
@@ -313,23 +322,24 @@ function Register() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <h1 className="text-xl font-bold text-white">Registration Successful! 🎉</h1>
-                  <p className="text-white/70 text-sm mt-1">Your login credentials have been emailed to you</p>
+                  <h1 className="text-xl font-bold text-white">Registration Successful!</h1>
+                  <p className="text-white/70 text-sm mt-1">
+                    {credentialsEmailed
+                      ? "Credentials were emailed — also save them below"
+                      : "Save your login credentials below (email delivery is temporarily unavailable)"}
+                  </p>
                 </div>
 
                 <div className="px-8 py-6 space-y-5">
                   {/* Parent info */}
                   <div className="bg-gray-50 border border-gray-200 p-4">
                     <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Registered By</p>
-                    <p className="font-medium text-gray-900">{registerData.parentFirstName} {registerData.parentLastName}</p>
-                    <p className="text-sm text-gray-500">{registerData.parentEmail}</p>
+                    <p className="font-medium text-gray-900">{registeredParent.firstName} {registeredParent.lastName}</p>
+                    <p className="text-sm text-gray-500">{registeredParent.email}</p>
                   </div>
 
-                  {/* Student credentials */}
-                  {(() => {
-                    console.log("Rendering popup, createdStudents:", createdStudents);
-                    return createdStudents.length > 0;
-                  })() && (
+                  {/* Student credentials — always shown; passwords only appear once */}
+                  {createdStudents.length > 0 ? (
                     <div>
                       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Your Login Credentials</p>
                       <div className="space-y-3">
@@ -359,7 +369,7 @@ function Register() {
                                   className="text-xs text-secondary-color border border-secondary-color px-2 py-1 hover:bg-secondary-color hover:text-white transition-colors ml-2 shrink-0"
                                 >Copy</button>
                               </div>
-                              {s.password && (
+                              {s.password ? (
                                 <div className="flex items-center justify-between bg-amber-50 border border-amber-300 px-3 py-2">
                                   <div>
                                     <p className="text-xs text-amber-600 font-semibold">Password (shown once only!)</p>
@@ -371,19 +381,29 @@ function Register() {
                                     className="text-xs text-amber-700 border border-amber-400 px-2 py-1 hover:bg-amber-500 hover:text-white transition-colors ml-2 shrink-0"
                                   >Copy</button>
                                 </div>
-                              )}
+                              ) : null}
                             </div>
                           </div>
                         ))}
                       </div>
                     </div>
+                  ) : (
+                    <div className="bg-red-50 border border-red-200 px-4 py-3">
+                      <p className="text-sm text-red-700">
+                        Account may have been created, but credentials could not be loaded. Contact support with your registration email.
+                      </p>
+                    </div>
                   )}
 
                   {/* Instructions */}
                   <div className="bg-amber-50 border border-amber-300 px-4 py-3">
-                    <p className="text-xs text-amber-800 leading-relaxed font-semibold mb-1">⚠️ Save your credentials now!</p>
+                    <p className="text-xs text-amber-800 leading-relaxed font-semibold mb-1">Save your credentials now!</p>
                     <p className="text-xs text-amber-700 leading-relaxed">
-                      Copy and save your <strong>Student ID</strong> and <strong>Password</strong> above — the password is only shown once here. It has also been sent to your email. Log in using your Student ID or email address, then complete payment to unlock all portal features.
+                      Copy your <strong>Student ID</strong>, <strong>Email</strong>, and <strong>Password</strong> above — the password is only shown once.
+                      {credentialsEmailed
+                        ? " A copy was also sent to your email."
+                        : " Email delivery is temporarily unavailable, so this screen is the only place to get the password."}
+                      {" "}Log in with your Student ID or email, then complete payment to unlock portal features.
                     </p>
                   </div>
 
