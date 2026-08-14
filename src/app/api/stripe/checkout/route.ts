@@ -96,10 +96,13 @@ export async function POST(request: Request) {
     });
   } catch (error: unknown) {
     console.error("Stripe checkout error:", error);
+    const detail = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       {
-        message: "Could not create checkout session",
-        error: error instanceof Error ? error.message : "Unknown error",
+        message: detail.includes("API Key") || detail.includes("Invalid API Key")
+          ? "Stripe API key is invalid. Check STRIPE_SECRET_KEY in .env.local (live keys must start with sk_live_)."
+          : "Could not create checkout session",
+        error: detail,
       },
       { status: 500 }
     );
