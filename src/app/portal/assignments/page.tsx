@@ -11,6 +11,7 @@ import {
   getMaterialById,
   isMaterialCompleted,
   upsertStudentProgress,
+  upsertLearningGap,
   type Assignment,
   type AssignmentSubmission,
   type MaterialCompletion,
@@ -332,11 +333,60 @@ function QuizResultPanel({
           topic: topicLabel,
           difficulty: "Core",
           studentId,
+          source: "assignment",
+          assignmentId: assignment.id,
         })
       );
       window.location.href = "/portal/practice";
     } catch (err: unknown) {
       setSimError(err instanceof Error ? err.message : "Could not create similar questions");
+    } finally {
+      setCreatingSimFor(null);
+    }
+  }
+
+  async function handlePracticeAllWrong() {
+    const wrong = questions.filter((q) => !isCorrect(q));
+    if (!wrong.length) return;
+    setCreatingSimFor("__all__");
+    setSimError("");
+    const topicLabel = assignment.title || assignment.subject;
+    try {
+      const allQs: Question[] = [];
+      for (const q of wrong.slice(0, 5)) {
+        const res = await fetch("/api/create-similar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            question: {
+              ...q,
+              topic: topicLabel,
+              subtopic: assignment.subject,
+              difficulty: "Core",
+            },
+            count: 2,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "Failed");
+        allQs.push(...(data.questions as Question[]));
+      }
+      const existing = JSON.parse(sessionStorage.getItem("practiceQuestions") ?? "[]");
+      sessionStorage.setItem("practiceQuestions", JSON.stringify([...existing, ...allQs]));
+      sessionStorage.setItem(
+        "practiceMeta",
+        JSON.stringify({
+          subject: assignment.subject,
+          topic: topicLabel,
+          difficulty: "Core",
+          studentId,
+          source: "assignment",
+          assignmentId: assignment.id,
+        })
+      );
+      window.location.href = "/portal/practice";
+    } catch (err: unknown) {
+      setSimError(err instanceof Error ? err.message : "Could not create practice questions");
     } finally {
       setCreatingSimFor(null);
     }
@@ -437,7 +487,7 @@ function QuizResultPanel({
                     {q.workedSolution && (
                       <div className="bg-gray-50 border border-gray-200 px-3 py-2">
                         <p className="text-xs font-semibold text-gray-600 mb-0.5">Worked Solution</p>
-                        <p className="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed">{q.workedSolution}</p>
+                        <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed tracking-[0.01em] font-[family-name:var(--font-solution),ui-serif,Georgia,serif]">{q.workedSolution}</p>
                       </div>
                     )}
                   </div>
@@ -455,8 +505,19 @@ function QuizResultPanel({
         <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50">
           <MdPrint size={15} /> Print
         </button>
-        <a href="/portal/practice" className="flex items-center gap-2 px-4 py-2 bg-purple-700 text-white text-sm font-semibold hover:bg-purple-800">
-          <MdAutoAwesome size={15} /> Go to AI Practice
+        {questions.some((q) => !isCorrect(q)) && (
+          <button
+            type="button"
+            onClick={handlePracticeAllWrong}
+            disabled={creatingSimFor === "__all__"}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-700 text-white text-sm font-semibold hover:bg-purple-800 disabled:opacity-60"
+          >
+            <MdAutoAwesome size={15} />
+            {creatingSimFor === "__all__" ? "Building practice…" : "AI Practice wrong questions"}
+          </button>
+        )}
+        <a href="/portal/practice" className="flex items-center gap-2 px-4 py-2 border border-purple-300 text-purple-800 text-sm font-semibold hover:bg-purple-50">
+          <MdAutoAwesome size={15} /> Open AI Practice
         </a>
       </div>
     </div>
@@ -531,6 +592,32 @@ function QuizRunner({
       };
 
       await upsertSubmission(submission);
+
+      // Feed learning gaps so assignment results appear in analytics + AI Practice gap list
+      try {
+        const topicStats: Record<string, { correct: number; total: number }> = {};
+        for (const q of questions) {
+          const topic = assignment.title || assignment.subject;
+          topicStats[topic] ??= { correct: 0, total: 0 };
+          topicStats[topic].total++;
+          const given = answers[q.id]?.trim().toLowerCase() ?? "";
+          const correctAns = q.correctAnswer.trim().toLowerCase();
+          const ok =
+            q.type === "short_answer"
+              ? given.includes(correctAns)
+              : given === correctAns;
+          if (ok) topicStats[topic].correct++;
+        }
+        await Promise.all(
+          Object.entries(topicStats).map(([topic, v]) => {
+            const accuracy = v.total > 0 ? Math.round((v.correct / v.total) * 100) : 0;
+            return upsertLearningGap(studentId, assignment.subject, topic, undefined, accuracy);
+          })
+        );
+      } catch (gapErr) {
+        console.error("Learning gap update failed (quiz still saved):", gapErr);
+      }
+
       onComplete(assignment, submission);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to submit quiz.");

@@ -11,6 +11,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { sendEmail, isSesConfigured } from "@/lib/email";
+import { maxStudentsForPlan } from "@/lib/pricingPlans";
 
 // ── Helpers ────────────────────────────────────────────────
 
@@ -71,6 +72,8 @@ interface RegisterData {
   organizingFor: string; parentFirstName: string; parentLastName: string;
   parentEmail: string; parentPhone: string; parentPostcode: string;
   parentReferredBy: string; noOfStudents: string;
+  planId?: string; planTitle?: string;
+  planAmountCents?: number; planDurationDays?: number;
   startPreference: string; startDate: string; students: StudentData[];
 }
 
@@ -161,6 +164,27 @@ export async function POST(request: Request) {
     const { registerData }: { registerData: RegisterData } = await request.json();
     console.log("Registration data received:", JSON.stringify(registerData, null, 2));
 
+    if (!registerData.planId || !registerData.planTitle) {
+      return NextResponse.json(
+        { success: false, message: "Please select a pricing plan before registering." },
+        { status: 400 }
+      );
+    }
+
+    const planMeta = { title: registerData.planTitle, badge: "" };
+    const allowedMax = maxStudentsForPlan(planMeta);
+    if (!registerData.students?.length || registerData.students.length > allowedMax) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: allowedMax === 1
+            ? "This plan allows registration for one student only. Choose the Family Plan for up to three students."
+            : `Family Plan allows up to ${allowedMax} students per registration.`,
+        },
+        { status: 400 }
+      );
+    }
+
     const portalUrl = process.env.NEXT_PUBLIC_PORTAL_URL || "https://bridgitus.com/portal/login";
     const fromEmail = process.env.EMAIL_FROM || "noreply@bridgitus.com";
     const adminEmail = process.env.ADMIN_EMAIL || "admin@bridgitus.com";
@@ -233,6 +257,8 @@ export async function POST(request: Request) {
         startPreference: student.startPreference,
         startDate: student.startDate,
         selectedTimeSlots: student.selectedTimeSlots,
+        planId: registerData.planId,
+        planTitle: registerData.planTitle,
         status: "active",
         paymentStatus: "pending",
         credentialsSent: false,

@@ -279,7 +279,7 @@ function ResultsPanel({
                     {q.workedSolution && (
                       <div className="bg-gray-50 border border-gray-200 px-3 py-2">
                         <p className="text-xs font-semibold text-gray-600 mb-0.5">Worked Solution</p>
-                        <p className="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed">{q.workedSolution}</p>
+                        <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed tracking-[0.01em] font-[family-name:var(--font-solution),ui-serif,Georgia,serif]">{q.workedSolution}</p>
                       </div>
                     )}
                   </div>

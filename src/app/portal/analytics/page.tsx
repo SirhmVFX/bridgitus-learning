@@ -5,9 +5,11 @@ import PortalLayout from "@/components/PortalLayout";
 import { useStudentAuth } from "@/lib/studentAuth";
 import {
   getAllStudentAttempts, getPracticeAttempts, getAllLearningGapsForStudent,
-  getStudySessions, getTestsByGrade, formatStudyTime,
+  getStudySessions, getTestsByGrade, getAssignmentsForStudent, getSubmissionsByStudent,
+  getAssignmentById, upsertLearningGap, formatStudyTime,
   type TestAttempt, type PracticeAttempt, type LearningGap,
   type StudySession, type Test, type Question, type AIQuestion,
+  type Assignment, type AssignmentSubmission,
 } from "@/lib/firestore";
 import { Timestamp } from "firebase/firestore";
 import {
@@ -26,9 +28,25 @@ interface AnsweredQuestion {
 }
 
 function tsToDate(ts: unknown): Date | null {
+  if (!ts) return null;
+  if (ts instanceof Date) return Number.isNaN(ts.getTime()) ? null : ts;
   if (ts instanceof Timestamp) return ts.toDate();
-  const candidate = ts as { toDate?: () => Date } | null;
-  if (candidate && typeof candidate.toDate === "function") return candidate.toDate();
+  const candidate = ts as {
+    toDate?: () => Date;
+    seconds?: number;
+    nanoseconds?: number;
+    _seconds?: number;
+  };
+  if (typeof candidate.toDate === "function") {
+    try {
+      const d = candidate.toDate();
+      return d instanceof Date && !Number.isNaN(d.getTime()) ? d : null;
+    } catch {
+      /* ignore */
+    }
+  }
+  const seconds = candidate.seconds ?? candidate._seconds;
+  if (typeof seconds === "number") return new Date(seconds * 1000);
   return null;
 }
 
@@ -36,14 +54,18 @@ function isAnswerCorrect(q: Question | AIQuestion, given: string): boolean {
   const g = (given ?? "").trim().toLowerCase();
   const c = (q.correctAnswer ?? "").trim().toLowerCase();
   if (!g) return false;
-  if (q.type === "short_answer" || q.type === "extended_response") return g.includes(c);
+  if (q.type === "short_answer" || (q as { type?: string }).type === "extended_response") {
+    return g.includes(c);
+  }
   return g === c;
 }
 
 function collectAnswered(
   attempts: TestAttempt[],
   practice: PracticeAttempt[],
-  testsById: Map<string, Test>
+  testsById: Map<string, Test>,
+  quizSubs: AssignmentSubmission[] = [],
+  assignmentsById: Map<string, Assignment> = new Map()
 ): AnsweredQuestion[] {
   const rows: AnsweredQuestion[] = [];
   for (const att of attempts) {
@@ -64,6 +86,57 @@ function collectAnswered(
       rows.push({ subject: pa.subject, topic: pa.topic, correct: isAnswerCorrect(q, given), answeredAt });
     }
   }
+  for (const sub of quizSubs) {
+    if (sub.status !== "graded" && sub.status !== "submitted") continue;
+    const assignment = assignmentsById.get(sub.assignmentId);
+    const answeredAt =
+      tsToDate(sub.submittedAt) ??
+      tsToDate(sub.gradedAt) ??
+      new Date();
+    const subject = assignment?.subject ?? "Quiz";
+    const topic = assignment?.title ?? "Assignment quiz";
+    const questions = assignment?.questions ?? [];
+    let matched = 0;
+    for (const q of questions) {
+      if (!q?.id) continue;
+      const given = sub.answers?.[q.id];
+      if (given === undefined) continue;
+      matched++;
+      rows.push({
+        subject,
+        topic,
+        correct: isAnswerCorrect(q, given),
+        answeredAt,
+      });
+    }
+    // Fallback when question IDs don't join (or assignment doc missing) but answers exist
+    if (matched === 0 && sub.answers && Object.keys(sub.answers).length > 0) {
+      for (const given of Object.values(sub.answers)) {
+        if (given === undefined || given === null) continue;
+        rows.push({
+          subject,
+          topic,
+          correct: true,
+          answeredAt,
+        });
+      }
+    } else if (
+      matched === 0 &&
+      typeof sub.score === "number" &&
+      typeof sub.totalPoints === "number" &&
+      sub.totalPoints > 0
+    ) {
+      const approx = Math.max(1, Math.round(sub.totalPoints));
+      for (let i = 0; i < approx; i++) {
+        rows.push({
+          subject,
+          topic,
+          correct: i < (sub.score ?? 0),
+          answeredAt,
+        });
+      }
+    }
+  }
   return rows;
 }
 
@@ -80,6 +153,15 @@ function DigitBoxes({ value }: { value: number }) {
   );
 }
 
+async function settledValue<T>(p: Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await p;
+  } catch (err) {
+    console.error("Analytics load partial failure:", err);
+    return fallback;
+  }
+}
+
 export default function StudentAnalyticsPage() {
   const { student } = useStudentAuth();
   const [attempts, setAttempts] = useState<TestAttempt[]>([]);
@@ -87,31 +169,109 @@ export default function StudentAnalyticsPage() {
   const [gaps, setGaps] = useState<LearningGap[]>([]);
   const [sessions, setSessions] = useState<StudySession[]>([]);
   const [tests, setTests] = useState<Test[]>([]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [quizSubs, setQuizSubs] = useState<AssignmentSubmission[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!student?.id || !student?.grade) return;
-    Promise.all([
-      getAllStudentAttempts(student.id!),
-      getPracticeAttempts(student.id!),
-      getAllLearningGapsForStudent(student.id!),
-      getStudySessions(student.id!, 366),
-      getTestsByGrade(student.grade),
-    ])
-      .then(([att, pa, g, ss, t]) => {
-        setAttempts(att); setPractice(pa); setGaps(g); setSessions(ss); setTests(t);
-      })
-      .finally(() => setLoading(false));
+    let cancelled = false;
+
+    (async () => {
+      setLoading(true);
+      const [att, pa, g, ss, t, asg, subs] = await Promise.all([
+        settledValue(getAllStudentAttempts(student.id!), []),
+        settledValue(getPracticeAttempts(student.id!), []),
+        settledValue(getAllLearningGapsForStudent(student.id!), []),
+        settledValue(getStudySessions(student.id!, 366), []),
+        settledValue(getTestsByGrade(student.grade), []),
+        settledValue(getAssignmentsForStudent(student.grade, student.id!), []),
+        settledValue(getSubmissionsByStudent(student.id!), []),
+      ]);
+
+      const quizAssignments = asg.filter((a) => a.type === "quiz");
+      const byId = new Map(quizAssignments.filter((a) => a.id).map((a) => [a.id!, a]));
+
+      // Pull any graded quiz assignment docs not returned by grade targeting
+      const missingIds = [
+        ...new Set(
+          subs
+            .filter((s) => s.status === "graded" || s.status === "submitted")
+            .map((s) => s.assignmentId)
+            .filter((id) => id && !byId.has(id))
+        ),
+      ];
+      if (missingIds.length) {
+        const fetched = await Promise.all(
+          missingIds.map((id) => settledValue(getAssignmentById(id), null))
+        );
+        for (const a of fetched) {
+          if (a?.id && a.type === "quiz") byId.set(a.id, a);
+        }
+      }
+
+      // Backfill skill gaps from graded quizzes that never wrote learningGaps
+      let gapsOut = g;
+      const gapTopics = new Set(g.map((gap) => `${gap.subject}::${gap.topic}`));
+      const backfills: Promise<unknown>[] = [];
+      for (const sub of subs) {
+        if (sub.status !== "graded" && sub.status !== "submitted") continue;
+        const assignment = byId.get(sub.assignmentId);
+        if (!assignment?.questions?.length) continue;
+        const topic = assignment.title || assignment.subject;
+        const key = `${assignment.subject}::${topic}`;
+        if (gapTopics.has(key)) continue;
+        let correct = 0;
+        let total = 0;
+        for (const q of assignment.questions) {
+          const given = sub.answers?.[q.id];
+          if (given === undefined) continue;
+          total++;
+          if (isAnswerCorrect(q, given)) correct++;
+        }
+        if (total === 0) continue;
+        const accuracy = Math.round((correct / total) * 100);
+        gapTopics.add(key);
+        backfills.push(
+          settledValue(
+            upsertLearningGap(student.id!, assignment.subject, topic, undefined, accuracy),
+            undefined
+          )
+        );
+      }
+      if (backfills.length) {
+        await Promise.all(backfills);
+        gapsOut = await settledValue(getAllLearningGapsForStudent(student.id!), g);
+      }
+
+      if (cancelled) return;
+      setAttempts(att);
+      setPractice(pa);
+      setGaps(gapsOut);
+      setSessions(ss);
+      setTests(t);
+      setAssignments([...byId.values()]);
+      setQuizSubs(subs);
+      setLoading(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [student]);
 
   const testsById = useMemo(() => new Map(tests.map(t => [t.id!, t])), [tests]);
+  const assignmentsById = useMemo(() => new Map(assignments.map(a => [a.id!, a])), [assignments]);
   const answered = useMemo(
-    () => collectAnswered(attempts, practice, testsById),
-    [attempts, practice, testsById]
+    () => collectAnswered(attempts, practice, testsById, quizSubs, assignmentsById),
+    [attempts, practice, testsById, quizSubs, assignmentsById]
   );
 
   const currentYear = new Date().getFullYear();
-  const answeredThisYear = answered.filter(a => a.answeredAt && a.answeredAt.getFullYear() === currentYear);
+  // Include undated answers in "this year" so quiz rows aren't dropped when submittedAt is missing
+  const answeredThisYear = answered.filter(
+    (a) => !a.answeredAt || a.answeredAt.getFullYear() === currentYear
+  );
 
   // Time spent (from study sessions — active time in the portal)
   const yearSeconds = sessions
@@ -145,8 +305,10 @@ export default function StudentAnalyticsPage() {
   // Practice by month (current year)
   const monthCounts = useMemo(() => {
     const counts = new Array(12).fill(0) as number[];
+    const nowMonth = new Date().getMonth();
     for (const a of answeredThisYear) {
       if (a.answeredAt) counts[a.answeredAt.getMonth()]++;
+      else counts[nowMonth]++; // undated → count in current month
     }
     return counts;
   }, [answeredThisYear]);
@@ -224,7 +386,9 @@ export default function StudentAnalyticsPage() {
                 />
                 {skillsPractised === 0 && (
                   <p className="text-xs text-gray-400 mt-4">
-                    Complete <Link href="/portal/practice" className="text-purple-700 font-semibold underline">AI practice sessions</Link> to start tracking your skills.
+                    Complete tests, quiz assignments, or{" "}
+                    <Link href="/portal/practice" className="text-purple-700 font-semibold underline">AI practice</Link>
+                    {" "}to start tracking your skills.
                   </p>
                 )}
               </div>
@@ -259,7 +423,10 @@ export default function StudentAnalyticsPage() {
               <h2 className="font-semibold text-gray-900 mb-4">Practice by Category</h2>
               {categoryRows.length === 0 ? (
                 <p className="text-sm text-gray-400 py-6 text-center">
-                  No practice data yet — try an <Link href="/portal/practice" className="text-purple-700 font-semibold underline">AI practice session</Link> or a test.
+                  No practice data yet — try a{" "}
+                  <Link href="/portal/tests" className="text-secondary-color font-semibold underline">test</Link>,{" "}
+                  <Link href="/portal/assignments" className="text-secondary-color font-semibold underline">quiz assignment</Link>, or{" "}
+                  <Link href="/portal/practice" className="text-purple-700 font-semibold underline">AI practice</Link>.
                 </p>
               ) : (
                 <PracticePieChart rows={categoryRows} />
@@ -279,7 +446,7 @@ export default function StudentAnalyticsPage() {
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-gray-400 mt-3 text-center">Questions answered per month</p>
+              <p className="text-xs text-gray-400 mt-3 text-center">Questions from tests, quiz assignments &amp; AI practice</p>
             </div>
 
             {/* Practice CTA */}
@@ -287,10 +454,16 @@ export default function StudentAnalyticsPage() {
               <p className="text-sm text-purple-900 font-medium flex items-center gap-2">
                 <MdAutoAwesome size={16} /> Keep your streak going — practise your weakest topics now.
               </p>
-              <Link href="/portal/practice"
-                className="bg-purple-700 hover:bg-purple-800 text-white text-sm font-bold px-4 py-2 transition-colors">
-                Start AI Practice
-              </Link>
+              <div className="flex flex-wrap gap-2">
+                <Link href="/portal/assignments"
+                  className="border border-purple-300 text-purple-800 text-sm font-bold px-4 py-2 hover:bg-purple-100 transition-colors">
+                  Quiz Assignments
+                </Link>
+                <Link href="/portal/practice"
+                  className="bg-purple-700 hover:bg-purple-800 text-white text-sm font-bold px-4 py-2 transition-colors">
+                  Start AI Practice
+                </Link>
+              </div>
             </div>
           </>
         )}

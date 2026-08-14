@@ -5,124 +5,17 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useStudentAuth } from "@/lib/studentAuth";
+import { getPublishedPricingPlans, type SitePricingPlan } from "@/lib/firestore";
 import {
-  getPublishedPricingPlans,
+  FALLBACK_PLANS,
+  enrichPlans,
+  findPlanMatch,
   getPlanAmountCents,
-  type SitePricingPlan,
-} from "@/lib/firestore";
+} from "@/lib/pricingPlans";
 import {
   MdPayment, MdCheckCircle, MdLock, MdSchool, MdLogout,
   MdArrowBack,
 } from "react-icons/md";
-
-/** Same AUD plans / layout content as the public pricing page. */
-const FALLBACK_PLANS: SitePricingPlan[] = [
-  {
-    id: "1",
-    title: "Basic Plan",
-    tagline: "Pay as you go",
-    price: "$50",
-    per: "/hour lesson",
-    badge: "1 Student",
-    description: "Perfect for trial lessons or casual, flexible learning with no commitment.",
-    icon: "📚",
-    ctaLabel: "Select Basic Plan",
-    perks: [{ desc: "Flexible Scheduling" }, { desc: "No long-term commitment" }, { desc: "Perfect for casual learning" }],
-    freePerks: ["One-on-one tutoring", "Flexible scheduling", "Free initial consultation"],
-    features: [
-      { icon: "🎯", title: "Personalised learning", desc: "Tailored to your child's needs" },
-      { icon: "📅", title: "Flexible scheduling", desc: "Book sessions that fit your life" },
-      { icon: "✅", title: "No commitment", desc: "Pay only for what you need" },
-      { icon: "💬", title: "Expert feedback", desc: "Immediate guidance each session" },
-    ],
-    bottomNote1: "Start learning today with no obligation.",
-    bottomNote2: "Cancel or pause anytime",
-    highlighted: false,
-    order: 0,
-    published: true,
-    amountCents: 5000,
-    durationDays: 7,
-  },
-  {
-    id: "2",
-    title: "Standard Plan",
-    tagline: "Growth Plan",
-    price: "$955",
-    per: "20 classes at $47.75/hr",
-    badge: "10 Weeks",
-    description: "Structured learning with 2 sessions per week — build consistency and real momentum.",
-    icon: "🚀",
-    ctaLabel: "Select Standard Plan",
-    perks: [{ desc: "2 classes per week (10 weeks)" }, { desc: "Structured learning with consistency" }, { desc: "Progress tracking & Feedback" }],
-    freePerks: ["One-on-one tutoring", "Flexible scheduling", "Free initial consultation"],
-    features: [
-      { icon: "📊", title: "Progress tracking", desc: "Regular updates for your child" },
-      { icon: "🎓", title: "Structured lessons", desc: "With consistency & routine" },
-      { icon: "💡", title: "Personalised support", desc: "Tailored to each child's needs" },
-      { icon: "🛡", title: "Flexible & convenient", desc: "Online lessons that fit your schedule" },
-    ],
-    bottomNote1: "More learning. More progress. More value.",
-    bottomNote2: "Cancel or pause anytime",
-    highlighted: true,
-    order: 1,
-    published: true,
-    amountCents: 95500,
-    durationDays: 70,
-  },
-  {
-    id: "3",
-    title: "Premium Plan",
-    tagline: "Success Plan",
-    price: "$1,365",
-    per: "30 classes at $45.50/hr",
-    badge: "15 Weeks",
-    description: "The strongest foundation — 2 sessions per week over 15 weeks with full accountability.",
-    icon: "🏆",
-    ctaLabel: "Select Premium Plan",
-    perks: [{ desc: "2 classes per week (15 weeks)" }, { desc: "Strong foundation & measurable improvements" }, { desc: "Best value for long-term learning" }],
-    freePerks: ["One-on-one tutoring", "Flexible scheduling", "Free initial consultation"],
-    features: [
-      { icon: "📈", title: "Measurable improvement", desc: "Track real academic progress" },
-      { icon: "🎯", title: "Deep personalisation", desc: "Fully tailored programme" },
-      { icon: "📝", title: "Exam readiness", desc: "Targeted test & exam preparation" },
-      { icon: "🤝", title: "Dedicated tutor", desc: "Consistent mentor every session" },
-    ],
-    bottomNote1: "Best value — save more per hour the longer you commit.",
-    bottomNote2: "Cancel or pause anytime",
-    highlighted: false,
-    order: 2,
-    published: true,
-    amountCents: 136500,
-    durationDays: 105,
-  },
-  {
-    id: "4",
-    title: "Family Plan",
-    tagline: "Best Value for Families",
-    price: "$49.99",
-    per: "/week",
-    badge: "1 to 3 Children",
-    description: "Unlimited access for up to 3 children. One low price. More progress together.",
-    icon: "👨‍👩‍👧‍👦",
-    ctaLabel: "Select Family Plan",
-    perks: [{ desc: "Up to 3 children included" }, { desc: "Unlimited weekly access" }, { desc: "One flat weekly price" }],
-    freePerks: ["One-on-one tutoring per child", "Flexible scheduling", "Free initial consultation"],
-    features: [
-      { icon: "👥", title: "Structured learning", desc: "With consistency & routine" },
-      { icon: "👤", title: "Personalised support", desc: "Tailored to each child's needs" },
-      { icon: "📊", title: "Progress tracking & feedback", desc: "Regular updates for each child" },
-      { icon: "👨‍👩‍👧", title: "Family learning support", desc: "Resources to support learning at home" },
-      { icon: "🛡", title: "Flexible & convenient", desc: "Online lessons that fit your schedule" },
-    ],
-    bottomNote1: "More learning. More progress. More value together.",
-    bottomNote2: "Cancel or pause anytime",
-    highlighted: false,
-    order: 3,
-    published: true,
-    amountCents: 4999,
-    durationDays: 7,
-  },
-];
 
 function PaymentPageInner() {
   const { student, loading: authLoading, signOut, refreshStudent } = useStudentAuth();
@@ -136,6 +29,7 @@ function PaymentPageInner() {
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [lockedToRegisteredPlan, setLockedToRegisteredPlan] = useState(false);
 
   const stripeConfigured = Boolean(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.startsWith("pk_"));
 
@@ -148,34 +42,38 @@ function PaymentPageInner() {
   }, [student, authLoading, router]);
 
   useEffect(() => {
+    if (authLoading || !student) return;
+
     getPublishedPricingPlans()
       .then((data) => {
-        // Prefer CMS plans, but fill missing marketing fields from fallback by title
-        if (data.length === 0) {
-          setPlans(FALLBACK_PLANS);
-          return;
-        }
-        const enriched = data.map((plan) => {
-          const fb = FALLBACK_PLANS.find(
-            (f) => f.title.toLowerCase() === plan.title.toLowerCase()
-          );
-          return {
-            ...fb,
-            ...plan,
-            features: plan.features?.length ? plan.features : fb?.features,
-            description: plan.description || fb?.description,
-            icon: plan.icon || fb?.icon,
-            bottomNote1: plan.bottomNote1 || fb?.bottomNote1,
-            bottomNote2: plan.bottomNote2 || fb?.bottomNote2,
-            badge: plan.badge || fb?.badge,
-            amountCents: getPlanAmountCents(plan) || fb?.amountCents,
-          } as SitePricingPlan;
+        const enriched = enrichPlans(data.length ? data : FALLBACK_PLANS);
+        const preferred = findPlanMatch(enriched, {
+          planId: student.planId,
+          planTitle: student.planTitle,
         });
-        setPlans(enriched);
+        if (preferred) {
+          setPlans([preferred]);
+          setLockedToRegisteredPlan(true);
+        } else {
+          // Legacy students without a saved plan still see all options
+          setPlans(enriched);
+          setLockedToRegisteredPlan(false);
+        }
       })
-      .catch(() => setPlans(FALLBACK_PLANS))
+      .catch(() => {
+        const preferred = findPlanMatch(FALLBACK_PLANS, {
+          planId: student.planId,
+          planTitle: student.planTitle,
+        });
+        if (preferred) {
+          setPlans([preferred]);
+          setLockedToRegisteredPlan(true);
+        } else {
+          setPlans(FALLBACK_PLANS);
+        }
+      })
       .finally(() => setPlansLoading(false));
-  }, []);
+  }, [authLoading, student]);
 
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
@@ -230,30 +128,41 @@ function PaymentPageInner() {
         }),
       });
       const data = await res.json();
-      if (!res.ok || !data.url) {
-        throw new Error(data.error || data.message || "Could not start checkout");
+      if (!res.ok) throw new Error(data.message || "Checkout failed");
+      if (data.url) {
+        window.location.href = data.url;
+        return;
       }
-      window.location.href = data.url as string;
+      throw new Error("No checkout URL returned");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Could not start payment.");
+      setError(err instanceof Error ? err.message : "Could not start payment");
       setPaying(false);
     }
   }
 
-  async function handleSignOut() { await signOut(); router.replace("/portal/login"); }
-
-  if (authLoading || verifying) {
+  function Header() {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f4f6fb]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-secondary-color border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-gray-500">{verifying ? "Confirming your payment…" : "Loading your account…"}</p>
+      <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/assets/FullLogo.png" alt="Bridgitus" width={100} height={36} className="h-8 w-auto object-contain" />
+        </Link>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-600 hidden sm:inline">
+            {student?.firstName} {student?.lastName}
+          </span>
+          <button
+            type="button"
+            onClick={() => signOut().then(() => router.replace("/portal/login"))}
+            className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800"
+          >
+            <MdLogout size={16} /> Sign out
+          </button>
         </div>
-      </div>
+      </header>
     );
   }
 
-  if (!student || student.paymentStatus === "paid" || student.paymentStatus === "waived") {
+  if (authLoading || !student) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f4f6fb]">
         <div className="w-8 h-8 border-4 border-secondary-color border-t-transparent rounded-full animate-spin" />
@@ -261,120 +170,93 @@ function PaymentPageInner() {
     );
   }
 
-  if (success) {
+  if (verifying) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f4f6fb]">
-        <div className="bg-white border border-gray-200 p-10 text-center max-w-sm w-full mx-4">
-          <MdCheckCircle size={56} className="mx-auto text-emerald-500 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Payment Confirmed!</h2>
-          <p className="text-gray-500 text-sm">
-            Welcome to Bridgitus Learning Portal, {student.firstName}.<br />
-            Redirecting to your dashboard…
-          </p>
+      <div className="min-h-screen bg-[#f4f6fb] flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="bg-white border border-gray-200 p-8 max-w-md w-full text-center">
+            <div className="w-10 h-10 border-4 border-secondary-color border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <h1 className="text-lg font-bold text-gray-900">Confirming payment…</h1>
+            <p className="text-sm text-gray-500 mt-2">Please wait while we activate your portal access.</p>
+          </div>
         </div>
       </div>
     );
   }
 
-  const Header = () => (
-    <header className="bg-secondary-color px-4 sm:px-6 py-4 flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <MdSchool size={20} className="text-white" />
-        <span className="text-white font-semibold text-sm">Bridgitus Learning Portal</span>
+  if (success) {
+    return (
+      <div className="min-h-screen bg-[#f4f6fb] flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="bg-white border border-gray-200 p-8 max-w-md w-full text-center">
+            <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MdCheckCircle className="text-green-600" size={32} />
+            </div>
+            <h1 className="text-xl font-bold text-gray-900">Payment successful!</h1>
+            <p className="text-sm text-gray-500 mt-2">Redirecting you to the dashboard…</p>
+          </div>
+        </div>
       </div>
-      <button onClick={handleSignOut}
-        className="flex items-center gap-1.5 text-white/70 hover:text-white text-sm transition-colors">
-        <MdLogout size={15} /> Sign out
-      </button>
-    </header>
-  );
+    );
+  }
 
   if (selectedPlan) {
     const amountCents = getPlanAmountCents(selectedPlan);
     return (
       <div className="min-h-screen bg-[#f4f6fb] flex flex-col">
         <Header />
-        <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
-          <div className="w-full max-w-md">
-            <button onClick={() => { setSelectedPlan(null); setError(""); }}
-              className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-4 transition-colors">
-              <MdArrowBack size={16} /> Back to plans
-            </button>
+        <div className="flex-1 py-10 px-4">
+          <div className="max-w-lg mx-auto">
+            {!lockedToRegisteredPlan && (
+              <button
+                type="button"
+                onClick={() => setSelectedPlan(null)}
+                className="inline-flex items-center gap-1 text-sm text-secondary-color mb-6 hover:underline"
+              >
+                <MdArrowBack size={16} /> Back to plans
+              </button>
+            )}
 
-            <div className="bg-white border border-gray-200">
-              <div className="bg-secondary-color px-6 sm:px-8 py-6">
-                <div className="flex justify-center mb-3">
-                  <Image src="/assets/FullLogo.png" alt="Bridgitus" width={130} height={48}
-                    className="object-contain h-10 w-auto brightness-0 invert" priority />
-                </div>
-                <h1 className="text-white font-bold text-lg text-center">Complete Payment</h1>
-                <p className="text-white/70 text-sm text-center mt-1">{selectedPlan.title}</p>
-              </div>
+            <div className="bg-secondary-color text-white p-6 text-center mb-0">
+              <MdSchool size={28} className="mx-auto mb-2 opacity-80" />
+              <h1 className="text-xl font-bold">Confirm payment</h1>
+              <p className="text-white/70 text-sm text-center mt-1">{selectedPlan.title}</p>
+            </div>
 
-              <div className="px-6 sm:px-8 py-6 space-y-5">
-                <div className="border border-gray-200 p-4 bg-gray-50">
-                  <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-2">Enrolled Student</p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-secondary-color flex items-center justify-center shrink-0">
-                      <span className="text-white font-bold text-sm">{student.firstName[0]}{student.lastName[0]}</span>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900 text-sm">{student.firstName} {student.lastName}</p>
-                      <p className="text-xs text-gray-400">{student.studentId} · Grade {student.grade}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border border-secondary-color/30 bg-secondary-color/5 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-bold text-gray-900">{selectedPlan.title}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">({selectedPlan.tagline}) · {selectedPlan.per}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-black text-secondary-color">{selectedPlan.price}</p>
-                      <p className="text-[11px] text-gray-400">AUD</p>
-                    </div>
-                  </div>
-                </div>
-
+            <div className="bg-white border border-gray-200 border-t-0 p-6 space-y-5">
+              <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-2">Portal access includes</p>
-                  <ul className="space-y-1.5 text-sm text-gray-700">
-                    {["All learning materials for your grade", "Tests & exams with instant grading",
-                      "IXL & DeltaMath assignments", "Progress tracking & achievement badges",
-                      "Direct teacher feedback on results"].map((item) => (
-                        <li key={item} className="flex items-center gap-2">
-                          <MdCheckCircle size={14} className="text-emerald-500 shrink-0" /> {item}
-                        </li>
-                      ))}
-                  </ul>
+                  <p className="font-bold text-gray-900">{selectedPlan.title}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">({selectedPlan.tagline}) · {selectedPlan.per}</p>
                 </div>
-
-                {error && (
-                  <div className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
-                )}
-
-                <button
-                  onClick={() => startCheckout(selectedPlan)}
-                  disabled={paying || amountCents <= 0}
-                  className="w-full bg-secondary-color hover:bg-secondary-color/90 disabled:opacity-50 text-white font-bold py-4 text-base flex items-center justify-center gap-2 transition-colors"
-                >
-                  {paying ? (
-                    <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Redirecting to Stripe…</>
-                  ) : (
-                    <><MdPayment size={20} />Pay {selectedPlan.price} AUD + tax with Stripe</>
-                  )}
-                </button>
-
-                <p className="text-center text-xs text-gray-500">
-                  Tax (e.g. GST) is calculated by Stripe Tax at checkout based on billing address.
-                </p>
-
-                <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400">
-                  <MdLock size={12} /> Secured by Stripe · AUD · 256-bit SSL
+                <div className="text-right">
+                  <p className="text-2xl font-black text-secondary-color">{selectedPlan.price}</p>
+                  <p className="text-[11px] text-gray-400">AUD + tax</p>
                 </div>
               </div>
+
+              {error && (
+                <div className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+              )}
+
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <MdLock size={14} /> Secure checkout via Stripe
+              </div>
+
+              <button
+                type="button"
+                disabled={paying || amountCents <= 0}
+                onClick={() => startCheckout(selectedPlan)}
+                className="w-full py-3.5 text-sm font-bold bg-secondary-color text-white hover:bg-secondary-color/90 disabled:opacity-60 inline-flex items-center justify-center gap-2"
+              >
+                {paying ? (
+                  "Redirecting…"
+                ) : (
+                  <><MdPayment size={20} />Pay {selectedPlan.price} AUD + tax with Stripe</>
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -394,11 +276,14 @@ function PaymentPageInner() {
                 className="object-contain h-10 w-auto" priority />
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
-              Choose your plan
+              {lockedToRegisteredPlan ? "Your selected plan" : "Choose your plan"}
             </h1>
             <p className="text-base text-gray-500 max-w-xl mx-auto">
-              Hi {student.firstName} — same plans as our pricing page. All prices are in AUD.
-              Payment activates your full portal access immediately.
+              Hi {student.firstName} —{" "}
+              {lockedToRegisteredPlan
+                ? "complete payment for the plan you chose at registration."
+                : "same plans as our pricing page."}{" "}
+              All prices are in AUD. Payment activates your full portal access immediately.
             </p>
             <div className="inline-flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 mt-5 text-sm text-gray-600">
               <div className="w-6 h-6 bg-secondary-color flex items-center justify-center shrink-0">
@@ -419,7 +304,7 @@ function PaymentPageInner() {
               <div className="w-8 h-8 border-4 border-secondary-color border-t-transparent rounded-full animate-spin" />
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className={`grid grid-cols-1 ${plans.length > 1 ? "sm:grid-cols-2" : "max-w-md mx-auto"} gap-6`}>
               {plans.map((plan) => {
                 const amountCents = getPlanAmountCents(plan);
                 return (
@@ -497,57 +382,20 @@ function PaymentPageInner() {
                                   {f.icon}
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="font-bold text-gray-900 text-xs leading-tight">{f.title}</p>
-                                  <p className="text-gray-400 text-xs leading-tight mt-0.5">{f.desc}</p>
+                                  <p className="text-xs font-semibold text-gray-800 leading-tight">{f.title}</p>
+                                  <p className="text-[11px] text-gray-500 leading-snug">{f.desc}</p>
                                 </div>
                               </div>
                             ))}
                           </div>
                         </div>
-                      ) : (
-                        <div className="space-y-2">
-                          {plan.perks.map((perk, i) => (
-                            <div key={i} className="flex gap-2 items-start">
-                              <span className="text-secondary-color text-base shrink-0 mt-0.5">✓</span>
-                              <p className="text-sm text-gray-600">{perk.desc}</p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {(plan.bottomNote1 || plan.bottomNote2) && (
-                        <>
-                          <div className="h-px bg-gray-100 mt-auto" />
-                          <div className="grid grid-cols-2 gap-2 text-xs text-gray-400">
-                            {plan.bottomNote1 && (
-                              <div className="flex items-start gap-1.5">
-                                <span className="text-secondary-color shrink-0">♡</span>
-                                <span>{plan.bottomNote1}</span>
-                              </div>
-                            )}
-                            {plan.bottomNote2 && (
-                              <div className="flex items-start gap-1.5">
-                                <span className="text-secondary-color shrink-0">🛡</span>
-                                <span>{plan.bottomNote2}</span>
-                              </div>
-                            )}
-                          </div>
-                        </>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 );
               })}
             </div>
           )}
-
-          <p className="text-center text-xs text-gray-400 mt-10">
-            All prices are in AUD. Plans can be paused or cancelled at any time.
-          </p>
-          <div className="flex items-center justify-center gap-2 mt-3 text-xs text-gray-400">
-            <MdLock size={13} />
-            All payments secured by Stripe · AUD · 256-bit SSL encryption
-          </div>
         </div>
       </div>
     </div>
@@ -558,7 +406,7 @@ export default function PaymentPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-[#f4f6fb]">
-        <div className="w-10 h-10 border-4 border-secondary-color border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-secondary-color border-t-transparent rounded-full animate-spin" />
       </div>
     }>
       <PaymentPageInner />

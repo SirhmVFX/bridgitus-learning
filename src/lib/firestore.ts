@@ -332,6 +332,15 @@ export async function getSubmission(assignmentId: string, studentId: string): Pr
   return { id: d.id, ...(d.data() as AssignmentSubmission) };
 }
 
+export async function getSubmissionsByStudent(studentId: string): Promise<AssignmentSubmission[]> {
+  const snap = await getDocs(
+    query(collection(db, "assignmentSubmissions"), where("studentId", "==", studentId))
+  );
+  return snap.docs
+    .map((d) => ({ id: d.id, ...(d.data() as AssignmentSubmission) }))
+    .sort((a, b) => (b.submittedAt as Timestamp)?.toMillis() - (a.submittedAt as Timestamp)?.toMillis() || 0);
+}
+
 export async function upsertSubmission(sub: Omit<AssignmentSubmission, "id">): Promise<void> {
   const existing = await getSubmission(sub.assignmentId, sub.studentId);
   if (existing?.id) {
