@@ -1,10 +1,7 @@
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 
-/**
- * TEMPORARILY DISABLED — set to `false` and uncomment SES send logic below
- * when you want emails live again.
- */
-export const EMAIL_ENABLED = false;
+/** Set to `false` to temporarily disable all outbound email. */
+export const EMAIL_ENABLED = true;
 
 export interface SendEmailOptions {
   to: string | string[];
