@@ -363,9 +363,13 @@ function PaymentPageInner() {
                   {paying ? (
                     <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Redirecting to Stripe…</>
                   ) : (
-                    <><MdPayment size={20} />Pay {selectedPlan.price} AUD with Stripe</>
+                    <><MdPayment size={20} />Pay {selectedPlan.price} AUD + tax with Stripe</>
                   )}
                 </button>
+
+                <p className="text-center text-xs text-gray-500">
+                  Tax (e.g. GST) is calculated by Stripe Tax at checkout based on billing address.
+                </p>
 
                 <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400">
                   <MdLock size={12} /> Secured by Stripe · AUD · 256-bit SSL

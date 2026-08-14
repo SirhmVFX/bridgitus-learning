@@ -1,14 +1,29 @@
 import { getSiteContent } from "@/lib/firestore";
 import ContactForm from "./_ContactForm";
 
-const DEFAULTS = { email: "info@bridgitus.com", phone: "+61 433 600 592", altPhone: "" };
+// Always fetch latest CMS content (admin edits must show immediately)
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const DEFAULTS = { email: "info@bridgitus.com", phone: "+61 433 600 592", altPhone: "0434742393" };
 
 export default async function Contact() {
   let ci = DEFAULTS;
   try {
     const d = await getSiteContent("contact_info");
-    if (d) ci = { ...DEFAULTS, ...(d as typeof DEFAULTS) };
-  } catch { }
+    if (d) {
+      const raw = d as Partial<typeof DEFAULTS>;
+      ci = {
+        ...DEFAULTS,
+        ...raw,
+        email: typeof raw.email === "string" && raw.email.trim() ? raw.email : DEFAULTS.email,
+        phone: typeof raw.phone === "string" && raw.phone.trim() ? raw.phone : DEFAULTS.phone,
+        altPhone: typeof raw.altPhone === "string" && raw.altPhone.trim() ? raw.altPhone : DEFAULTS.altPhone,
+      };
+    }
+  } catch (err) {
+    console.error("contact_info load failed:", err);
+  }
 
   return (
     <main>
