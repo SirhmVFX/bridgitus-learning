@@ -25,6 +25,8 @@ interface AnsweredQuestion {
   topic: string;
   correct: boolean;
   answeredAt: Date | null;
+  /** Where the question came from — used to split category pies. */
+  source: "quiz" | "assignment" | "practice";
 }
 
 function tsToDate(ts: unknown): Date | null {
@@ -75,7 +77,13 @@ function collectAnswered(
     for (const q of test.questions ?? []) {
       const given = att.answers?.[q.id];
       if (given === undefined) continue;
-      rows.push({ subject: test.subject, topic: test.title, correct: isAnswerCorrect(q, given), answeredAt });
+      rows.push({
+        subject: test.subject,
+        topic: test.title,
+        correct: isAnswerCorrect(q, given),
+        answeredAt,
+        source: "quiz",
+      });
     }
   }
   for (const pa of practice) {
@@ -83,7 +91,13 @@ function collectAnswered(
     for (const q of pa.questions ?? []) {
       const given = pa.answers?.[q.id];
       if (given === undefined) continue;
-      rows.push({ subject: pa.subject, topic: pa.topic, correct: isAnswerCorrect(q, given), answeredAt });
+      rows.push({
+        subject: pa.subject,
+        topic: pa.topic,
+        correct: isAnswerCorrect(q, given),
+        answeredAt,
+        source: "practice",
+      });
     }
   }
   for (const sub of quizSubs) {
@@ -107,6 +121,7 @@ function collectAnswered(
         topic,
         correct: isAnswerCorrect(q, given),
         answeredAt,
+        source: "assignment",
       });
     }
     // Fallback when question IDs don't join (or assignment doc missing) but answers exist
@@ -118,6 +133,7 @@ function collectAnswered(
           topic,
           correct: true,
           answeredAt,
+          source: "assignment",
         });
       }
     } else if (
@@ -133,11 +149,30 @@ function collectAnswered(
           topic,
           correct: i < (sub.score ?? 0),
           answeredAt,
+          source: "assignment",
         });
       }
     }
   }
   return rows;
+}
+
+function buildCategoryRows(items: AnsweredQuestion[]) {
+  const agg: Record<string, { subject: string; count: number }> = {};
+  for (const a of items) {
+    agg[a.topic] ??= { subject: a.subject, count: 0 };
+    agg[a.topic].count++;
+  }
+  const total = items.length || 1;
+  return Object.entries(agg)
+    .map(([topic, v]) => ({
+      topic,
+      subject: v.subject,
+      count: v.count,
+      pct: Math.round((v.count / total) * 100),
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 8);
 }
 
 /** IXL-style big digit boxes for the banner counter. */
@@ -288,19 +323,15 @@ export default function StudentAnalyticsPage() {
   const skillsMastered = gaps.filter(g => g.accuracy >= 95).length;
   const skillsProgressed = gaps.filter(g => g.resolved || g.accuracy >= 80).length;
 
-  // Practice by category (topic share of all answered questions)
-  const categoryRows = useMemo(() => {
-    const agg: Record<string, { subject: string; count: number }> = {};
-    for (const a of answered) {
-      agg[a.topic] ??= { subject: a.subject, count: 0 };
-      agg[a.topic].count++;
-    }
-    const total = answered.length || 1;
-    return Object.entries(agg)
-      .map(([topic, v]) => ({ topic, subject: v.subject, count: v.count, pct: Math.round((v.count / total) * 100) }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 8);
-  }, [answered]);
+  // Practice by category — separate pies for quizzes (tests + AI practice) vs assignments
+  const quizCategoryRows = useMemo(
+    () => buildCategoryRows(answered.filter((a) => a.source === "quiz" || a.source === "practice")),
+    [answered]
+  );
+  const assignmentCategoryRows = useMemo(
+    () => buildCategoryRows(answered.filter((a) => a.source === "assignment")),
+    [answered]
+  );
 
   // Practice by month (current year)
   const monthCounts = useMemo(() => {
@@ -418,19 +449,35 @@ export default function StudentAnalyticsPage() {
               </div>
             </div>
 
-            {/* Practice by category — pie chart */}
-            <div className="bg-white border border-gray-200 p-5">
-              <h2 className="font-semibold text-gray-900 mb-4">Practice by Category</h2>
-              {categoryRows.length === 0 ? (
-                <p className="text-sm text-gray-400 py-6 text-center">
-                  No practice data yet — try a{" "}
-                  <Link href="/portal/tests" className="text-secondary-color font-semibold underline">test</Link>,{" "}
-                  <Link href="/portal/assignments" className="text-secondary-color font-semibold underline">quiz assignment</Link>, or{" "}
-                  <Link href="/portal/practice" className="text-purple-700 font-semibold underline">AI practice</Link>.
-                </p>
-              ) : (
-                <PracticePieChart rows={categoryRows} />
-              )}
+            {/* Practice by category — separate quiz vs assignment pies */}
+            <div className="grid lg:grid-cols-2 gap-4">
+              <div className="bg-white border border-gray-200 p-5">
+                <h2 className="font-semibold text-gray-900 mb-1">Quizzes by Category</h2>
+                <p className="text-xs text-gray-400 mb-4">Portal tests &amp; AI practice</p>
+                {quizCategoryRows.length === 0 ? (
+                  <p className="text-sm text-gray-400 py-6 text-center">
+                    No quiz data yet — try a{" "}
+                    <Link href="/portal/tests" className="text-secondary-color font-semibold underline">test</Link>
+                    {" "}or{" "}
+                    <Link href="/portal/practice" className="text-purple-700 font-semibold underline">AI practice</Link>.
+                  </p>
+                ) : (
+                  <PracticePieChart rows={quizCategoryRows} />
+                )}
+              </div>
+
+              <div className="bg-white border border-gray-200 p-5">
+                <h2 className="font-semibold text-gray-900 mb-1">Assignments by Category</h2>
+                <p className="text-xs text-gray-400 mb-4">Quiz assignments from your teacher</p>
+                {assignmentCategoryRows.length === 0 ? (
+                  <p className="text-sm text-gray-400 py-6 text-center">
+                    No assignment data yet — complete a{" "}
+                    <Link href="/portal/assignments" className="text-secondary-color font-semibold underline">quiz assignment</Link>.
+                  </p>
+                ) : (
+                  <PracticePieChart rows={assignmentCategoryRows} />
+                )}
+              </div>
             </div>
 
             {/* Practice by month */}

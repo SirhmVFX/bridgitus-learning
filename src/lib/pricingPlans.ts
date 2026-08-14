@@ -12,7 +12,7 @@ export const FALLBACK_PLANS: SitePricingPlan[] = [
     badge: "1 Student",
     description: "Perfect for trial lessons or casual, flexible learning with no commitment.",
     icon: "📚",
-    ctaLabel: "Select Basic Plan",
+    ctaLabel: "Book your first lesson",
     perks: [{ desc: "Flexible Scheduling" }, { desc: "No long-term commitment" }, { desc: "Perfect for casual learning" }],
     freePerks: ["One-on-one tutoring", "Flexible scheduling", "Free initial consultation"],
     features: [
@@ -38,7 +38,7 @@ export const FALLBACK_PLANS: SitePricingPlan[] = [
     badge: "10 Weeks",
     description: "Structured learning with 2 sessions per week — build consistency and real momentum.",
     icon: "🚀",
-    ctaLabel: "Select Standard Plan",
+    ctaLabel: "Book your standard plan",
     perks: [{ desc: "2 classes per week (10 weeks)" }, { desc: "Structured learning with consistency" }, { desc: "Progress tracking & Feedback" }],
     freePerks: ["One-on-one tutoring", "Flexible scheduling", "Free initial consultation"],
     features: [
@@ -64,7 +64,7 @@ export const FALLBACK_PLANS: SitePricingPlan[] = [
     badge: "15 Weeks",
     description: "The strongest foundation — 2 sessions per week over 15 weeks with full accountability.",
     icon: "🏆",
-    ctaLabel: "Select Premium Plan",
+    ctaLabel: "Book your premium plan",
     perks: [{ desc: "2 classes per week (15 weeks)" }, { desc: "Strong foundation & measurable improvements" }, { desc: "Best value for long-term learning" }],
     freePerks: ["One-on-one tutoring", "Flexible scheduling", "Free initial consultation"],
     features: [
@@ -90,7 +90,7 @@ export const FALLBACK_PLANS: SitePricingPlan[] = [
     badge: "1 to 3 Children",
     description: "Unlimited access for up to 3 children. One low price. More progress together.",
     icon: "👨‍👩‍👧‍👦",
-    ctaLabel: "Select Family Plan",
+    ctaLabel: "Book your family plan now",
     perks: [{ desc: "Up to 3 children included" }, { desc: "Unlimited weekly access" }, { desc: "One flat weekly price" }],
     freePerks: ["One-on-one tutoring per child", "Flexible scheduling", "Free initial consultation"],
     features: [

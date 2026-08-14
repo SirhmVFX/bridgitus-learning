@@ -16,6 +16,7 @@ import {
   isFamilyPlan,
   maxStudentsForPlan,
 } from "@/lib/pricingPlans";
+import PricingPlanCard from "@/components/PricingPlanCard";
 
 const emptyStudent = () => ({
   firstName: "",
@@ -476,51 +477,19 @@ function Register() {
                 <div className="w-8 h-8 border-4 border-secondary-color border-t-transparent rounded-full animate-spin" />
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {plans.map((plan) => {
-                  const family = isFamilyPlan(plan);
-                  const active = selectedPlan?.id === plan.id;
-                  return (
-                    <button
-                      key={plan.id}
-                      type="button"
-                      onClick={() => applyPlan(plan, true)}
-                      className={`text-left bg-white p-5 border transition-colors ${
-                        active
-                          ? "border-secondary-color ring-2 ring-secondary-color/30"
-                          : plan.highlighted
-                            ? "border-secondary-color"
-                            : "border-gray-300 hover:border-secondary-color/60"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-3 mb-3">
-                        <div>
-                          <h2 className="text-lg font-bold text-gray-900">{plan.title}</h2>
-                          <p className="text-xs text-gray-500">({plan.tagline})</p>
-                        </div>
-                        {plan.icon && <span className="text-2xl">{plan.icon}</span>}
-                      </div>
-                      <div className="flex items-end gap-1 mb-2">
-                        <span className="text-3xl font-black text-gray-900">{plan.price}</span>
-                        <span className="text-sm text-gray-500 mb-0.5">{plan.per}</span>
-                      </div>
-                      {plan.badge && (
-                        <span className="inline-block bg-secondary-color text-white text-xs font-bold px-3 py-1 mb-3">
-                          {plan.badge}
-                        </span>
-                      )}
-                      {plan.description && (
-                        <p className="text-sm text-gray-600 mb-3">{plan.description}</p>
-                      )}
-                      <p className="text-xs font-semibold text-secondary-color">
-                        {family ? "Register up to 3 students" : "Register 1 student"}
-                      </p>
-                      <span className="mt-4 inline-block w-full text-center py-2.5 text-sm font-bold bg-secondary-color text-white">
-                        {plan.ctaLabel ?? `Select ${plan.title}`}
-                      </span>
-                    </button>
-                  );
-                })}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-[1250px] mx-auto w-full">
+                {plans.map((plan) => (
+                  <PricingPlanCard
+                    key={plan.id ?? plan.title}
+                    plan={plan}
+                    selected={
+                      selectedPlan?.id === plan.id ||
+                      selectedPlan?.title === plan.title
+                    }
+                    showStudentLimitHint
+                    onSelect={(p) => applyPlan(p, true)}
+                  />
+                ))}
               </div>
             )}
           </div>
