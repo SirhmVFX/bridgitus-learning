@@ -430,9 +430,20 @@ export async function getAnnouncementsForStudent(grade: string): Promise<Announc
 // ─────────────────────────────────────────────────────────────
 
 export async function getSiteContent(section: string): Promise<Record<string, unknown> | null> {
-  const snap = await getDocs(query(collection(db, "siteContent"), where("section", "==", section), limit(1)));
+  const snap = await getDocs(query(collection(db, "siteContent"), where("section", "==", section)));
   if (snap.empty) return null;
-  return (snap.docs[0].data() as SiteContent).data;
+
+  // Prefer the most recently updated doc if duplicates exist
+  const docs = [...snap.docs].sort((a, b) => {
+    const aMs = (a.data().updatedAt as { toMillis?: () => number } | undefined)?.toMillis?.() ?? 0;
+    const bMs = (b.data().updatedAt as { toMillis?: () => number } | undefined)?.toMillis?.() ?? 0;
+    return bMs - aMs;
+  });
+  const raw = docs[0].data() as SiteContent & Record<string, unknown>;
+  // Nested CMS shape: { section, data: { ... } }. Legacy flat docs fall back to top-level fields.
+  if (raw.data && typeof raw.data === "object") return raw.data as Record<string, unknown>;
+  const { section: _s, updatedAt: _u, id: _id, data: _d, ...flat } = raw;
+  return flat;
 }
 
 export async function getPublishedTestimonials(): Promise<SiteTestimonial[]> {

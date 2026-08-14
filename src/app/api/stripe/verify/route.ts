@@ -83,6 +83,9 @@ export async function POST(request: Request) {
       paymentStatus: "paid",
       paymentReference: sessionId,
       paymentAmount: session.amount_total ?? 0,
+      paymentSubtotal: session.amount_subtotal ?? null,
+      paymentTax: session.total_details?.amount_tax ?? null,
+      paymentCurrency: session.currency ?? "aud",
       planId: planId || null,
       planTitle: planTitle || null,
       paidAt: serverTimestamp(),
@@ -105,6 +108,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       message: "Payment verified and recorded",
       amount: session.amount_total,
+      subtotal: session.amount_subtotal,
+      tax: session.total_details?.amount_tax ?? 0,
       currency: session.currency,
     });
   } catch (error: unknown) {
