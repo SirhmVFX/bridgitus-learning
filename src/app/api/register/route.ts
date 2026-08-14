@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import {
   collection,
@@ -17,7 +14,7 @@ import { sendEmail, isSesConfigured } from "@/lib/email";
 
 // ── Helpers ────────────────────────────────────────────────
 
-async function generateStudentId(): Promise<string> {
+async function nextStudentIdCounter(): Promise<{ year: number; next: number }> {
   const year = new Date().getFullYear();
   const prefix = `BRG-${year}-`;
   const snap = await getDocs(
@@ -27,8 +24,16 @@ async function generateStudentId(): Promise<string> {
       where("studentId", "<", `BRG-${year + 1}-`)
     )
   );
-  const next = snap.size + 1;
-  return `${prefix}${String(next).padStart(4, "0")}`;
+  return { year, next: snap.size + 1 };
+}
+
+function formatStudentId(year: number, n: number): string {
+  return `BRG-${year}-${String(n).padStart(4, "0")}`;
+}
+
+/** Unique Firebase Auth email — students never type this; they log in with Student ID. */
+function authEmailForStudentId(studentId: string): string {
+  return `${studentId.toLowerCase()}@students.bridgitus.local`;
 }
 
 function generatePassword(): string {
@@ -72,7 +77,7 @@ interface RegisterData {
 // ── Email Templates ────────────────────────────────────────
 
 function credentialsEmail(
-  studentName: string, studentId: string, email: string,
+  studentName: string, studentId: string, parentEmail: string,
   password: string, grade: string, portalUrl: string
 ): string {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
@@ -83,23 +88,23 @@ function credentialsEmail(
     </div>
     <div style="padding:40px;">
       <p>Hi <strong>${studentName}</strong>,</p>
-      <p>Your registration is confirmed. Here are your login credentials:</p>
+      <p>Your registration is confirmed. Log in with your <strong>Student ID</strong> and password (not email):</p>
       <div style="background:#f0f7ff;border:2px solid #00369b;padding:24px;margin:24px 0;text-align:center;">
         <h2 style="color:#00369b;margin:0 0 16px;">Your Login Credentials</h2>
         <table style="width:100%;border-collapse:collapse;">
           <tr><td style="padding:8px 12px;font-weight:600;color:#475569;text-align:left;width:140px;">Student ID</td>
               <td style="padding:8px 12px;font-family:monospace;font-size:16px;font-weight:700;color:#00369b;">${studentId}</td></tr>
-          <tr><td style="padding:8px 12px;font-weight:600;color:#475569;text-align:left;">Email</td>
-              <td style="padding:8px 12px;font-family:monospace;font-size:14px;color:#2c3e50;">${email}</td></tr>
           <tr><td style="padding:8px 12px;font-weight:600;color:#475569;text-align:left;">Password</td>
               <td style="padding:8px 12px;font-family:monospace;font-size:16px;font-weight:700;color:#00369b;letter-spacing:0.1em;">${password}</td></tr>
           <tr><td style="padding:8px 12px;font-weight:600;color:#475569;text-align:left;">Grade</td>
               <td style="padding:8px 12px;">Grade ${grade}</td></tr>
+          <tr><td style="padding:8px 12px;font-weight:600;color:#475569;text-align:left;">Parent email</td>
+              <td style="padding:8px 12px;font-size:14px;color:#2c3e50;">${parentEmail}</td></tr>
         </table>
       </div>
       <div style="background:#fff3cd;border-left:4px solid #f59e0b;padding:12px 16px;margin:16px 0;">
         <p style="margin:0;font-size:14px;color:#92400e;">
-          <strong>Important:</strong> Please change your password after your first login. Keep these credentials safe.
+          <strong>Important:</strong> Use your Student ID + password to log in. Change your password after first login.
         </p>
       </div>
       <div style="text-align:center;margin:32px 0;">
@@ -115,13 +120,13 @@ function credentialsEmail(
 
 function parentConfirmationEmail(
   parentName: string,
-  students: Array<{ name: string; studentId: string; grade: string; email: string }>
+  students: Array<{ name: string; studentId: string; grade: string; password: string }>
 ): string {
   const rows = students.map(s => `
     <tr>
       <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">${s.name}</td>
       <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-family:monospace;color:#00369b;font-weight:700;">${s.studentId}</td>
-      <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">${s.email}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-family:monospace;">${s.password}</td>
       <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">Grade ${s.grade}</td>
     </tr>`).join("");
 
@@ -133,12 +138,12 @@ function parentConfirmationEmail(
     </div>
     <div style="padding:40px;">
       <p>Dear <strong>${parentName}</strong>,</p>
-      <p>Your registration has been processed. Each student has received their credentials by email.</p>
+      <p>Your registration has been processed. Each child logs in with their own <strong>Student ID</strong> and password:</p>
       <table style="width:100%;border-collapse:collapse;border:1px solid #e2e8f0;">
         <thead><tr style="background:#f8fafc;">
           <th style="padding:10px 12px;text-align:left;font-size:12px;text-transform:uppercase;">Name</th>
           <th style="padding:10px 12px;text-align:left;font-size:12px;text-transform:uppercase;">Student ID</th>
-          <th style="padding:10px 12px;text-align:left;font-size:12px;text-transform:uppercase;">Email</th>
+          <th style="padding:10px 12px;text-align:left;font-size:12px;text-transform:uppercase;">Password</th>
           <th style="padding:10px 12px;text-align:left;font-size:12px;text-transform:uppercase;">Grade</th>
         </tr></thead>
         <tbody>${rows}</tbody>
@@ -164,6 +169,17 @@ export async function POST(request: Request) {
       console.warn("AWS SES is not fully configured — registration will continue without sending emails.");
     }
 
+    const parentEmail = registerData.parentEmail.trim().toLowerCase();
+
+    // Returning parent: same email can already have children — we still add more
+    const existingSnap = await getDocs(
+      query(collection(db, "students"), where("parentEmail", "==", parentEmail))
+    );
+    const existingCount = existingSnap.size;
+    if (existingCount > 0) {
+      console.log(`Parent ${parentEmail} already has ${existingCount} student(s) — adding more under the same email.`);
+    }
+
     const createdStudents: Array<{
       name: string; studentId: string; email: string;
       grade: string; password: string; firebaseUid: string;
@@ -171,44 +187,25 @@ export async function POST(request: Request) {
     let emailsSent = 0;
     let emailsFailed = 0;
 
+    const { year, next: startN } = await nextStudentIdCounter();
+    let idCounter = startN;
+
     for (const student of registerData.students) {
       console.log(`Processing student: ${student.firstName} ${student.lastName}`);
-      const studentIndex = registerData.students.indexOf(student);
 
-      // Derive a unique email per student
-      const studentEmail = registerData.students.length === 1
-        ? registerData.parentEmail
-        : `${registerData.parentEmail.split("@")[0]}+student${studentIndex + 1}@${registerData.parentEmail.split("@")[1]}`;
-
-      const studentId = await generateStudentId();
+      const studentId = formatStudentId(year, idCounter++);
       const password = generatePassword();
+      // Unique Auth identity per child — parent contact email is shared and never used for Auth
+      const authEmail = authEmailForStudentId(studentId);
 
-      // Create Firebase Auth account using the client SDK
-      let firebaseUid: string;
-      try {
-        const cred = await createUserWithEmailAndPassword(auth, studentEmail, password);
-        firebaseUid = cred.user.uid;
-      } catch (authError: unknown) {
-        const code = (authError as { code?: string }).code;
-        if (code === "auth/email-already-in-use") {
-          // Try to sign in to get the UID of the existing user
-          try {
-            const existing = await signInWithEmailAndPassword(auth, studentEmail, password);
-            firebaseUid = existing.user.uid;
-          } catch {
-            console.warn(`Student email ${studentEmail} already exists and password doesn't match.`);
-            continue;
-          }
-        } else {
-          throw authError;
-        }
-      }
+      const cred = await createUserWithEmailAndPassword(auth, authEmail, password);
+      const firebaseUid = cred.user.uid;
 
-      // Save student record to Firestore using client SDK
       const studentDocRef = await addDoc(collection(db, "students"), {
         uid: firebaseUid,
         studentId,
-        email: studentEmail,
+        email: parentEmail,
+        authEmail,
         firstName: student.firstName,
         lastName: student.lastName,
         dateOfBirth: student.age,
@@ -220,7 +217,7 @@ export async function POST(request: Request) {
           : [],
         parentFirstName: registerData.parentFirstName,
         parentLastName: registerData.parentLastName,
-        parentEmail: registerData.parentEmail,
+        parentEmail,
         parentPhone: registerData.parentPhone,
         postcode: registerData.parentPostcode,
         organizingFor: registerData.organizingFor,
@@ -238,49 +235,29 @@ export async function POST(request: Request) {
         selectedTimeSlots: student.selectedTimeSlots,
         status: "active",
         paymentStatus: "pending",
-        // Set true only after a successful send below
         credentialsSent: false,
         enrolledAt: serverTimestamp(),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
 
-      // Email is optional — accounts are always created even if SES fails (sandbox / pending production).
       let studentMailOk = false;
       if (emailReady) {
         try {
           await sendEmail({
-            to: studentEmail,
+            to: parentEmail,
             from: fromEmail,
             subject: `Your Bridgitus Learning Portal Credentials — ${student.firstName}`,
             html: credentialsEmail(
               `${student.firstName} ${student.lastName}`,
-              studentId, studentEmail, password, student.grade, portalUrl
+              studentId, parentEmail, password, student.grade, portalUrl
             ),
           });
           studentMailOk = true;
           emailsSent++;
-
-          if (studentEmail !== registerData.parentEmail) {
-            try {
-              await sendEmail({
-                to: registerData.parentEmail,
-                from: fromEmail,
-                subject: `Bridgitus Credentials for ${student.firstName} ${student.lastName}`,
-                html: credentialsEmail(
-                  `${student.firstName} ${student.lastName}`,
-                  studentId, studentEmail, password, student.grade, portalUrl
-                ),
-              });
-              emailsSent++;
-            } catch (mailErr) {
-              emailsFailed++;
-              console.error(`Failed to send parent copy for ${studentEmail}:`, mailErr);
-            }
-          }
         } catch (mailErr) {
           emailsFailed++;
-          console.error(`Failed to send credentials email for ${studentEmail}:`, mailErr);
+          console.error(`Failed to send credentials email for ${studentId}:`, mailErr);
         }
       }
 
@@ -290,19 +267,26 @@ export async function POST(request: Request) {
 
       createdStudents.push({
         name: `${student.firstName} ${student.lastName}`,
-        studentId, email: studentEmail, grade: student.grade,
-        password, firebaseUid,
+        studentId,
+        email: parentEmail,
+        grade: student.grade,
+        password,
+        firebaseUid,
       });
-      console.log(`Created student: ${student.firstName} ${student.lastName}, ID: ${studentId}, Email: ${studentEmail}, mailed=${studentMailOk}`);
+      console.log(`Created student: ${student.firstName} ${student.lastName}, ID: ${studentId}, parentEmail=${parentEmail}`);
     }
 
-    console.log("All createdStudents:", JSON.stringify(createdStudents.map(({ password: _p, ...rest }) => rest), null, 2));
+    if (createdStudents.length === 0) {
+      return NextResponse.json(
+        { message: "Registration failed", error: "No student accounts were created." },
+        { status: 500 }
+      );
+    }
 
-    // Parent confirmation + admin notification (best-effort)
-    if (emailReady && createdStudents.length > 0) {
+    if (emailReady) {
       try {
         await sendEmail({
-          to: registerData.parentEmail,
+          to: parentEmail,
           from: fromEmail,
           subject: `Registration Confirmed — Bridgitus Learning`,
           html: parentConfirmationEmail(
@@ -321,9 +305,9 @@ export async function POST(request: Request) {
           to: adminEmail,
           from: fromEmail,
           subject: `New Registration — ${registerData.parentFirstName} ${registerData.parentLastName} (${createdStudents.length} student${createdStudents.length > 1 ? "s" : ""})`,
-          html: `<p>New registration from <strong>${registerData.parentFirstName} ${registerData.parentLastName}</strong> (${registerData.parentEmail}).</p>
-                 <p>${createdStudents.length} student account${createdStudents.length > 1 ? "s" : ""} created.</p>
-                 <ul>${createdStudents.map(s => `<li>${s.name} — ${s.studentId} — Grade ${s.grade} — temp password: ${s.password}</li>`).join("")}</ul>`,
+          html: `<p>New registration from <strong>${registerData.parentFirstName} ${registerData.parentLastName}</strong> (${parentEmail}).</p>
+                 <p>${createdStudents.length} student account${createdStudents.length > 1 ? "s" : ""} created${existingCount ? ` (parent already had ${existingCount})` : ""}.</p>
+                 <ul>${createdStudents.map(s => `<li>${s.name} — ${s.studentId} — Grade ${s.grade} — password: ${s.password}</li>`).join("")}</ul>`,
         });
         emailsSent++;
       } catch (mailErr) {
@@ -338,10 +322,10 @@ export async function POST(request: Request) {
       {
         message: "Registration successful",
         studentsCreated: createdStudents.length,
+        existingSiblings: existingCount,
         emailsSent,
         emailsFailed,
         emailed,
-        // Always return credentials so the UI can show them when email is unavailable
         students: createdStudents.map((s) => ({
           name: s.name,
           studentId: s.studentId,

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useStudentAuth } from "@/lib/studentAuth";
-import { MdEmail, MdLock, MdVisibility, MdVisibilityOff, MdSchool } from "react-icons/md";
+import { MdLock, MdVisibility, MdVisibilityOff, MdSchool } from "react-icons/md";
 
 export default function LoginPage() {
   const { signIn, user, loading } = useStudentAuth();
@@ -35,7 +35,7 @@ export default function LoginPage() {
       const msg =
         err instanceof Error ? err.message : "Login failed. Please try again.";
       if (msg.includes("invalid-credential") || msg.includes("wrong-password") || msg.includes("user-not-found")) {
-        setError("Incorrect credentials. Check your Student ID / email and password.");
+        setError("Incorrect Student ID or password.");
       } else {
         setError(msg);
       }
@@ -101,17 +101,17 @@ export default function LoginPage() {
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h2>
             <p className="text-gray-500 text-sm mb-8">
-              Sign in with your Student ID or email address
+              Sign in with your Student ID and password
             </p>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
               {/* Identifier */}
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
-                  Student ID or Email
+                  Student ID
                 </label>
                 <div className="relative">
-                  <MdEmail
+                  <MdSchool
                     size={18}
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                   />
@@ -119,9 +119,10 @@ export default function LoginPage() {
                     type="text"
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder="BRG-2026-0001 or email@example.com"
+                    placeholder="BRG-2026-0001"
                     required
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-secondary-color focus:ring-2 focus:ring-secondary-color/20 transition-all"
+                    autoComplete="username"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-secondary-color focus:ring-2 focus:ring-secondary-color/20 transition-all uppercase"
                   />
                 </div>
               </div>
