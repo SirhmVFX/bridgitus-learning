@@ -323,13 +323,13 @@ export default function StudentAnalyticsPage() {
   const skillsMastered = gaps.filter(g => g.accuracy >= 95).length;
   const skillsProgressed = gaps.filter(g => g.resolved || g.accuracy >= 80).length;
 
-  // Practice by category — separate pies for quizzes (tests + AI practice) vs assignments
+  // Practice by category — tests alone vs quiz assignments + AI practice
   const quizCategoryRows = useMemo(
-    () => buildCategoryRows(answered.filter((a) => a.source === "quiz" || a.source === "practice")),
+    () => buildCategoryRows(answered.filter((a) => a.source === "quiz")),
     [answered]
   );
   const assignmentCategoryRows = useMemo(
-    () => buildCategoryRows(answered.filter((a) => a.source === "assignment")),
+    () => buildCategoryRows(answered.filter((a) => a.source === "assignment" || a.source === "practice")),
     [answered]
   );
 
@@ -453,13 +453,11 @@ export default function StudentAnalyticsPage() {
             <div className="grid lg:grid-cols-2 gap-4">
               <div className="bg-white border border-gray-200 p-5">
                 <h2 className="font-semibold text-gray-900 mb-1">Quizzes by Category</h2>
-                <p className="text-xs text-gray-400 mb-4">Portal tests &amp; AI practice</p>
+                <p className="text-xs text-gray-400 mb-4">Portal tests only</p>
                 {quizCategoryRows.length === 0 ? (
                   <p className="text-sm text-gray-400 py-6 text-center">
                     No quiz data yet — try a{" "}
-                    <Link href="/portal/tests" className="text-secondary-color font-semibold underline">test</Link>
-                    {" "}or{" "}
-                    <Link href="/portal/practice" className="text-purple-700 font-semibold underline">AI practice</Link>.
+                    <Link href="/portal/tests" className="text-secondary-color font-semibold underline">portal test</Link>.
                   </p>
                 ) : (
                   <PracticePieChart rows={quizCategoryRows} />
@@ -468,11 +466,13 @@ export default function StudentAnalyticsPage() {
 
               <div className="bg-white border border-gray-200 p-5">
                 <h2 className="font-semibold text-gray-900 mb-1">Assignments by Category</h2>
-                <p className="text-xs text-gray-400 mb-4">Quiz assignments from your teacher</p>
+                <p className="text-xs text-gray-400 mb-4">Quiz assignments &amp; AI practice</p>
                 {assignmentCategoryRows.length === 0 ? (
                   <p className="text-sm text-gray-400 py-6 text-center">
-                    No assignment data yet — complete a{" "}
-                    <Link href="/portal/assignments" className="text-secondary-color font-semibold underline">quiz assignment</Link>.
+                    No data yet — complete a{" "}
+                    <Link href="/portal/assignments" className="text-secondary-color font-semibold underline">quiz assignment</Link>
+                    {" "}or{" "}
+                    <Link href="/portal/practice" className="text-purple-700 font-semibold underline">AI practice</Link>.
                   </p>
                 ) : (
                   <PracticePieChart rows={assignmentCategoryRows} />
