@@ -25,6 +25,8 @@ export interface Student {
   paymentStatus: "pending" | "paid" | "failed" | "waived" | "expired";
   paymentReference?: string; paymentAmount?: number; paidAt?: Timestamp;
   planId?: string; planTitle?: string; planExpiresAt?: Timestamp;
+  /** Last password issued at registration or admin reset (visible to admin). */
+  issuedPassword?: string;
   // Stripe payment data (captured on successful Checkout)
   stripeCustomerId?: string;
   stripePaymentMethod?: {

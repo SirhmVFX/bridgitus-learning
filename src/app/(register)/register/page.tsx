@@ -66,7 +66,7 @@ function Register() {
     message: string;
   } | null>(null);
   const [createdStudents, setCreatedStudents] = useState<Array<{ name: string; studentId: string; email: string; grade: string; password?: string }>>([]);
-  const [registeredParent, setRegisteredParent] = useState({ firstName: "", lastName: "", email: "" });
+  const [registeredParent, setRegisteredParent] = useState({ firstName: "", lastName: "", email: "", planTitle: "" });
   const [credentialsEmailed, setCredentialsEmailed] = useState(false);
 
   const [openDays, setOpenDays] = useState<Record<number, boolean>>({});
@@ -296,6 +296,7 @@ function Register() {
           firstName: registerData.parentFirstName,
           lastName: registerData.parentLastName,
           email: registerData.parentEmail,
+          planTitle: registerData.planTitle || selectedPlan?.title || "",
         });
         setCredentialsEmailed(Boolean(data.emailed));
         if (data.students && data.students.length > 0) {
@@ -357,7 +358,7 @@ function Register() {
                     </svg>
                   </div>
                   <h1 className="text-xl font-bold text-white">Registration Successful!</h1>
-                  <p className="text-white/70 text-sm mt-1">
+                    <p className="text-white/70 text-sm mt-1">
                     {credentialsEmailed
                       ? "Credentials were emailed — also save them below"
                       : "Save your login credentials below (email delivery is temporarily unavailable)"}
@@ -437,16 +438,37 @@ function Register() {
                     </p>
                   </div>
 
+                  {/family/i.test(registeredParent.planTitle) && (
+                    <div className="bg-blue-50 border border-blue-200 px-4 py-3">
+                      <p className="text-xs text-blue-900 font-semibold mb-1">Adding another child later?</p>
+                      <p className="text-xs text-blue-800 leading-relaxed">
+                        Come back to{" "}
+                        <Link href="/register?plan=Family%20Plan" className="underline font-semibold">
+                          /register
+                        </Link>{" "}
+                        with the <strong>Family Plan</strong> and the <strong>same parent email</strong>.
+                        You can register up to 3 children in total. Bridgitus admin can also add a sibling from the student record.
+                      </p>
+                    </div>
+                  )}
+
                   {/* Action buttons */}
                   <div className="flex gap-3">
                     <Link href="/portal/login"
                       className="flex-1 bg-secondary-color text-white text-center font-semibold py-3 text-sm hover:bg-secondary-color/90 transition-colors">
                       Log In to Portal →
                     </Link>
-                    <Link href="/"
-                      className="flex-1 border border-gray-300 text-gray-700 text-center font-semibold py-3 text-sm hover:bg-gray-50 transition-colors">
-                      Back to Home
-                    </Link>
+                    {/family/i.test(registeredParent.planTitle) ? (
+                      <Link href="/register?plan=Family%20Plan"
+                        className="flex-1 border border-secondary-color text-secondary-color text-center font-semibold py-3 text-sm hover:bg-secondary-color/5 transition-colors">
+                        Add another child
+                      </Link>
+                    ) : (
+                      <Link href="/"
+                        className="flex-1 border border-gray-300 text-gray-700 text-center font-semibold py-3 text-sm hover:bg-gray-50 transition-colors">
+                        Back to Home
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>
