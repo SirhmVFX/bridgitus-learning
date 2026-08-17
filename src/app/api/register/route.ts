@@ -171,20 +171,6 @@ export async function POST(request: Request) {
       );
     }
 
-    const planMeta = { title: registerData.planTitle, badge: "" };
-    const allowedMax = maxStudentsForPlan(planMeta);
-    if (!registerData.students?.length || registerData.students.length > allowedMax) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: allowedMax === 1
-            ? "This plan allows registration for one student only. Choose the Family Plan for up to three students."
-            : `Family Plan allows up to ${allowedMax} students per registration.`,
-        },
-        { status: 400 }
-      );
-    }
-
     const portalUrl = process.env.NEXT_PUBLIC_PORTAL_URL || "https://bridgitus.com/portal/login";
     const fromEmail = process.env.EMAIL_FROM || "noreply@bridgitus.com";
     const adminEmail = process.env.ADMIN_EMAIL || "admin@bridgitus.com";
@@ -202,6 +188,49 @@ export async function POST(request: Request) {
     const existingCount = existingSnap.size;
     if (existingCount > 0) {
       console.log(`Parent ${parentEmail} already has ${existingCount} student(s) — adding more under the same email.`);
+    }
+
+    const isFamily = /family/i.test(registerData.planTitle || "") || maxStudentsForPlan({ title: registerData.planTitle, badge: "" }) > 1;
+    const allowedMax = isFamily ? 3 : 1;
+    if (!registerData.students?.length || registerData.students.length > allowedMax) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: allowedMax === 1
+            ? "This plan allows registration for one student only. Choose the Family Plan for up to three students."
+            : `Family Plan allows up to ${allowedMax} students per registration.`,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Family plan: total children under this parent email cannot exceed 3
+    if (isFamily && existingCount + registerData.students.length > 3) {
+      const remaining = Math.max(0, 3 - existingCount);
+      return NextResponse.json(
+        {
+          success: false,
+          message: remaining === 0
+            ? "This Family Plan already has 3 students registered. Contact Bridgitus admin if you need changes."
+            : `This Family Plan already has ${existingCount} student(s). You can add ${remaining} more (maximum 3).`,
+          existingCount,
+          remaining,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Non-family: if parent already has a student, block extra registrations on non-family plans
+    if (!isFamily && existingCount > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "This email already has a student registered. To add another child, register again with the Family Plan (up to 3), or contact Bridgitus admin.",
+          existingCount,
+        },
+        { status: 400 }
+      );
     }
 
     const createdStudents: Array<{
@@ -259,6 +288,7 @@ export async function POST(request: Request) {
         selectedTimeSlots: student.selectedTimeSlots,
         planId: registerData.planId,
         planTitle: registerData.planTitle,
+        issuedPassword: password,
         status: "active",
         paymentStatus: "pending",
         credentialsSent: false,

@@ -16,6 +16,10 @@ export default function LoginPage() {
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotId, setForgotId] = useState("");
+  const [forgotMsg, setForgotMsg] = useState("");
+  const [forgotBusy, setForgotBusy] = useState(false);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -172,6 +176,66 @@ export default function LoginPage() {
               </button>
             </form>
 
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForgot((v) => !v);
+                  setForgotMsg("");
+                  setForgotId(identifier);
+                }}
+                className="text-sm text-secondary-color font-semibold hover:underline cursor-pointer"
+              >
+                Forgot password?
+              </button>
+            </div>
+
+            {showForgot && (
+              <div className="mt-4 border border-gray-200 bg-gray-50 p-4 space-y-3">
+                <p className="text-xs text-gray-600">
+                  Enter your Student ID. We&apos;ll email the parent contact on file with login details,
+                  or notify Bridgitus admin to reset it.
+                </p>
+                <input
+                  type="text"
+                  value={forgotId}
+                  onChange={(e) => setForgotId(e.target.value)}
+                  placeholder="BRG-2026-0001"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm uppercase"
+                />
+                {forgotMsg && (
+                  <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-2">
+                    {forgotMsg}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  disabled={forgotBusy}
+                  onClick={async () => {
+                    setForgotBusy(true);
+                    setForgotMsg("");
+                    try {
+                      const res = await fetch("/api/students/forgot-password", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ studentId: forgotId.trim() }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok) throw new Error(data.error || "Request failed");
+                      setForgotMsg(data.message || "Request submitted.");
+                    } catch (err: unknown) {
+                      setForgotMsg(err instanceof Error ? err.message : "Request failed");
+                    } finally {
+                      setForgotBusy(false);
+                    }
+                  }}
+                  className="w-full bg-[#001f5b] text-white text-sm font-semibold py-2.5 rounded-lg disabled:opacity-60 cursor-pointer"
+                >
+                  {forgotBusy ? "Sending…" : "Send password help"}
+                </button>
+              </div>
+            )}
+
             <p className="mt-6 text-center text-sm text-gray-500">
               Not yet enrolled?{" "}
               <Link
@@ -179,6 +243,13 @@ export default function LoginPage() {
                 className="text-secondary-color font-semibold hover:underline"
               >
                 Register now
+              </Link>
+            </p>
+
+            <p className="mt-2 text-center text-xs text-gray-400">
+              Adding another child on a Family Plan?{" "}
+              <Link href="/register?plan=Family%20Plan" className="hover:underline">
+                Register with the same parent email
               </Link>
             </p>
 
