@@ -184,7 +184,7 @@ export default async function About() {
           From the Director&apos;s desk
         </h2>
         <div className="flex flex-col md:flex-row gap-8 md:gap-10">
-          <div className="md:w-1/3">
+          {/* <div className="md:w-1/3">
             {c.directorImage && (
               <Image
                 src={c.directorImage}
@@ -198,8 +198,8 @@ export default async function About() {
               <p className="font-semibold">{c.directorName}</p>
               <p className="text-black/50 text-sm italic">{c.directorRole}</p>
             </div>
-          </div>
-          <div className="md:w-2/3 flex flex-col gap-5">
+          </div> */}
+          <div className=" flex flex-col gap-5">
             {c.directorBio
               .split("\n\n")
               .filter(Boolean)
