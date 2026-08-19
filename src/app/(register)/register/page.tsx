@@ -329,6 +329,9 @@ function Register() {
         setStepPlan(true);
         setStep1(false);
         setStep6(false);
+        if (typeof window !== "undefined") {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
       } else {
         throw new Error(data.message || "Registration couldn’t be completed. Please try again.");
       }
@@ -346,140 +349,142 @@ function Register() {
     }
   };
 
+  if (registerSuccess) {
+    return (
+      <div className="min-h-[100dvh] w-full bg-[#f4f6fb]">
+        <div className="w-full max-w-lg mx-auto px-4 py-8 sm:py-12 pb-16">
+          <div className="bg-white border border-gray-200 overflow-hidden shadow-sm">
+            <div className="bg-secondary-color px-5 sm:px-8 py-7 sm:py-8 text-center">
+              <div className="mx-auto w-14 h-14 bg-white/20 flex items-center justify-center mb-3">
+                <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-bold text-white">Registration Successful!</h1>
+              <p className="text-white/80 text-sm mt-2 leading-relaxed">
+                {credentialsEmailed
+                  ? "Credentials were emailed — also save them below"
+                  : "Save your login credentials below (email delivery is temporarily unavailable)"}
+              </p>
+            </div>
+
+            <div className="px-4 sm:px-8 py-6 space-y-5">
+              <div className="bg-gray-50 border border-gray-200 p-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Registered By</p>
+                <p className="font-medium text-gray-900">{registeredParent.firstName} {registeredParent.lastName}</p>
+                <p className="text-sm text-gray-500 break-all">{registeredParent.email}</p>
+                {registeredParent.planTitle && (
+                  <p className="text-xs text-secondary-color font-semibold mt-2">Plan: {registeredParent.planTitle}</p>
+                )}
+              </div>
+
+              {createdStudents.length > 0 ? (
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Your Login Credentials</p>
+                  <div className="space-y-4">
+                    {createdStudents.map((s, i) => (
+                      <div key={i} className="border-2 border-secondary-color bg-secondary-color/5 p-4">
+                        <p className="font-semibold text-gray-900 mb-3">{s.name} — Grade {s.grade}</p>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-start justify-between gap-3 bg-white border border-gray-200 px-3 py-2.5">
+                            <div className="min-w-0">
+                              <p className="text-xs text-gray-400">Student ID</p>
+                              <p className="font-mono font-bold text-secondary-color text-base tracking-wide break-all">{s.studentId}</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => navigator.clipboard.writeText(s.studentId).then(() => alert("Student ID copied!"))}
+                              className="shrink-0 text-xs text-secondary-color border border-secondary-color px-2.5 py-1.5 hover:bg-secondary-color hover:text-white transition-colors cursor-pointer"
+                            >
+                              Copy
+                            </button>
+                          </div>
+                          <div className="bg-white border border-gray-200 px-3 py-2.5">
+                            <p className="text-xs text-gray-400">Parent / contact email</p>
+                            <p className="font-medium text-gray-800 break-all">{s.email}</p>
+                          </div>
+                          {s.password ? (
+                            <div className="flex items-start justify-between gap-3 bg-amber-50 border border-amber-300 px-3 py-2.5">
+                              <div className="min-w-0">
+                                <p className="text-xs text-amber-700 font-semibold">Password (shown once only!)</p>
+                                <p className="font-mono font-bold text-amber-900 text-base tracking-widest break-all">{s.password}</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => navigator.clipboard.writeText(s.password!).then(() => alert("Password copied!"))}
+                                className="shrink-0 text-xs text-amber-800 border border-amber-400 px-2.5 py-1.5 hover:bg-amber-500 hover:text-white transition-colors cursor-pointer"
+                              >
+                                Copy
+                              </button>
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-red-50 border border-red-200 px-4 py-3">
+                  <p className="text-sm text-red-700">
+                    Account may have been created, but credentials could not be loaded. Contact support with your registration email.
+                  </p>
+                </div>
+              )}
+
+              <div className="bg-amber-50 border border-amber-300 px-4 py-3">
+                <p className="text-sm text-amber-900 font-semibold mb-1">Save your credentials now!</p>
+                <p className="text-sm text-amber-800 leading-relaxed">
+                  Copy each child&apos;s <strong>Student ID</strong> and <strong>Password</strong> above — passwords are only shown once.
+                  Log in at the portal with <strong>Student ID + password</strong> (not email).
+                  {credentialsEmailed
+                    ? " A copy was also sent to your email."
+                    : " Email delivery is temporarily unavailable, so this screen is the only place to get the passwords."}
+                  {" "}Then complete payment to unlock portal features.
+                </p>
+              </div>
+
+              {/family/i.test(registeredParent.planTitle) && (
+                <div className="bg-blue-50 border border-blue-200 px-4 py-3">
+                  <p className="text-sm text-blue-900 font-semibold mb-1">Adding another child later?</p>
+                  <p className="text-sm text-blue-800 leading-relaxed">
+                    Register again with the <strong>Family Plan</strong> and the <strong>same parent email</strong>.
+                    You can register up to 3 children in total. Bridgitus admin can also add a sibling from the student record.
+                  </p>
+                </div>
+              )}
+
+              <div className="flex flex-col gap-3 pt-1">
+                <Link
+                  href="/portal/login"
+                  className="w-full bg-secondary-color text-white text-center font-semibold py-3.5 text-sm hover:bg-secondary-color/90 transition-colors"
+                >
+                  Log In to Portal →
+                </Link>
+                {/family/i.test(registeredParent.planTitle) ? (
+                  <Link
+                    href="/register?plan=Family%20Plan"
+                    className="w-full border border-secondary-color text-secondary-color text-center font-semibold py-3.5 text-sm hover:bg-secondary-color/5 transition-colors"
+                  >
+                    Add another child
+                  </Link>
+                ) : null}
+                <Link
+                  href="/"
+                  className="w-full border border-gray-300 text-gray-700 text-center font-semibold py-3.5 text-sm hover:bg-gray-50 transition-colors"
+                >
+                  Back to Home
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div>
-        <div>
-          {registerSuccess ? (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-              <div className="w-full max-w-lg bg-white p-0 overflow-hidden">
-                {/* Header */}
-                <div className="bg-secondary-color px-8 py-6 text-center">
-                  <div className="mx-auto w-14 h-14 bg-white/20 flex items-center justify-center mb-3">
-                    <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <h1 className="text-xl font-bold text-white">Registration Successful!</h1>
-                    <p className="text-white/70 text-sm mt-1">
-                    {credentialsEmailed
-                      ? "Credentials were emailed — also save them below"
-                      : "Save your login credentials below (email delivery is temporarily unavailable)"}
-                  </p>
-                </div>
-
-                <div className="px-8 py-6 space-y-5">
-                  {/* Parent info */}
-                  <div className="bg-gray-50 border border-gray-200 p-4">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Registered By</p>
-                    <p className="font-medium text-gray-900">{registeredParent.firstName} {registeredParent.lastName}</p>
-                    <p className="text-sm text-gray-500">{registeredParent.email}</p>
-                  </div>
-
-                  {/* Student credentials — always shown; passwords only appear once */}
-                  {createdStudents.length > 0 ? (
-                    <div>
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Your Login Credentials</p>
-                      <div className="space-y-3">
-                        {createdStudents.map((s, i) => (
-                          <div key={i} className="border-2 border-secondary-color bg-secondary-color/5 p-4">
-                            <p className="font-semibold text-gray-900 mb-3">{s.name} — Grade {s.grade}</p>
-                            <div className="space-y-2 text-sm">
-                              <div className="flex items-center justify-between bg-white border border-gray-200 px-3 py-2">
-                                <div>
-                                  <p className="text-xs text-gray-400">Student ID</p>
-                                  <p className="font-mono font-bold text-secondary-color text-base tracking-wide">{s.studentId}</p>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => navigator.clipboard.writeText(s.studentId).then(() => alert("Student ID copied!"))}
-                                  className="text-xs text-secondary-color border border-secondary-color px-2 py-1 hover:bg-secondary-color hover:text-white transition-colors"
-                                >Copy</button>
-                              </div>
-                              <div className="flex items-center justify-between bg-white border border-gray-200 px-3 py-2">
-                                <div>
-                                  <p className="text-xs text-gray-400">Parent / contact email</p>
-                                  <p className="font-medium text-gray-800 break-all">{s.email}</p>
-                                </div>
-                              </div>
-                              {s.password ? (
-                                <div className="flex items-center justify-between bg-amber-50 border border-amber-300 px-3 py-2">
-                                  <div>
-                                    <p className="text-xs text-amber-600 font-semibold">Password (shown once only!)</p>
-                                    <p className="font-mono font-bold text-amber-800 text-base tracking-widest">{s.password}</p>
-                                  </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => navigator.clipboard.writeText(s.password!).then(() => alert("Password copied!"))}
-                                    className="text-xs text-amber-700 border border-amber-400 px-2 py-1 hover:bg-amber-500 hover:text-white transition-colors ml-2 shrink-0"
-                                  >Copy</button>
-                                </div>
-                              ) : null}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-red-50 border border-red-200 px-4 py-3">
-                      <p className="text-sm text-red-700">
-                        Account may have been created, but credentials could not be loaded. Contact support with your registration email.
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Instructions */}
-                  <div className="bg-amber-50 border border-amber-300 px-4 py-3">
-                    <p className="text-xs text-amber-800 leading-relaxed font-semibold mb-1">Save your credentials now!</p>
-                    <p className="text-xs text-amber-700 leading-relaxed">
-                      Copy each child&apos;s <strong>Student ID</strong> and <strong>Password</strong> above — passwords are only shown once.
-                      Log in at the portal with <strong>Student ID + password</strong> (not email).
-                      {credentialsEmailed
-                        ? " A copy was also sent to your email."
-                        : " Email delivery is temporarily unavailable, so this screen is the only place to get the passwords."}
-                      {" "}Then complete payment to unlock portal features.
-                    </p>
-                  </div>
-
-                  {/family/i.test(registeredParent.planTitle) && (
-                    <div className="bg-blue-50 border border-blue-200 px-4 py-3">
-                      <p className="text-xs text-blue-900 font-semibold mb-1">Adding another child later?</p>
-                      <p className="text-xs text-blue-800 leading-relaxed">
-                        Come back to{" "}
-                        <Link href="/register?plan=Family%20Plan" className="underline font-semibold">
-                          /register
-                        </Link>{" "}
-                        with the <strong>Family Plan</strong> and the <strong>same parent email</strong>.
-                        You can register up to 3 children in total. Bridgitus admin can also add a sibling from the student record.
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Action buttons */}
-                  <div className="flex gap-3">
-                    <Link href="/portal/login"
-                      className="flex-1 bg-secondary-color text-white text-center font-semibold py-3 text-sm hover:bg-secondary-color/90 transition-colors">
-                      Log In to Portal →
-                    </Link>
-                    {/family/i.test(registeredParent.planTitle) ? (
-                      <Link href="/register?plan=Family%20Plan"
-                        className="flex-1 border border-secondary-color text-secondary-color text-center font-semibold py-3 text-sm hover:bg-secondary-color/5 transition-colors">
-                        Add another child
-                      </Link>
-                    ) : (
-                      <Link href="/"
-                        className="flex-1 border border-gray-300 text-gray-700 text-center font-semibold py-3 text-sm hover:bg-gray-50 transition-colors">
-                        Back to Home
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            ""
-          )}
-        </div>
         {stepPlan ? (
           <div className="flex flex-col gap-8">
             <div className="flex flex-col gap-2 items-center text-center">
