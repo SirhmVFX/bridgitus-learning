@@ -246,13 +246,45 @@ export async function POST(request: Request) {
     for (const student of registerData.students) {
       console.log(`Processing student: ${student.firstName} ${student.lastName}`);
 
-      const studentId = formatStudentId(year, idCounter++);
-      const password = generatePassword();
-      // Unique Auth identity per child — parent contact email is shared and never used for Auth
-      const authEmail = authEmailForStudentId(studentId);
+      let studentId = "";
+      let password = "";
+      let authEmail = "";
+      let firebaseUid = "";
 
-      const cred = await createUserWithEmailAndPassword(auth, authEmail, password);
-      const firebaseUid = cred.user.uid;
+      // Allocate a free Student ID / Auth email (retries if an orphaned Auth user still holds an old ID)
+      let created = false;
+      for (let attempt = 0; attempt < 8; attempt++) {
+        studentId = formatStudentId(year, idCounter++);
+        password = generatePassword();
+        authEmail = authEmailForStudentId(studentId);
+        try {
+          const cred = await createUserWithEmailAndPassword(auth, authEmail, password);
+          firebaseUid = cred.user.uid;
+          created = true;
+          break;
+        } catch (authErr: unknown) {
+          const code =
+            typeof authErr === "object" && authErr && "code" in authErr
+              ? String((authErr as { code?: string }).code)
+              : "";
+          const msg = authErr instanceof Error ? authErr.message : String(authErr);
+          if (code === "auth/email-already-in-use" || msg.includes("email-already-in-use")) {
+            console.warn(`Auth email already in use for ${authEmail} — trying next Student ID`);
+            continue;
+          }
+          throw authErr;
+        }
+      }
+      if (!created) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "We couldn’t create a login for this student because an old account is blocking new IDs. Please ask Bridgitus admin to delete the previous login, then try again.",
+          },
+          { status: 409 }
+        );
+      }
 
       const studentDocRef = await addDoc(collection(db, "students"), {
         uid: firebaseUid,
@@ -394,10 +426,18 @@ export async function POST(request: Request) {
     );
   } catch (error: unknown) {
     console.error("Registration error:", error);
+    const raw = error instanceof Error ? error.message : "Unknown error";
+    let message = "Registration couldn’t be completed. Please try again.";
+    if (raw.includes("email-already-in-use")) {
+      message =
+        "A previous login for this student still exists. Please contact Bridgitus support, or ask an admin to fully delete the old student account, then try again.";
+    } else if (raw.includes("network") || raw.includes("Network")) {
+      message = "Network error while registering. Check your connection and try again.";
+    }
     return NextResponse.json(
       {
-        message: "Registration failed",
-        error: error instanceof Error ? error.message : "Unknown error",
+        success: false,
+        message,
       },
       { status: 500 }
     );
