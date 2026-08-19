@@ -330,13 +330,16 @@ function Register() {
         setStep1(false);
         setStep6(false);
       } else {
-        throw new Error(data.message || "Failed to send message");
+        throw new Error(data.message || "Registration couldn’t be completed. Please try again.");
       }
     } catch (error) {
       console.error("Registration error:", error);
       setSubmitStatus({
         success: false,
-        message: "Failed to send message. Please try again later.",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Registration couldn’t be completed. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
@@ -1904,12 +1907,19 @@ function Register() {
               </div>
             ))}
 
+            {submitStatus && !submitStatus.success && (
+              <div className="mt-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {submitStatus.message}
+              </div>
+            )}
+
             <div className="flex justify-between mt-6">
               <button
                 type="button"
                 onClick={() => {
                   setStep6(false);
                   setStep5(true);
+                  setSubmitStatus(null);
                 }}
                 className="px-5 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200 md:text-[8px] lg:text-[11px] xl:text-[12px] bg-black/5"
               >
@@ -1919,7 +1929,8 @@ function Register() {
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="px-5 py-3 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer bg-secondary-color text-white md:text-[8px] lg:text-[11px] xl:text-[12px]"
+                disabled={isSubmitting}
+                className="px-5 py-3 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer bg-secondary-color text-white md:text-[8px] lg:text-[11px] xl:text-[12px] disabled:opacity-60"
               >
                 {isSubmitting ? "Submitting..." : "Submit Registration"}
               </button>
