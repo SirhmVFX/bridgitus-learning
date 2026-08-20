@@ -81,7 +81,7 @@ ${message}`;
         // Still succeed — message is saved in Firestore
       }
     } else {
-      console.warn("AWS SES not configured — contact message saved without email notification.");
+      console.warn("Email not configured — contact message saved without email notification.");
     }
 
     return NextResponse.json(

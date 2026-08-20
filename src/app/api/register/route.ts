@@ -176,7 +176,7 @@ export async function POST(request: Request) {
     const adminEmail = process.env.ADMIN_EMAIL || "admin@bridgitus.com";
     const emailReady = isSesConfigured();
     if (!emailReady) {
-      console.warn("AWS SES is not fully configured — registration will continue without sending emails.");
+      console.warn("Email is not fully configured — registration will continue without sending emails.");
     }
 
     const parentEmail = registerData.parentEmail.trim().toLowerCase();
