@@ -193,8 +193,8 @@ export default function LoginPage() {
             {showForgot && (
               <div className="mt-4 border border-gray-200 bg-gray-50 p-4 space-y-3">
                 <p className="text-xs text-gray-600">
-                  Enter your Student ID. We&apos;ll email the parent contact on file with login details,
-                  or notify Bridgitus admin to reset it.
+                  Enter your Student ID. We&apos;ll email the parent/guardian on file a secure link
+                  to set a new password (student accounts cannot receive email).
                 </p>
                 <input
                   type="text"
@@ -231,7 +231,7 @@ export default function LoginPage() {
                   }}
                   className="w-full bg-[#001f5b] text-white text-sm font-semibold py-2.5 rounded-lg disabled:opacity-60 cursor-pointer"
                 >
-                  {forgotBusy ? "Sending…" : "Send password help"}
+                  {forgotBusy ? "Sending…" : "Email reset link to parent"}
                 </button>
               </div>
             )}

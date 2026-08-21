@@ -206,3 +206,22 @@ export function isEmailConfigured(): boolean {
 export function isSesConfigured(): boolean {
   return isEmailConfigured();
 }
+
+/** Shared branded HTML wrapper for Bridgitus emails. */
+export function brandedEmail(title: string, bodyHtml: string): string {
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f1f5f9;">
+  <div style="max-width:600px;margin:0 auto;background:#ffffff;">
+    <div style="background:#00369b;padding:28px 32px;text-align:center;">
+      <p style="margin:0 0 6px;color:#93c5fd;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;">Bridgitus Learning</p>
+      <h1 style="color:#ffffff;margin:0;font-size:22px;font-weight:700;">${title}</h1>
+    </div>
+    <div style="padding:28px 32px;color:#334155;font-size:15px;line-height:1.65;">
+      ${bodyHtml}
+    </div>
+    <div style="padding:18px 32px;background:#f8fafc;border-top:1px solid #e2e8f0;text-align:center;font-size:12px;color:#94a3b8;">
+      © ${new Date().getFullYear()} Bridgitus Learning · This message was sent to the parent/guardian on file.
+    </div>
+  </div>
+</body></html>`;
+}
