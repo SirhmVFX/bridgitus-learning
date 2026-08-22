@@ -1,81 +1,76 @@
 import { NextResponse } from "next/server";
 import { createHash } from "crypto";
-import { FieldValue, Timestamp } from "firebase-admin/firestore";
-import {
-  adminAuth,
-  adminDb,
-  isFirebaseAdminConfigured,
-} from "@/lib/firebaseAdmin";
+
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
 function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
+function json(data: unknown, status = 200) {
+  return NextResponse.json(data, { status });
+}
+
 /**
  * GET /api/students/reset-password?token=...
- * Validates a reset token (for the reset page).
- *
- * POST /api/students/reset-password
- * Body: { token: string, password: string }
- * Sets a new Firebase Auth password + stores issuedPassword on the student.
+ * POST /api/students/reset-password  Body: { token, password }
  */
 export async function GET(request: Request) {
   try {
-    if (!isFirebaseAdminConfigured()) {
-      return NextResponse.json({ error: "Reset is temporarily unavailable." }, { status: 503 });
-    }
-
     const token = new URL(request.url).searchParams.get("token")?.trim() || "";
     if (!token || token.length < 32) {
-      return NextResponse.json({ error: "Invalid or missing reset link." }, { status: 400 });
+      return json({ error: "Invalid or missing reset link." }, 400);
     }
 
     const info = await lookupToken(token);
     if (!info.ok) {
-      return NextResponse.json({ error: info.error }, { status: 400 });
+      return json({ error: info.error }, 400);
     }
 
-    return NextResponse.json({
+    return json({
       valid: true,
       studentId: info.studentId,
       firstName: info.firstName,
     });
   } catch (err: unknown) {
     console.error("reset-password GET error:", err);
-    return NextResponse.json(
+    return json(
       { error: err instanceof Error ? err.message : "Validation failed" },
-      { status: 500 }
+      500
     );
   }
 }
 
 export async function POST(request: Request) {
   try {
-    if (!isFirebaseAdminConfigured()) {
-      return NextResponse.json({ error: "Reset is temporarily unavailable." }, { status: 503 });
+    let body: { token?: string; password?: string };
+    try {
+      body = await request.json();
+    } catch {
+      return json({ error: "Invalid request body." }, 400);
     }
 
-    const body = await request.json();
     const token = String(body.token || "").trim();
     const password = String(body.password || "");
 
     if (!token || token.length < 32) {
-      return NextResponse.json({ error: "Invalid or missing reset link." }, { status: 400 });
+      return json({ error: "Invalid or missing reset link." }, 400);
     }
     if (password.length < 8) {
-      return NextResponse.json(
-        { error: "Password must be at least 8 characters." },
-        { status: 400 }
-      );
+      return json({ error: "Password must be at least 8 characters." }, 400);
     }
     if (password.length > 72) {
-      return NextResponse.json({ error: "Password is too long." }, { status: 400 });
+      return json({ error: "Password is too long." }, 400);
     }
 
     const info = await lookupToken(token);
     if (!info.ok) {
-      return NextResponse.json({ error: info.error }, { status: 400 });
+      return json({ error: info.error }, 400);
     }
+
+    const { adminAuth, adminDb } = await import("@/lib/firebaseAdmin");
+    const { FieldValue } = await import("firebase-admin/firestore");
 
     await adminAuth().updateUser(info.uid, { password });
     await adminDb().collection("students").doc(info.studentDocId).update({
@@ -88,16 +83,16 @@ export async function POST(request: Request) {
       usedAt: FieldValue.serverTimestamp(),
     });
 
-    return NextResponse.json({
+    return json({
       success: true,
       studentId: info.studentId,
       message: "Password updated. You can now sign in with Student ID and the new password.",
     });
   } catch (err: unknown) {
     console.error("reset-password POST error:", err);
-    return NextResponse.json(
+    return json(
       { error: err instanceof Error ? err.message : "Reset failed" },
-      { status: 500 }
+      500
     );
   }
 }
@@ -113,8 +108,20 @@ async function lookupToken(token: string): Promise<
     }
   | { ok: false; error: string }
 > {
+  const admin = await import("@/lib/firebaseAdmin");
+  if (!admin.isFirebaseAdminConfigured()) {
+    return { ok: false, error: "Reset is temporarily unavailable." };
+  }
+
+  try {
+    admin.getAdminApp();
+  } catch {
+    return { ok: false, error: "Reset is temporarily unavailable." };
+  }
+
   const tokenHash = hashToken(token);
-  const snap = await adminDb()
+  const snap = await admin
+    .adminDb()
     .collection("passwordResets")
     .where("tokenHash", "==", tokenHash)
     .limit(1)
@@ -127,16 +134,22 @@ async function lookupToken(token: string): Promise<
   const resetDoc = snap.docs[0]!;
   const data = resetDoc.data();
   if (data.used) {
-    return { ok: false, error: "This reset link has already been used. Request a new one from the login page." };
+    return {
+      ok: false,
+      error: "This reset link has already been used. Request a new one from the login page.",
+    };
   }
 
-  const expiresAt = data.expiresAt as Timestamp | undefined;
-  if (expiresAt && expiresAt.toMillis() < Date.now()) {
-    return { ok: false, error: "This reset link has expired. Request a new one from the login page." };
+  const expiresAt = data.expiresAt as { toMillis?: () => number } | undefined;
+  if (expiresAt?.toMillis && expiresAt.toMillis() < Date.now()) {
+    return {
+      ok: false,
+      error: "This reset link has expired. Request a new one from the login page.",
+    };
   }
 
   const studentDocId = data.studentDocId as string;
-  const studentSnap = await adminDb().collection("students").doc(studentDocId).get();
+  const studentSnap = await admin.adminDb().collection("students").doc(studentDocId).get();
   if (!studentSnap.exists) {
     return { ok: false, error: "Student account not found." };
   }
@@ -144,7 +157,10 @@ async function lookupToken(token: string): Promise<
   const student = studentSnap.data()!;
   const uid = student.uid as string | undefined;
   if (!uid) {
-    return { ok: false, error: "This student account cannot be reset. Contact Bridgitus support." };
+    return {
+      ok: false,
+      error: "This student account cannot be reset. Contact Bridgitus support.",
+    };
   }
 
   return {

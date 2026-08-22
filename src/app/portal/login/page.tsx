@@ -220,8 +220,18 @@ export default function LoginPage() {
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ studentId: forgotId.trim() }),
                       });
-                      const data = await res.json();
-                      if (!res.ok) throw new Error(data.error || "Request failed");
+                      const text = await res.text();
+                      let data: { error?: string; message?: string; success?: boolean } = {};
+                      try {
+                        data = text ? JSON.parse(text) : {};
+                      } catch {
+                        throw new Error(
+                          res.ok
+                            ? "Unexpected response from server. Please try again."
+                            : `Request failed (HTTP ${res.status}). If this keeps happening, contact Bridgitus support.`
+                        );
+                      }
+                      if (!res.ok) throw new Error(data.error || `Request failed (HTTP ${res.status})`);
                       setForgotMsg(data.message || "Request submitted.");
                     } catch (err: unknown) {
                       setForgotMsg(err instanceof Error ? err.message : "Request failed");
