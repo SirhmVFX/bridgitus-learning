@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import { createHash, randomBytes } from "crypto";
-import { FieldValue, Timestamp } from "firebase-admin/firestore";
-import {
-  adminDb,
-  isFirebaseAdminConfigured,
-} from "@/lib/firebaseAdmin";
 import { sendEmail, brandedEmail, isEmailConfigured } from "@/lib/email";
+
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
 function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
@@ -23,44 +21,87 @@ function siteOrigin(request: Request): string {
   return "https://bridgitus.com";
 }
 
+function json(data: unknown, status = 200) {
+  return NextResponse.json(data, { status });
+}
+
 /**
  * POST /api/students/forgot-password
  * Body: { studentId: string } // BRG-YYYY-NNNN
  *
  * Emails ONLY the parent/guardian a secure link to set a new portal password.
- * Student Auth uses a non-mailbox address (@students.bridgitus.local), so parents
- * complete the reset on behalf of / with the student.
  */
 export async function POST(request: Request) {
+  const generic = {
+    success: true,
+    message:
+      "If this Student ID is registered, a password reset link has been sent to the parent/guardian email on file. Check that inbox (and spam) and follow the steps in the email.",
+  };
+
   try {
-    const body = await request.json();
+    let body: { studentId?: string };
+    try {
+      body = await request.json();
+    } catch {
+      return json({ error: "Invalid request body." }, 400);
+    }
+
     const raw = String(body.studentId || "").trim().toUpperCase();
     if (!/^BRG-\d{4}-\d{4}$/.test(raw)) {
-      return NextResponse.json(
+      return json(
         { error: "Enter a valid Student ID (e.g. BRG-2026-0001)." },
-        { status: 400 }
+        400
       );
     }
 
-    const generic = {
-      success: true,
-      message:
-        "If this Student ID is registered, a password reset link has been sent to the parent/guardian email on file. Check that inbox (and spam) and follow the steps in the email.",
-    };
+    if (!isEmailConfigured()) {
+      return json({
+        success: true,
+        message:
+          "Password recovery email is temporarily unavailable. Please contact Bridgitus support.",
+      });
+    }
 
-    if (!isFirebaseAdminConfigured()) {
-      return NextResponse.json({
+    // Dynamic import so a Firebase Admin load failure still returns JSON (not empty 500)
+    let adminDb: typeof import("@/lib/firebaseAdmin").adminDb;
+    let isFirebaseAdminConfigured: typeof import("@/lib/firebaseAdmin").isFirebaseAdminConfigured;
+    let getAdminApp: typeof import("@/lib/firebaseAdmin").getAdminApp;
+    let FieldValue: typeof import("firebase-admin/firestore").FieldValue;
+    let Timestamp: typeof import("firebase-admin/firestore").Timestamp;
+
+    try {
+      const admin = await import("@/lib/firebaseAdmin");
+      const fs = await import("firebase-admin/firestore");
+      adminDb = admin.adminDb;
+      isFirebaseAdminConfigured = admin.isFirebaseAdminConfigured;
+      getAdminApp = admin.getAdminApp;
+      FieldValue = fs.FieldValue;
+      Timestamp = fs.Timestamp;
+    } catch (loadErr: unknown) {
+      console.error("Failed to load Firebase Admin:", loadErr);
+      return json({
         success: true,
         message:
           "Password reset is temporarily unavailable. Please contact Bridgitus support.",
       });
     }
 
-    if (!isEmailConfigured()) {
-      return NextResponse.json({
+    if (!isFirebaseAdminConfigured()) {
+      return json({
         success: true,
         message:
-          "Password recovery email is temporarily unavailable. Please contact Bridgitus support.",
+          "Password reset is temporarily unavailable (server auth not configured). Please contact Bridgitus support.",
+      });
+    }
+
+    try {
+      getAdminApp();
+    } catch (err: unknown) {
+      console.error("Firebase Admin init failed:", err);
+      return json({
+        success: true,
+        message:
+          "Password reset is temporarily unavailable. Please contact Bridgitus support.",
       });
     }
 
@@ -71,7 +112,7 @@ export async function POST(request: Request) {
       .get();
 
     if (snap.empty) {
-      return NextResponse.json(generic);
+      return json(generic);
     }
 
     const docSnap = snap.docs[0]!;
@@ -86,26 +127,14 @@ export async function POST(request: Request) {
     const uid = student.uid as string | undefined;
 
     if (!parentEmail || !uid) {
-      // Still generic — do not leak account issues
-      return NextResponse.json(generic);
+      return json(generic);
     }
 
     const token = randomBytes(32).toString("hex");
     const tokenHash = hashToken(token);
     const expiresAt = Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000));
 
-    // Invalidate previous unused tokens for this student (no composite index needed)
-    const old = await adminDb()
-      .collection("passwordResets")
-      .where("studentDocId", "==", docSnap.id)
-      .get();
-    const batch = adminDb().batch();
-    old.docs.forEach((d) => {
-      if (d.data().used) return;
-      batch.update(d.ref, { used: true, invalidatedAt: FieldValue.serverTimestamp() });
-    });
-    const resetRef = adminDb().collection("passwordResets").doc();
-    batch.set(resetRef, {
+    await adminDb().collection("passwordResets").add({
       tokenHash,
       studentDocId: docSnap.id,
       studentId: raw,
@@ -114,19 +143,39 @@ export async function POST(request: Request) {
       expiresAt,
       createdAt: FieldValue.serverTimestamp(),
     });
-    await batch.commit();
+
+    try {
+      const old = await adminDb()
+        .collection("passwordResets")
+        .where("studentDocId", "==", docSnap.id)
+        .get();
+      const updates = old.docs.filter(
+        (d) => d.data().tokenHash !== tokenHash && d.data().used !== true
+      );
+      await Promise.all(
+        updates.slice(0, 20).map((d) =>
+          d.ref.update({
+            used: true,
+            invalidatedAt: FieldValue.serverTimestamp(),
+          })
+        )
+      );
+    } catch (invalidateErr) {
+      console.warn("Could not invalidate old reset tokens:", invalidateErr);
+    }
 
     const origin = siteOrigin(request);
     const resetUrl = `${origin}/portal/reset-password?token=${token}`;
     const portalUrl =
       process.env.NEXT_PUBLIC_PORTAL_URL || `${origin}/portal/login`;
 
-    await sendEmail({
-      to: parentEmail,
-      subject: `Reset portal password for ${firstName} — Bridgitus Learning`,
-      html: brandedEmail(
-        "Reset student password",
-        `
+    try {
+      await sendEmail({
+        to: parentEmail,
+        subject: `Reset portal password for ${firstName} — Bridgitus Learning`,
+        html: brandedEmail(
+          "Reset student password",
+          `
         <p style="margin:0 0 16px;">Hi,</p>
         <p style="margin:0 0 16px;">
           We received a request to reset the Bridgitus Learning portal password for
@@ -178,15 +227,32 @@ export async function POST(request: Request) {
         </p>
         <p style="margin:20px 0 0;">Best regards,<br/><strong>The Bridgitus Team</strong></p>
         `
-      ),
-    });
+        ),
+      });
+    } catch (mailErr: unknown) {
+      console.error("forgot-password email failed:", mailErr);
+      return json(
+        {
+          error:
+            mailErr instanceof Error
+              ? `Could not send email: ${mailErr.message}`
+              : "Could not send the reset email. Please try again or contact support.",
+        },
+        500
+      );
+    }
 
-    return NextResponse.json(generic);
+    return json(generic);
   } catch (err: unknown) {
     console.error("forgot-password error:", err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Request failed" },
-      { status: 500 }
+    return json(
+      {
+        error:
+          err instanceof Error
+            ? err.message
+            : "Password reset request failed. Please try again.",
+      },
+      500
     );
   }
 }
