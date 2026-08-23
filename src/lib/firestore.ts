@@ -473,7 +473,12 @@ export async function getPublishedPricingPlans(): Promise<SitePricingPlan[]> {
   const snap = await getDocs(query(collection(db, "sitePricingPlans"), where("published", "==", true)));
   return snap.docs
     .map(d => ({ id: d.id, ...(d.data() as SitePricingPlan) }))
-    .sort((a, b) => a.order - b.order);
+    .sort((a, b) => {
+      const aFamily = (a.title || "").toLowerCase().includes("family") ? 0 : 1;
+      const bFamily = (b.title || "").toLowerCase().includes("family") ? 0 : 1;
+      if (aFamily !== bFamily) return aFamily - bFamily;
+      return (a.order ?? 0) - (b.order ?? 0);
+    });
 }
 
 export async function getPricingPlanById(id: string): Promise<SitePricingPlan | null> {

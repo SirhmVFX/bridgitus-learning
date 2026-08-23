@@ -18,6 +18,7 @@ import {
   MdCheckCircle, MdRadioButtonUnchecked, MdLock,
   MdTimer, MdFilterList, MdSearch,
 } from "react-icons/md";
+import { ReadAloudButton, gradeSupportsReadAloud } from "@/components/QuestionReadAloud";
 
 const TYPE_ICONS: Record<string, React.ReactNode> = {
   text: <MdArticle size={18} />,
@@ -67,6 +68,7 @@ function MaterialCard({
   index,
   isCompleted,
   isLocked,
+  studentGrade,
   onToggleComplete,
   toggling,
 }: {
@@ -74,10 +76,19 @@ function MaterialCard({
   index: number;
   isCompleted: boolean;
   isLocked: boolean;
+  studentGrade: string;
   onToggleComplete: (m: LearningMaterial) => void;
   toggling: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const canListen = gradeSupportsReadAloud(studentGrade) && !isLocked;
+  const listenText = [
+    material.title,
+    material.description || "",
+    expanded ? material.content || "" : "",
+  ]
+    .filter(Boolean)
+    .join(". ");
 
   return (
     <div className={`bg-white border transition-all ${isCompleted ? "border-emerald-300 bg-emerald-50/30" :
@@ -132,9 +143,14 @@ function MaterialCard({
               )}
             </div>
 
-            <h3 className={`font-semibold text-base ${isLocked ? "text-gray-400" : "text-gray-900"}`}>
-              {material.title}
-            </h3>
+            <div className="flex items-start justify-between gap-2 flex-wrap">
+              <h3 className={`font-semibold text-base ${isLocked ? "text-gray-400" : "text-gray-900"}`}>
+                {material.title}
+              </h3>
+              {canListen && listenText.trim() && (
+                <ReadAloudButton speechText={listenText} label="Listen" />
+              )}
+            </div>
 
             {isLocked ? (
               <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
@@ -392,6 +408,7 @@ export default function MaterialsPage() {
                 index={index}
                 isCompleted={isMaterialCompleted(completions, m.id!)}
                 isLocked={isLocked(index)}
+                studentGrade={student!.grade}
                 onToggleComplete={handleToggleComplete}
                 toggling={toggling === m.id}
               />
