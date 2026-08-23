@@ -79,12 +79,12 @@ export async function POST(request: Request) {
       Timestamp = fs.Timestamp;
     } catch (loadErr: unknown) {
       console.error("Failed to load Firebase Admin:", loadErr);
+      const detail = loadErr instanceof Error ? loadErr.message : String(loadErr);
       return json({
         success: false,
-        error:
-          "Password reset is unavailable: Firebase Admin could not load on the server. Add FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY to production env and redeploy.",
+        error: `Firebase Admin could not load: ${detail}`,
         message:
-          "Password reset is unavailable right now. Please contact Bridgitus support, or ask admin to reset from the Students page.",
+          "Password reset is unavailable right now. After adding FIREBASE_* env vars, redeploy the site. If it still fails, check FIREBASE_PRIVATE_KEY formatting (use \\n for newlines).",
       });
     }
 

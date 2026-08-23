@@ -4,7 +4,8 @@ const nextConfig: NextConfig = {
   images: {
     domains: ["img.freepik.com", "res.cloudinary.com"],
   },
-  /* config options here */
+  // Keep firebase-admin out of the serverless bundle (otherwise import fails on Vercel)
+  serverExternalPackages: ["firebase-admin"],
 };
 
 export default nextConfig;
