@@ -18,6 +18,7 @@ import {
   type Question,
   type MaterialCompletion,
 } from "@/lib/firestore";
+import { QuestionReadAloud } from "@/components/QuestionReadAloud";
 import {
   MdQuiz,
   MdTimer,
@@ -310,12 +311,14 @@ function TestRunner({
   test,
   studentId,
   studentUid,
+  studentGrade,
   attemptNumber,
   onSubmit,
 }: {
   test: Test;
   studentId: string;
   studentUid: string;
+  studentGrade: string;
   attemptNumber: number;
   onSubmit: (attempt: TestAttempt | null) => void;
 }) {
@@ -421,7 +424,7 @@ function TestRunner({
         />
       </div>
       <div className="p-6">
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-4 flex-wrap">
           <span className="w-8 h-8 bg-secondary-color text-white text-sm font-bold flex items-center justify-center shrink-0">
             {current + 1}
           </span>
@@ -429,6 +432,17 @@ function TestRunner({
             {q.type.replace("_", " ")} · {q.points} pt
             {q.points !== 1 ? "s" : ""}
           </span>
+          <QuestionReadAloud
+            grade={studentGrade}
+            text={q.text}
+            options={
+              q.type === "true_false"
+                ? ["True", "False"]
+                : q.options
+            }
+            index={current}
+            className="ml-auto"
+          />
         </div>
         <div
           className="text-gray-800 font-medium text-base mb-4 leading-relaxed"
@@ -622,6 +636,7 @@ export default function TestsPage() {
             test={activeTest}
             studentId={student!.id!}
             studentUid={user!.uid}
+            studentGrade={student!.grade}
             attemptNumber={attemptsForTest(activeTest.id!).length + 1}
             onSubmit={(attempt) => {
               setSubmitted(false);

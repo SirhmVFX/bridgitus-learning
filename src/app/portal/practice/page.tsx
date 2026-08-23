@@ -12,6 +12,7 @@ import {
   MdCheckCircle, MdCancel, MdExpandMore, MdExpandLess,
   MdPrint, MdRefresh,
 } from "react-icons/md";
+import { QuestionReadAloud } from "@/components/QuestionReadAloud";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -29,12 +30,14 @@ function PracticeRunner({
   meta,
   studentId,
   studentUid,
+  studentGrade,
   onDone,
 }: {
   questions: AIQuestion[];
   meta: PracticeMeta;
   studentId: string;
   studentUid: string;
+  studentGrade: string;
   onDone: (answers: Record<string, string>) => void;
 }) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -89,7 +92,7 @@ function PracticeRunner({
 
       {/* Question */}
       <div className="p-6">
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-4 flex-wrap">
           <span className="w-8 h-8 bg-purple-700 text-white text-sm font-bold flex items-center justify-center shrink-0">
             {current + 1}
           </span>
@@ -97,6 +100,17 @@ function PracticeRunner({
             {q.type.replace("_", " ")} · {q.points} pt{q.points !== 1 ? "s" : ""}
             {q.difficulty && ` · ${q.difficulty}`}
           </span>
+          <QuestionReadAloud
+            grade={studentGrade}
+            text={q.text}
+            options={
+              q.type === "true_false"
+                ? ["True", "False"]
+                : q.options
+            }
+            index={current}
+            className="ml-auto"
+          />
         </div>
         <p className="text-gray-800 font-medium text-base mb-4 leading-relaxed">{q.text}</p>
 
@@ -502,6 +516,7 @@ export default function PracticePage() {
             meta={meta}
             studentId={student!.id!}
             studentUid={user!.uid}
+            studentGrade={student!.grade}
             onDone={handleDone}
           />
         )}

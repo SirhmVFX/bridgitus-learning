@@ -80,17 +80,20 @@ export async function POST(request: Request) {
     } catch (loadErr: unknown) {
       console.error("Failed to load Firebase Admin:", loadErr);
       return json({
-        success: true,
+        success: false,
+        error:
+          "Password reset is unavailable: Firebase Admin could not load on the server. Add FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY to production env and redeploy.",
         message:
-          "Password reset is temporarily unavailable. Please contact Bridgitus support.",
+          "Password reset is unavailable right now. Please contact Bridgitus support, or ask admin to reset from the Students page.",
       });
     }
 
     if (!isFirebaseAdminConfigured()) {
       return json({
-        success: true,
+        success: false,
+        error: "FIREBASE_CLIENT_EMAIL / FIREBASE_PRIVATE_KEY missing on server.",
         message:
-          "Password reset is temporarily unavailable (server auth not configured). Please contact Bridgitus support.",
+          "Password reset is unavailable: server auth is not configured. Please contact Bridgitus support.",
       });
     }
 
@@ -99,9 +102,10 @@ export async function POST(request: Request) {
     } catch (err: unknown) {
       console.error("Firebase Admin init failed:", err);
       return json({
-        success: true,
+        success: false,
+        error: err instanceof Error ? err.message : "Firebase Admin init failed",
         message:
-          "Password reset is temporarily unavailable. Please contact Bridgitus support.",
+          "Password reset is unavailable right now. Please contact Bridgitus support, or ask admin to reset from the Students page.",
       });
     }
 

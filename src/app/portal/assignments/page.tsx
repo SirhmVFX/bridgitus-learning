@@ -16,6 +16,7 @@ import {
   type AssignmentSubmission,
   type MaterialCompletion,
 } from "@/lib/firestore";
+import { QuestionReadAloud } from "@/components/QuestionReadAloud";
 import {
   MdAssignment,
   MdOpenInNew,
@@ -528,12 +529,14 @@ function QuizRunner({
   assignment,
   studentId,
   studentUid,
+  studentGrade,
   onCancel,
   onComplete,
 }: {
   assignment: Assignment;
   studentId: string;
   studentUid: string;
+  studentGrade: string;
   onCancel: () => void;
   onComplete: (assignment: Assignment, submission: AssignmentSubmission) => void;
 }) {
@@ -653,9 +656,21 @@ function QuizRunner({
       <div className="space-y-4">
         {questions.map((question, index) => (
           <div key={question.id} className="border rounded-xl p-4">
-            <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
               <p className="text-sm font-semibold text-gray-900">Question {index + 1}</p>
-              <span className="text-xs text-gray-500">{question.points} points</span>
+              <div className="flex items-center gap-2">
+                <QuestionReadAloud
+                  grade={studentGrade}
+                  text={question.text}
+                  options={
+                    question.type === "true_false"
+                      ? ["True", "False"]
+                      : question.options
+                  }
+                  index={index}
+                />
+                <span className="text-xs text-gray-500">{question.points} points</span>
+              </div>
             </div>
             <p className="text-sm text-gray-700 mb-3">{question.text}</p>
             {question.imageUrl && (
@@ -838,6 +853,7 @@ export default function AssignmentsPage() {
             assignment={activeQuiz}
             studentId={student!.id!}
             studentUid={user!.uid}
+            studentGrade={student!.grade}
             onCancel={() => setActiveQuiz(null)}
             onComplete={handleCompleteQuiz}
           />

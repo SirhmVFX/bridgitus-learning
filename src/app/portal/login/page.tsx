@@ -204,7 +204,13 @@ export default function LoginPage() {
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm uppercase"
                 />
                 {forgotMsg && (
-                  <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-2">
+                  <p
+                    className={`text-xs px-3 py-2 border ${
+                      /unavailable|failed|error|contact/i.test(forgotMsg)
+                        ? "text-amber-800 bg-amber-50 border-amber-200"
+                        : "text-emerald-700 bg-emerald-50 border-emerald-200"
+                    }`}
+                  >
                     {forgotMsg}
                   </p>
                 )}
@@ -232,7 +238,11 @@ export default function LoginPage() {
                         );
                       }
                       if (!res.ok) throw new Error(data.error || `Request failed (HTTP ${res.status})`);
-                      setForgotMsg(data.message || "Request submitted.");
+                      if (data.success === false) {
+                        setForgotMsg(data.message || data.error || "Password reset is unavailable.");
+                      } else {
+                        setForgotMsg(data.message || "Request submitted.");
+                      }
                     } catch (err: unknown) {
                       setForgotMsg(err instanceof Error ? err.message : "Request failed");
                     } finally {
