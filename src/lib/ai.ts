@@ -32,3 +32,13 @@ export async function createSimilarQuestions(
   if (getAiProvider() === "openai") return openai.createSimilarQuestions(params);
   return gemini.createSimilarQuestions(params);
 }
+
+/** Attach diagrams for questions that need them (OpenAI Images when key present). */
+export async function attachDiagramsToQuestions(
+  questions: AIQuestion[]
+): Promise<{ questions: AIQuestion[]; generated: number; failed: number }> {
+  if (!process.env.OPENAI_API_KEY?.trim()) {
+    return { questions, generated: 0, failed: 0 };
+  }
+  return openai.attachDiagramsToQuestions(questions);
+}

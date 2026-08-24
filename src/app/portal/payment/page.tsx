@@ -12,6 +12,7 @@ import {
   findPlanMatch,
   getPlanAmountCents,
 } from "@/lib/pricingPlans";
+import { hasPortalAccess } from "@/lib/payment";
 import {
   MdPayment, MdCheckCircle, MdLock, MdSchool, MdLogout,
   MdArrowBack,
@@ -36,7 +37,7 @@ function PaymentPageInner() {
   useEffect(() => {
     if (authLoading) return;
     if (!student) { router.replace("/portal/login"); return; }
-    if (student.paymentStatus === "paid" || student.paymentStatus === "waived") {
+    if (student && hasPortalAccess(student)) {
       router.replace("/portal/dashboard");
     }
   }, [student, authLoading, router]);
