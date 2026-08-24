@@ -103,7 +103,7 @@ Return ONLY a valid JSON object:
     {
       "id": "q1",
       "type": "multiple_choice",
-      "text": "Question text",
+      "text": "Question text. Include [DIAGRAM: brief description] when a visual helps.",
       "options": ["A) option1", "B) option2", "C) option3", "D) option4"],
       "correctAnswer": "A) option1",
       "points": 1,
@@ -111,7 +111,9 @@ Return ONLY a valid JSON object:
       "subtopic": "${p.subtopic ?? p.topic}",
       "difficulty": "${p.difficulty}",
       "explanation": "Brief explanation.",
-      "workedSolution": "Step-by-step solution."
+      "workedSolution": "Step-by-step solution.",
+      "needsDiagram": false,
+      "diagramPrompt": ""
     }
   ]
 }
@@ -120,7 +122,8 @@ Rules:
 - multiple_choice: exactly 4 options "A) "…"D) "; correctAnswer matches one option.
 - true_false: options ["True","False"].
 - short_answer / extended_response: omit options.
-- ids q1…q${count}. All questions unique.`;
+- ids q1…q${count}. All questions unique.
+- DIAGRAMS: When a question naturally needs a visual (number line, graph, shapes, geometry), set needsDiagram true and diagramPrompt to a short description. Also put [DIAGRAM: …] in the text. Only when a diagram genuinely helps.`;
 }
 
 async function chatJson(user: string, maxTokens = 8192): Promise<string> {
@@ -176,7 +179,122 @@ export async function generateQuestions(params: GenerateQuestionsParams): Promis
     topic: q.topic ?? params.topic,
     subtopic: q.subtopic ?? params.subtopic ?? params.topic,
     difficulty: q.difficulty ?? params.difficulty,
+    ...((q as QuestionWithDiagramMeta).needsDiagram ? { needsDiagram: true } : {}),
+    ...((q as QuestionWithDiagramMeta).diagramPrompt
+      ? { diagramPrompt: String((q as QuestionWithDiagramMeta).diagramPrompt) }
+      : {}),
   }));
+}
+
+type QuestionWithDiagramMeta = AIQuestion & {
+  needsDiagram?: boolean;
+  diagramPrompt?: string;
+};
+
+const DIAGRAM_TAG = /\[DIAGRAM:\s*([^\]]+)\]/i;
+const openaiImageModel = process.env.OPENAI_IMAGE_MODEL ?? "gpt-image-1";
+
+function extractDiagramPrompt(q: QuestionWithDiagramMeta): string | null {
+  if (q.imageUrl) return null;
+  if (q.diagramPrompt?.trim()) return q.diagramPrompt.trim();
+  const m = q.text?.match(DIAGRAM_TAG);
+  if (m?.[1]) return m[1].trim();
+  if (q.needsDiagram) {
+    return `Educational worksheet diagram that helps a student understand this question: ${q.text}`;
+  }
+  return null;
+}
+
+export async function generateQuestionDiagram(
+  question: AIQuestion,
+  options?: { force?: boolean }
+): Promise<string | null> {
+  let promptText = extractDiagramPrompt(question as QuestionWithDiagramMeta);
+  if (!promptText && options?.force) {
+    promptText = `Educational worksheet diagram or graph that helps a student understand this question: ${question.text}`;
+  }
+  if (!promptText) return null;
+
+  const client = getClient();
+  const fullPrompt = `Create a clear, simple educational diagram for a school worksheet.
+Style: clean black lines on white background, labelled where helpful, no photorealism, no watermarks, no decorative clutter, no people faces.
+Diagram content: ${promptText}`;
+
+  const isGptImage = /^gpt-image/i.test(openaiImageModel);
+  const result = await client.images.generate({
+    model: openaiImageModel,
+    prompt: fullPrompt,
+    n: 1,
+    size: "1024x1024",
+    ...(isGptImage
+      ? {
+          quality:
+            (process.env.OPENAI_IMAGE_QUALITY as
+              | "low"
+              | "medium"
+              | "high"
+              | "auto") || "medium",
+        }
+      : {}),
+  });
+
+  const b64 = result.data?.[0]?.b64_json;
+  if (!b64) {
+    const url = result.data?.[0]?.url;
+    if (url) {
+      const imgRes = await fetch(url);
+      if (!imgRes.ok) return null;
+      const buf = Buffer.from(await imgRes.arrayBuffer());
+      const { uploadBase64ToCloudinary } = await import("./cloudinary");
+      return uploadBase64ToCloudinary(
+        buf.toString("base64"),
+        "image/png",
+        "bridgitus/question-images"
+      );
+    }
+    return null;
+  }
+
+  const { uploadBase64ToCloudinary } = await import("./cloudinary");
+  return uploadBase64ToCloudinary(b64, "image/png", "bridgitus/question-images");
+}
+
+export async function attachDiagramsToQuestions(
+  questions: AIQuestion[]
+): Promise<{ questions: AIQuestion[]; generated: number; failed: number }> {
+  let generated = 0;
+  let failed = 0;
+  const out: AIQuestion[] = [];
+
+  for (const q of questions) {
+    const prompt = extractDiagramPrompt(q as QuestionWithDiagramMeta);
+    if (!prompt || q.imageUrl) {
+      const { needsDiagram: _n, diagramPrompt: _d, ...rest } =
+        q as QuestionWithDiagramMeta;
+      out.push(rest);
+      continue;
+    }
+    try {
+      const imageUrl = await generateQuestionDiagram(q);
+      const { needsDiagram: _n, diagramPrompt: _d, ...rest } =
+        q as QuestionWithDiagramMeta;
+      if (imageUrl) {
+        generated++;
+        out.push({ ...rest, imageUrl });
+      } else {
+        failed++;
+        out.push(rest);
+      }
+    } catch (err) {
+      console.error(`Diagram generation failed for ${q.id}:`, err);
+      failed++;
+      const { needsDiagram: _n, diagramPrompt: _d, ...rest } =
+        q as QuestionWithDiagramMeta;
+      out.push(rest);
+    }
+  }
+
+  return { questions: out, generated, failed };
 }
 
 export async function createSimilarQuestions(params: CreateSimilarParams): Promise<AIQuestion[]> {

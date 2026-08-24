@@ -109,6 +109,16 @@ export function StudentAuthProvider({ children }: { children: ReactNode }) {
     const cred = EmailAuthProvider.credential(user.email, currentPassword);
     await reauthenticateWithCredential(user, cred);
     await updatePassword(user, newPassword);
+    // Keep admin-visible issuedPassword in sync
+    if (student?.id) {
+      try {
+        const { updateStudent } = await import("@/lib/firestore");
+        await updateStudent(student.id, { issuedPassword: newPassword });
+        setStudent({ ...student, issuedPassword: newPassword });
+      } catch (err) {
+        console.error("Failed to sync issuedPassword:", err);
+      }
+    }
   }
 
   async function refreshStudent() {

@@ -8,8 +8,10 @@ import { useStudentAuth } from "@/lib/studentAuth";
 import {
   getAnnouncementsForStudent,
   recordStudyTime,
+  updateStudent,
   type Announcement,
 } from "@/lib/firestore";
+import { hasPortalAccess, isPlanExpired } from "@/lib/payment";
 import {
   MdDashboard,
   MdMenuBook,
@@ -80,10 +82,17 @@ export default function PortalLayout({
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const notifRef = useRef<HTMLDivElement>(null);
 
-  const isPaid =
-    student?.paymentStatus === "paid" || student?.paymentStatus === "waived";
+  const isPaid = student ? hasPortalAccess(student) : false;
   const isSuspended =
     student?.status === "suspended" || student?.status === "inactive";
+
+  // Persist expired status when plan date has passed
+  useEffect(() => {
+    if (!student?.id) return;
+    if (student.paymentStatus === "paid" && isPlanExpired(student)) {
+      updateStudent(student.id, { paymentStatus: "expired" }).catch(() => {});
+    }
+  }, [student]);
 
   useEffect(() => {
     if (loading) return;
@@ -241,6 +250,11 @@ export default function PortalLayout({
           {isPaid ? (
             <span className="bg-emerald-500/30 text-emerald-300 text-xs px-2 py-0.5 font-semibold">
               ✓ PAID
+            </span>
+          ) : student?.paymentStatus === "expired" ||
+            (student && isPlanExpired(student)) ? (
+            <span className="bg-red-500/30 text-red-300 text-xs px-2 py-0.5 font-semibold">
+              EXPIRED
             </span>
           ) : (
             <span className="bg-amber-500/30 text-amber-300 text-xs px-2 py-0.5 font-semibold">

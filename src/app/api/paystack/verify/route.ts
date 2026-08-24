@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase";
-import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { serverTimestamp } from "firebase/firestore";
 
 /**
  * POST /api/paystack/verify
@@ -99,10 +99,9 @@ export async function POST(request: Request) {
     const authorization = data.data.authorization ?? {};
     const customer = data.data.customer ?? {};
 
-    // Update student payment status
-    const studentRef = doc(db, "students", studentId);
-    await updateDoc(studentRef, {
-      paymentStatus: "paid",
+    const { applyPaymentToHousehold } = await import("@/lib/familyPayment");
+    const paymentFields = {
+      paymentStatus: "paid" as const,
       paymentReference: reference,
       paymentAmount: data.data.amount,
       planId: planId || null,
@@ -123,14 +122,25 @@ export async function POST(request: Request) {
         }
         : {}),
       updatedAt: serverTimestamp(),
+    };
+
+    const { updatedIds, family } = await applyPaymentToHousehold({
+      primaryStudentId: studentId,
+      planTitle,
+      planId,
+      paymentFields,
     });
 
     return NextResponse.json(
       {
-        message: "Payment verified and recorded",
+        message: family
+          ? `Payment verified — ${updatedIds.length} family student(s) unlocked`
+          : "Payment verified and recorded",
         amount: data.data.amount,
         currency: data.data.currency,
         paidAt: data.data.paid_at,
+        studentsUpdated: updatedIds.length,
+        family,
       },
       { status: 200 }
     );

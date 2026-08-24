@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, serverTimestamp } from "firebase/firestore";
+import { applyPaymentToHousehold } from "@/lib/familyPayment";
 
 /**
  * POST /api/stripe/verify
  * Body: { sessionId: string, studentId: string }
  * Confirms a completed Checkout Session and marks the student as paid.
+ * Family Plan: also marks siblings under the same parent email as paid.
  */
 export async function POST(request: Request) {
   try {
@@ -38,7 +40,6 @@ export async function POST(request: Request) {
     const planId = session.metadata?.planId ?? "";
     const planTitle = session.metadata?.planTitle ?? "";
 
-    // Optional plan expiry from durationDays
     let planExpiresAt: Date | null = null;
     if (planId) {
       try {
@@ -49,10 +50,11 @@ export async function POST(request: Request) {
             planExpiresAt = new Date(Date.now() + plan.durationDays * 24 * 60 * 60 * 1000);
           }
         }
-      } catch { /* best-effort */ }
+      } catch {
+        /* best-effort */
+      }
     }
 
-    // Capture customer + payment method for future auto-pay
     const customerId =
       typeof session.customer === "string" ? session.customer : session.customer?.id;
 
@@ -78,9 +80,8 @@ export async function POST(request: Request) {
       }
     }
 
-    const studentRef = doc(db, "students", studentId);
-    await updateDoc(studentRef, {
-      paymentStatus: "paid",
+    const paymentFields = {
+      paymentStatus: "paid" as const,
       paymentReference: sessionId,
       paymentAmount: session.amount_total ?? 0,
       paymentSubtotal: session.amount_subtotal ?? null,
@@ -103,14 +104,25 @@ export async function POST(request: Request) {
           }
         : {}),
       updatedAt: serverTimestamp(),
+    };
+
+    const { updatedIds, family } = await applyPaymentToHousehold({
+      primaryStudentId: studentId,
+      planTitle,
+      planId,
+      paymentFields,
     });
 
     return NextResponse.json({
-      message: "Payment verified and recorded",
+      message: family
+        ? `Payment verified — ${updatedIds.length} family student(s) unlocked`
+        : "Payment verified and recorded",
       amount: session.amount_total,
       subtotal: session.amount_subtotal,
       tax: session.total_details?.amount_tax ?? 0,
       currency: session.currency,
+      studentsUpdated: updatedIds.length,
+      family,
     });
   } catch (error: unknown) {
     console.error("Stripe verify error:", error);
