@@ -64,7 +64,7 @@ export const FALLBACK_PLANS: SitePricingPlan[] = [
     order: 1,
     published: true,
     amountCents: 5000,
-    durationDays: 7,
+    durationDays: 0, // usage quotas (1 lesson + 1 assessment), not calendar days
   },
   {
     id: "2",

@@ -25,6 +25,15 @@ export interface Student {
   paymentStatus: "pending" | "paid" | "failed" | "waived" | "expired";
   paymentReference?: string; paymentAmount?: number; paidAt?: Timestamp;
   planId?: string; planTitle?: string; planExpiresAt?: Timestamp;
+  /** Usage quotas for Basic / Standard / Premium (Family uses time expiry only). */
+  planQuota?: {
+    classesAllowed: number;
+    assessmentsAllowed: number;
+    classesUsed: number;
+    assessmentsUsed: number;
+    assignmentMinutesAllowed?: number;
+    assignmentMinutesUsed?: number;
+  };
   /** Last password issued at registration or admin reset (visible to admin). */
   issuedPassword?: string;
   // Stripe payment data (captured on successful Checkout)
@@ -296,6 +305,7 @@ export async function submitTestAttempt(attempt: Omit<TestAttempt, "id" | "submi
     payload.reviewedAt = serverTimestamp();
   }
   const ref = await addDoc(collection(db, "testAttempts"), payload);
+  await incrementPlanUsage(attempt.studentId, { assessments: 1 }).catch(() => {});
   return ref.id;
 }
 
@@ -345,10 +355,15 @@ export async function getSubmissionsByStudent(studentId: string): Promise<Assign
 
 export async function upsertSubmission(sub: Omit<AssignmentSubmission, "id">): Promise<void> {
   const existing = await getSubmission(sub.assignmentId, sub.studentId);
+  const isNew = !existing?.id;
   if (existing?.id) {
     await updateDoc(doc(db, "assignmentSubmissions", existing.id), { ...sub, submittedAt: serverTimestamp() });
   } else {
     await addDoc(collection(db, "assignmentSubmissions"), { ...sub, submittedAt: serverTimestamp() });
+  }
+  // Count each assignment/quiz once toward the plan assessment quota
+  if (isNew && (sub.status === "submitted" || sub.status === "graded")) {
+    await incrementPlanUsage(sub.studentId, { assessments: 1 }).catch(() => {});
   }
 }
 
@@ -413,6 +428,35 @@ export async function markMaterialComplete(studentId: string, material: Learning
     subject: material.subject, completedAt: serverTimestamp(),
   });
   await upsertStudentProgress(studentId, material.grade, material.subject, { materialCompleted: true });
+  await incrementPlanUsage(studentId, { classes: 1 });
+}
+
+/** Bump plan quota usage (classes = lessons/materials, assessments = tests/assignments/quizzes). */
+export async function incrementPlanUsage(
+  studentId: string,
+  delta: { classes?: number; assessments?: number; assignmentMinutes?: number }
+): Promise<void> {
+  const ref = doc(db, "students", studentId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+  const data = snap.data() as Student;
+  if (data.paymentStatus !== "paid" || !data.planQuota) return;
+  const q = { ...data.planQuota };
+  if (delta.classes) q.classesUsed = (q.classesUsed || 0) + delta.classes;
+  if (delta.assessments) q.assessmentsUsed = (q.assessmentsUsed || 0) + delta.assessments;
+  if (delta.assignmentMinutes) {
+    q.assignmentMinutesUsed = (q.assignmentMinutesUsed || 0) + delta.assignmentMinutes;
+  }
+  const patch: Record<string, unknown> = {
+    planQuota: q,
+    updatedAt: serverTimestamp(),
+  };
+  // Soft-expire when quotas are fully used
+  const { isQuotaExhausted } = await import("./planEntitlements");
+  if (isQuotaExhausted({ ...data, planQuota: q })) {
+    patch.paymentStatus = "expired";
+  }
+  await updateDoc(ref, patch);
 }
 
 export async function unmarkMaterialComplete(studentId: string, materialId: string): Promise<void> {
@@ -709,6 +753,12 @@ export async function recordStudyTime(studentId: string, seconds: number): Promi
     seconds: increment(seconds),
     updatedAt: serverTimestamp(),
   }, { merge: true });
+  // Basic plan tracks assignment/session minutes toward the included hour
+  if (seconds >= 30) {
+    await incrementPlanUsage(studentId, {
+      assignmentMinutes: Math.round(seconds / 60),
+    }).catch(() => {});
+  }
 }
 
 /** Study sessions for the last `days` days (including today), newest first. */

@@ -216,8 +216,9 @@ export async function generateQuestionDiagram(
   if (!promptText) return null;
 
   const client = getClient();
-  const fullPrompt = `Create a clear, simple educational diagram for a school worksheet.
+  const fullPrompt = `Create a clear, simple educational diagram for a school worksheet for Australian Year/Grade students.
 Style: clean black lines on white background, labelled where helpful, no photorealism, no watermarks, no decorative clutter, no people faces.
+Match the academic level of this question (do not use early-primary cartoon style for secondary topics).
 Diagram content: ${promptText}`;
 
   const isGptImage = /^gpt-image/i.test(openaiImageModel);
