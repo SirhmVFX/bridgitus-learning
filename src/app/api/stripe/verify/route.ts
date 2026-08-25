@@ -3,12 +3,15 @@ import { getStripe } from "@/lib/stripe";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, serverTimestamp } from "firebase/firestore";
 import { applyPaymentToHousehold } from "@/lib/familyPayment";
+import {
+  buildQuotaState,
+  computePlanExpiresAt,
+} from "@/lib/planEntitlements";
 
 /**
  * POST /api/stripe/verify
  * Body: { sessionId: string, studentId: string }
- * Confirms a completed Checkout Session and marks the student as paid.
- * Family Plan: also marks siblings under the same parent email as paid.
+ * Confirms Checkout and marks student(s) paid with plan expiry / quotas.
  */
 export async function POST(request: Request) {
   try {
@@ -27,27 +30,39 @@ export async function POST(request: Request) {
 
     if (session.payment_status !== "paid" && session.status !== "complete") {
       return NextResponse.json(
-        { message: "Payment was not successful", stripeStatus: session.payment_status },
+        {
+          message: "Payment was not successful",
+          stripeStatus: session.payment_status,
+        },
         { status: 402 }
       );
     }
 
-    const metaStudentId = session.metadata?.studentId || session.client_reference_id;
+    const metaStudentId =
+      session.metadata?.studentId || session.client_reference_id;
     if (metaStudentId && metaStudentId !== studentId) {
-      return NextResponse.json({ message: "Session does not match this student" }, { status: 403 });
+      return NextResponse.json(
+        { message: "Session does not match this student" },
+        { status: 403 }
+      );
     }
 
     const planId = session.metadata?.planId ?? "";
     const planTitle = session.metadata?.planTitle ?? "";
 
-    let planExpiresAt: Date | null = null;
-    if (planId) {
+    let planExpiresAt = computePlanExpiresAt(planTitle);
+    const planQuota = buildQuotaState(planTitle);
+
+    // Unknown plans: fall back to CMS durationDays
+    if (!planExpiresAt && !planQuota && planId) {
       try {
         const planDoc = await getDoc(doc(db, "sitePricingPlans", planId));
         if (planDoc.exists()) {
           const plan = planDoc.data();
           if (plan.durationDays && plan.durationDays > 0) {
-            planExpiresAt = new Date(Date.now() + plan.durationDays * 24 * 60 * 60 * 1000);
+            planExpiresAt = new Date(
+              Date.now() + plan.durationDays * 24 * 60 * 60 * 1000
+            );
           }
         }
       } catch {
@@ -56,7 +71,9 @@ export async function POST(request: Request) {
     }
 
     const customerId =
-      typeof session.customer === "string" ? session.customer : session.customer?.id;
+      typeof session.customer === "string"
+        ? session.customer
+        : session.customer?.id;
 
     let paymentMethodId: string | undefined;
     let cardLast4: string | undefined;
@@ -90,7 +107,8 @@ export async function POST(request: Request) {
       planId: planId || null,
       planTitle: planTitle || null,
       paidAt: serverTimestamp(),
-      ...(planExpiresAt ? { planExpiresAt } : {}),
+      planExpiresAt: planExpiresAt ?? null,
+      planQuota: planQuota ?? null,
       ...(customerId ? { stripeCustomerId: customerId } : {}),
       ...(paymentMethodId
         ? {
@@ -123,6 +141,8 @@ export async function POST(request: Request) {
       currency: session.currency,
       studentsUpdated: updatedIds.length,
       family,
+      planExpiresAt: planExpiresAt?.toISOString() ?? null,
+      planQuota,
     });
   } catch (error: unknown) {
     console.error("Stripe verify error:", error);

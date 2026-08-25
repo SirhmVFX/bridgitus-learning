@@ -347,6 +347,32 @@ export default function AccountPage() {
                 </p>
               )}
 
+              {student.planQuota && (
+                <div className="mt-2 text-xs text-gray-600 space-y-0.5">
+                  <p>
+                    Lessons used:{" "}
+                    <span className="font-semibold">
+                      {student.planQuota.classesUsed}/{student.planQuota.classesAllowed}
+                    </span>
+                  </p>
+                  <p>
+                    Assessments used:{" "}
+                    <span className="font-semibold">
+                      {student.planQuota.assessmentsUsed}/{student.planQuota.assessmentsAllowed}
+                    </span>
+                  </p>
+                  {typeof student.planQuota.assignmentMinutesAllowed === "number" && (
+                    <p>
+                      Session minutes:{" "}
+                      <span className="font-semibold">
+                        {student.planQuota.assignmentMinutesUsed ?? 0}/
+                        {student.planQuota.assignmentMinutesAllowed}
+                      </span>
+                    </p>
+                  )}
+                </div>
+              )}
+
               {student.planExpiresAt && (() => {
                 const expiresDate = (student.planExpiresAt as unknown as { toDate: () => Date })?.toDate?.();
                 if (!expiresDate) return null;

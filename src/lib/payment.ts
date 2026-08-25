@@ -1,5 +1,6 @@
 import type { Student } from "./firestore";
 import { Timestamp } from "firebase/firestore";
+import { isQuotaExhausted } from "./planEntitlements";
 
 /** Parse plan expiry date from Firestore Timestamp or ISO string. */
 export function getPlanExpiryDate(student: Student): Date | null {
@@ -8,7 +9,11 @@ export function getPlanExpiryDate(student: Student): Date | null {
   if (raw instanceof Timestamp) return raw.toDate();
 
   const candidate = raw as unknown as { toDate?: unknown };
-  if (typeof candidate === "object" && candidate !== null && typeof candidate.toDate === "function") {
+  if (
+    typeof candidate === "object" &&
+    candidate !== null &&
+    typeof candidate.toDate === "function"
+  ) {
     return (candidate.toDate as () => Date)();
   }
 
@@ -26,7 +31,9 @@ export function isPlanExpired(student: Student): boolean {
 export function isPaymentCurrent(student: Student): boolean {
   if (student.paymentStatus === "waived") return true;
   if (student.paymentStatus !== "paid") return false;
-  return !isPlanExpired(student);
+  if (isPlanExpired(student)) return false;
+  if (isQuotaExhausted(student)) return false;
+  return true;
 }
 
 export function getDaysRemaining(student: Student): number | null {
