@@ -87,7 +87,7 @@ function ResetPasswordForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-[#f4f6fb]">
-      <div className="w-full max-w-md bg-white border border-gray-100 shadow-sm p-8">
+      <div className="w-full max-w-md bg-white border border-gray-100 p-8">
         <div className="text-center mb-6">
           <Image
             src="/assets/FullLogo.png"

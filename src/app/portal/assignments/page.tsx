@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import PortalLayout from "@/components/PortalLayout";
+import Pagination from "@/components/Pagination";
 import { useStudentAuth } from "@/lib/studentAuth";
+import { paginate } from "@/lib/pagination";
 import {
   getAssignmentsForStudent,
   getSubmission,
@@ -133,32 +135,32 @@ function AssignmentCard({
       : "bg-secondary-color";
 
   return (
-    <div className={`bg-white border overflow-hidden transition-all ${!isUnlocked ? "opacity-65 border-gray-200" : isOverdue && status === "not_started" ? "border-red-200" : "border-gray-200"}`}>
+    <div className={`portal-card hover-lift !p-0 overflow-hidden transition-all ${!isUnlocked ? "opacity-65" : isOverdue && status === "not_started" ? "!border-red-200" : ""}`}>
       <div className={`h-1 ${!isUnlocked ? "bg-gray-200" : assignment.type === "ixl" ? "bg-orange-500" : assignment.type === "deltamath" ? "bg-blue-600" : "bg-secondary-color"}`} />
       <div className="p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 flex-wrap mb-1">
-              <span className={`text-white text-xs font-bold px-2 py-0.5 ${platformColor}`}>
+              <span className={`text-white text-xs font-bold px-2.5 py-0.5 rounded-full ${platformColor}`}>
                 {TYPE_LABELS[assignment.type] ?? assignment.type}
               </span>
-              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5">{assignment.subject}</span>
-              <span className={`text-xs px-2 py-0.5 font-medium ${statusStyle[status]}`}>{statusLabel[status]}</span>
+              <span className="text-xs bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full">{assignment.subject}</span>
+              <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${statusStyle[status]}`}>{statusLabel[status]}</span>
               {!isUnlocked && (
-                <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 font-semibold flex items-center gap-0.5">
+                <span className="text-xs bg-amber-100 text-amber-700 px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-0.5">
                   <MdLock size={11} /> Locked
                 </span>
               )}
               {isOverdue && status === "not_started" && isUnlocked && (
-                <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 font-semibold">Overdue</span>
+                <span className="text-xs bg-red-100 text-red-600 px-2.5 py-0.5 rounded-full font-semibold">Overdue</span>
               )}
             </div>
 
-            <h3 className={`font-semibold text-lg ${!isUnlocked ? "text-gray-400" : "text-gray-900"}`}>{assignment.title}</h3>
+            <h3 className={`font-semibold text-lg ${!isUnlocked ? "text-gray-400" : "text-[#001233]"}`}>{assignment.title}</h3>
             {assignment.description && <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{assignment.description}</p>}
 
             {!isUnlocked && prerequisiteTitle && (
-              <div className="mt-2 flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 px-3 py-2">
+              <div className="mt-2 flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
                 <MdMenuBook size={15} className="shrink-0" />
                 Complete <strong className="mx-1">&ldquo;{prerequisiteTitle}&rdquo;</strong> to unlock this assignment.
               </div>
@@ -177,8 +179,8 @@ function AssignmentCard({
               )}
             </div>
 
-            {status === "graded" && submission?.feedback && (
-              <div className="mt-2 p-3 bg-emerald-50 border border-emerald-100">
+              {status === "graded" && submission?.feedback && (
+              <div className="mt-2 p-3 rounded-xl bg-emerald-50 border border-emerald-100">
                 <p className="text-xs font-semibold text-emerald-700 mb-0.5">Teacher Feedback:</p>
                 <p className="text-xs text-emerald-600">{submission.feedback}</p>
               </div>
@@ -193,7 +195,7 @@ function AssignmentCard({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={status === "not_started" && !hasQuiz ? markStarted : undefined}
-                  className={`inline-flex items-center gap-1.5 text-white text-xs font-bold px-3 py-2 transition-colors ${assignment.type === "ixl" ? "bg-orange-500 hover:bg-orange-600" : "bg-blue-600 hover:bg-blue-700"}`}
+                  className={`inline-flex items-center gap-1.5 text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors ${assignment.type === "ixl" ? "bg-orange-500 hover:bg-orange-600" : "bg-blue-600 hover:bg-blue-700"}`}
                 >
                   <MdOpenInNew size={13} />
                   Open in {assignment.type === "ixl" ? "IXL" : "DeltaMath"}
@@ -204,7 +206,7 @@ function AssignmentCard({
                 <button
                   type="button"
                   onClick={() => onStartQuiz(assignment)}
-                  className="bg-secondary-color text-white text-xs font-bold px-3 py-2 hover:bg-secondary-color/90 transition-colors"
+                  className="portal-btn-primary !text-xs !px-3 !py-2"
                 >
                   Take Quiz
                 </button>
@@ -214,7 +216,7 @@ function AssignmentCard({
                 <button
                   type="button"
                   onClick={() => onViewResults(assignment, submission)}
-                  className="bg-emerald-600 text-white text-xs font-bold px-3 py-2 hover:bg-emerald-700 transition-colors"
+                  className="rounded-xl bg-emerald-600 text-white text-xs font-bold px-3 py-2 hover:bg-emerald-700 transition-colors"
                 >
                   View Results
                 </button>
@@ -224,7 +226,7 @@ function AssignmentCard({
                 <button
                   type="button"
                   onClick={() => onStartQuiz(assignment)}
-                  className="border border-secondary-color text-secondary-color text-xs font-bold px-3 py-2 hover:bg-secondary-color hover:text-white transition-colors"
+                  className="rounded-xl border border-secondary-color text-secondary-color text-xs font-bold px-3 py-2 hover:bg-secondary-color hover:text-white transition-colors"
                 >
                   Retake Quiz
                 </button>
@@ -246,7 +248,7 @@ function AssignmentCard({
                   type="button"
                   onClick={markStarted}
                   disabled={marking}
-                  className="bg-secondary-color text-white text-xs font-bold px-3 py-2 hover:bg-secondary-color/90 transition-colors disabled:opacity-60"
+                  className="portal-btn-primary !text-xs !px-3 !py-2 disabled:opacity-60"
                 >
                   Start
                 </button>
@@ -274,7 +276,7 @@ function AssignmentCard({
                     href={assignment.fileUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-3 inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 text-xs font-semibold px-3 py-2 hover:bg-gray-200 transition-colors"
+                    className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-gray-100 text-gray-700 text-xs font-semibold px-3 py-2 hover:bg-gray-200 transition-colors"
                   >
                     <MdLink size={13} />
                     {assignment.fileName ?? "Download file"}
@@ -403,30 +405,30 @@ function QuizResultPanel({
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-white border border-gray-200 p-4 text-center">
+        <div className="stat-card text-center !py-4">
           <p className={`text-3xl font-black ${(submission.passed ?? true) ? "text-emerald-600" : "text-red-500"}`}>
             {submission.percentage ?? 0}%
           </p>
-          <p className="text-xs text-gray-500 mt-0.5">Score</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400 mt-0.5">Score</p>
         </div>
-        <div className="bg-white border border-gray-200 p-4 text-center">
-          <p className="text-3xl font-black text-gray-900">
+        <div className="stat-card text-center !py-4">
+          <p className="text-3xl font-black text-[#001233]">
             {submission.score ?? 0}/{submission.totalPoints ?? 0}
           </p>
-          <p className="text-xs text-gray-500 mt-0.5">Points</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400 mt-0.5">Points</p>
         </div>
-        <div className="bg-white border border-gray-200 p-4 text-center">
+        <div className="stat-card text-center !py-4">
           <p className={`text-lg font-bold ${(submission.passed ?? true) ? "text-emerald-600" : "text-red-500"}`}>
             {(submission.passed ?? true) ? "Passed" : "Needs practice"}
           </p>
-          <p className="text-xs text-gray-500 mt-0.5">{assignment.title}</p>
+          <p className="text-xs text-slate-500 mt-0.5">{assignment.title}</p>
         </div>
       </div>
 
-      {simError && <p className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2">{simError}</p>}
+      {simError && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2">{simError}</p>}
 
-      <div className="bg-white border border-gray-200 overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100 font-semibold text-gray-900 text-sm">
+      <div className="portal-card !p-0 overflow-hidden">
+        <div className="px-4 py-3 border-b border-gray-100 font-semibold text-[#001233] text-sm">
           Question breakdown
         </div>
         <div className="divide-y divide-gray-50">
@@ -437,7 +439,7 @@ function QuizResultPanel({
               <div key={q.id}>
                 <div className={`px-4 py-3 flex items-start justify-between gap-3 ${correct ? "bg-emerald-50/50" : "bg-red-50/40"}`}>
                   <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <div className={`w-7 h-7 flex items-center justify-center text-xs font-bold shrink-0 ${correct ? "bg-emerald-500 text-white" : "bg-red-500 text-white"}`}>
+                    <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${correct ? "bg-emerald-500 text-white" : "bg-red-500 text-white"}`}>
                       {i + 1}
                     </div>
                     <p className="text-sm font-medium text-gray-800 leading-snug">{q.text}</p>
@@ -500,10 +502,10 @@ function QuizResultPanel({
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <button onClick={onBack} className="px-4 py-2 border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+        <button onClick={onBack} className="portal-btn-secondary">
           Back to assignments
         </button>
-        <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+        <button onClick={() => window.print()} className="flex items-center gap-2 portal-btn-secondary">
           <MdPrint size={15} /> Print
         </button>
         {questions.some((q) => !isCorrect(q)) && (
@@ -511,13 +513,13 @@ function QuizResultPanel({
             type="button"
             onClick={handlePracticeAllWrong}
             disabled={creatingSimFor === "__all__"}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-700 text-white text-sm font-semibold hover:bg-purple-800 disabled:opacity-60"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-700 text-white text-sm font-semibold hover:bg-purple-800 disabled:opacity-60"
           >
             <MdAutoAwesome size={15} />
             {creatingSimFor === "__all__" ? "Building practice…" : "AI Practice wrong questions"}
           </button>
         )}
-        <a href="/portal/practice" className="flex items-center gap-2 px-4 py-2 border border-purple-300 text-purple-800 text-sm font-semibold hover:bg-purple-50">
+        <a href="/portal/practice" className="flex items-center gap-2 px-4 py-2 rounded-xl border border-purple-300 text-purple-800 text-sm font-semibold hover:bg-purple-50">
           <MdAutoAwesome size={15} /> Open AI Practice
         </a>
       </div>
@@ -631,7 +633,7 @@ function QuizRunner({
 
   if (!questions.length) {
     return (
-      <div className="bg-white border border-gray-200 p-8 text-center">
+      <div className="portal-card p-8 text-center">
         <p className="text-gray-600">This quiz is not configured yet. Please contact your teacher.</p>
         <button type="button" onClick={onCancel} className="mt-4 text-sm font-semibold text-secondary-color hover:underline">
           Back to assignments
@@ -641,17 +643,17 @@ function QuizRunner({
   }
 
   return (
-    <div className="space-y-5 bg-white border border-gray-200 p-6">
+    <div className="space-y-5 portal-card">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">{assignment.title}</h2>
+          <h2 className="text-xl font-semibold text-[#001233]">{assignment.title}</h2>
           <p className="text-sm text-gray-500 mt-1">{assignment.description}</p>
           <p className="text-xs text-gray-400 mt-2">{questions.length} questions · {totalPoints} points total</p>
         </div>
         <button type="button" onClick={onCancel} className="text-xs text-gray-500 hover:text-gray-700">Cancel</button>
       </div>
 
-      {error && <div className="p-3 bg-red-50 border border-red-200 text-sm text-red-700">{error}</div>}
+      {error && <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">{error}</div>}
 
       <div className="space-y-4">
         {questions.map((question, index) => (
@@ -725,7 +727,7 @@ function QuizRunner({
           type="button"
           onClick={handleSubmit}
           disabled={submitting}
-          className="bg-secondary-color text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-secondary-color/90 disabled:opacity-60"
+          className="portal-btn-primary disabled:opacity-60"
         >
           {submitting ? "Submitting…" : "Submit Quiz"}
         </button>
@@ -747,6 +749,7 @@ export default function AssignmentsPage() {
   const [activeQuiz, setActiveQuiz] = useState<Assignment | null>(null);
   const [resultView, setResultView] = useState<{ assignment: Assignment; submission: AssignmentSubmission } | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
+  const [page, setPage] = useState(1);
 
   async function loadAssignments() {
     if (!student?.grade || !student?.id) return;
@@ -779,7 +782,12 @@ export default function AssignmentsPage() {
     loadAssignments();
   }, [student]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [filter]);
+
   const filtered = filter === "all" ? assignments : assignments.filter((a) => a.type === filter);
+  const pageSlice = paginate(filtered, page);
   const ixlCount = assignments.filter((a) => a.type === "ixl").length;
   const deltaMathCount = assignments.filter((a) => a.type === "deltamath").length;
 
@@ -797,21 +805,22 @@ export default function AssignmentsPage() {
 
   return (
     <PortalLayout>
-      <div className="max-w-4xl mx-auto space-y-5">
+      <div className="w-full space-y-5">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Assignments</h1>
-          <p className="text-gray-500 text-sm mt-0.5">Your tasks, IXL exercises, and DeltaMath practice</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-1">Tasks</p>
+          <h1 className="text-2xl lg:text-[1.75rem] font-extrabold text-[#001233] tracking-tight">Assignments</h1>
+          <p className="text-slate-500 text-sm mt-1">Your tasks, IXL exercises, and DeltaMath practice</p>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
-          <a href="https://www.ixl.com" target="_blank" rel="noopener noreferrer" className="bg-orange-500 text-white p-4 flex items-center justify-between hover:bg-orange-600 transition-colors">
+          <a href="https://www.ixl.com" target="_blank" rel="noopener noreferrer" className="rounded-2xl bg-orange-500 text-white p-4 flex items-center justify-between hover:bg-orange-600 transition-colors border border-orange-600">
             <div>
               <p className="font-bold text-lg">IXL Learning</p>
               <p className="text-white/80 text-sm">{ixlCount} assignment{ixlCount !== 1 ? "s" : ""} assigned</p>
             </div>
             <MdOpenInNew size={22} className="text-white/70" />
           </a>
-          <a href="https://www.deltamath.com" target="_blank" rel="noopener noreferrer" className="bg-blue-600 text-white p-4 flex items-center justify-between hover:bg-blue-700 transition-colors">
+          <a href="https://www.deltamath.com" target="_blank" rel="noopener noreferrer" className="rounded-2xl bg-blue-600 text-white p-4 flex items-center justify-between hover:bg-blue-700 transition-colors border border-blue-700">
             <div>
               <p className="font-bold text-lg">DeltaMath</p>
               <p className="text-white/80 text-sm">{deltaMathCount} assignment{deltaMathCount !== 1 ? "s" : ""} assigned</p>
@@ -826,20 +835,20 @@ export default function AssignmentsPage() {
               key={value}
               type="button"
               onClick={() => setFilter(value)}
-              className={`px-4 py-1.5 text-sm font-medium transition-all border ${filter === value ? "bg-secondary-color text-white border-secondary-color" : "bg-white border-gray-200 text-gray-600 hover:border-secondary-color"}`}
+              className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all border ${filter === value ? "bg-[#001233] text-white border-[#001233]" : "bg-white border-gray-200 text-gray-600 hover:border-[#00369b]"}`}
             >
               {value === "all" ? "All" : TYPE_LABELS[value]}
             </button>
           ))}
-          <span className="ml-auto text-xs text-gray-400 self-center">{filtered.length} assignment{filtered.length !== 1 ? "s" : ""}</span>
+          <span className="ml-auto text-xs text-slate-400 self-center">{filtered.length} assignment{filtered.length !== 1 ? "s" : ""}</span>
         </div>
 
         {loading ? (
-          <div className="space-y-3">{[...Array(3)].map((_, index) => <div key={index} className="bg-white border h-32 animate-pulse" />)}</div>
+          <div className="space-y-3">{[...Array(3)].map((_, index) => <div key={index} className="portal-card h-32 animate-pulse bg-slate-100" />)}</div>
         ) : filtered.length === 0 ? (
-          <div className="bg-white border border-gray-200 p-16 text-center">
-            <MdAssignment size={48} className="mx-auto text-gray-300 mb-3" />
-            <p className="text-gray-500 font-medium">No assignments yet.</p>
+          <div className="portal-card p-16 text-center">
+            <MdAssignment size={48} className="mx-auto text-slate-300 mb-3" />
+            <p className="text-slate-500 font-medium">No assignments yet.</p>
           </div>
         ) : resultView ? (
           <QuizResultPanel
@@ -859,7 +868,7 @@ export default function AssignmentsPage() {
           />
         ) : (
           <div className="space-y-4">
-            {filtered.map((assignment) => (
+            {pageSlice.items.map((assignment) => (
               <AssignmentCard
                 key={assignment.id}
                 assignment={assignment}
@@ -872,6 +881,7 @@ export default function AssignmentsPage() {
                 onViewResults={(a, s) => setResultView({ assignment: a, submission: s })}
               />
             ))}
+            <Pagination slice={pageSlice} onPageChange={setPage} />
           </div>
         )}
       </div>

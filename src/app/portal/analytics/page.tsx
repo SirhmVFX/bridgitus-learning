@@ -180,7 +180,7 @@ function DigitBoxes({ value }: { value: number }) {
   return (
     <div className="flex gap-1.5">
       {String(value).split("").map((d, i) => (
-        <span key={i} className="w-10 h-12 sm:w-12 sm:h-14 bg-white text-secondary-color text-2xl sm:text-3xl font-black flex items-center justify-center shadow-sm">
+        <span key={i} className="w-10 h-12 sm:w-12 sm:h-14 rounded-xl bg-white text-secondary-color text-2xl sm:text-3xl font-black flex items-center justify-center">
           {d}
         </span>
       ))}
@@ -347,23 +347,24 @@ export default function StudentAnalyticsPage() {
 
   return (
     <PortalLayout>
-      <div className="max-w-4xl mx-auto space-y-5">
+      <div className="w-full space-y-5">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Analytics</h1>
-          <p className="text-gray-500 text-sm mt-0.5">Your learning activity, time spent and skill progress</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-1">Insights</p>
+          <h1 className="text-2xl lg:text-[1.75rem] font-extrabold text-[#001233] tracking-tight">My Analytics</h1>
+          <p className="text-slate-500 text-sm mt-1">Your learning activity, time spent and skill progress</p>
         </div>
 
         {loading ? (
           <div className="space-y-4">
-            <div className="bg-white border h-36 animate-pulse" />
+            <div className="portal-card h-36 animate-pulse bg-slate-100" />
             <div className="grid sm:grid-cols-3 gap-4">
-              {[...Array(3)].map((_, i) => <div key={i} className="bg-white border h-28 animate-pulse" />)}
+              {[...Array(3)].map((_, i) => <div key={i} className="stat-card h-28 animate-pulse bg-slate-100" />)}
             </div>
           </div>
         ) : (
           <>
             {/* IXL-style banner */}
-            <div className="bg-secondary-color text-white p-6">
+            <div className="rounded-2xl bg-gradient-to-br from-[#001233] via-[#00369b] to-[#0050c8] text-white p-6/20">
               <div className="flex items-center justify-center flex-wrap gap-4 text-center">
                 <p className="text-sm sm:text-base font-bold uppercase tracking-wide">
                   This year, you&apos;ve answered
@@ -375,48 +376,48 @@ export default function StudentAnalyticsPage() {
 
             {/* Summary tiles */}
             <div className="grid sm:grid-cols-3 gap-4">
-              <div className="bg-white border border-gray-200 p-5 flex items-center gap-4">
-                <div className="w-11 h-11 bg-emerald-50 flex items-center justify-center shrink-0">
-                  <MdQuiz size={22} className="text-emerald-600" />
+              <div className="stat-card">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400">Answered</p>
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                    <MdQuiz size={18} className="text-emerald-600" />
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-gray-400 uppercase tracking-wide">Answered</p>
-                  <p className="text-2xl font-black text-gray-900">{answeredThisYear.length}</p>
-                  <p className="text-xs text-gray-400">questions this year</p>
-                </div>
+                <p className="text-3xl font-extrabold text-[#001233] mt-3 tracking-tight">{answeredThisYear.length}</p>
+                <p className="text-xs text-slate-400 mt-1">questions this year</p>
               </div>
-              <div className="bg-white border border-gray-200 p-5 flex items-center gap-4">
-                <div className="w-11 h-11 bg-blue-50 flex items-center justify-center shrink-0">
-                  <MdTimer size={22} className="text-blue-600" />
+              <div className="stat-card">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400">Spent</p>
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                    <MdTimer size={18} className="text-blue-600" />
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-gray-400 uppercase tracking-wide">Spent</p>
-                  <p className="text-2xl font-black text-gray-900">{formatStudyTime(yearSeconds)}</p>
-                  <p className="text-xs text-gray-400">learning this year</p>
-                </div>
+                <p className="text-3xl font-extrabold text-[#001233] mt-3 tracking-tight">{formatStudyTime(yearSeconds)}</p>
+                <p className="text-xs text-slate-400 mt-1">learning this year</p>
               </div>
-              <div className="bg-white border border-gray-200 p-5 flex items-center gap-4">
-                <div className="w-11 h-11 bg-purple-50 flex items-center justify-center shrink-0">
-                  <MdExtension size={22} className="text-purple-600" />
+              <div className="stat-card">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400">Made progress in</p>
+                  <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
+                    <MdExtension size={18} className="text-purple-600" />
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-gray-400 uppercase tracking-wide">Made progress in</p>
-                  <p className="text-2xl font-black text-gray-900">{skillsProgressed}</p>
-                  <p className="text-xs text-gray-400">skills</p>
-                </div>
+                <p className="text-3xl font-extrabold text-[#001233] mt-3 tracking-tight">{skillsProgressed}</p>
+                <p className="text-xs text-slate-400 mt-1">skills</p>
               </div>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
               {/* Skill progress mountain */}
-              <div className="bg-white border border-gray-200 p-5">
+              <div className="portal-card">
                 <SkillMountainChart
                   mastered={skillsMastered}
                   proficient={skillsProficient}
                   practised={skillsPractised}
                 />
                 {skillsPractised === 0 && (
-                  <p className="text-xs text-gray-400 mt-4">
+                  <p className="text-xs text-slate-400 mt-4">
                     Complete tests, quiz assignments, or{" "}
                     <Link href="/portal/practice" className="text-purple-700 font-semibold underline">AI practice</Link>
                     {" "}to start tracking your skills.
@@ -425,25 +426,25 @@ export default function StudentAnalyticsPage() {
               </div>
 
               {/* Time spent */}
-              <div className="bg-white border border-gray-200 p-5">
-                <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="portal-card">
+                <h2 className="font-semibold text-[#001233] mb-4 flex items-center gap-2">
                   <MdTimer size={16} className="text-blue-600" /> Time Spent
                 </h2>
                 <div className="grid grid-cols-3 divide-x divide-gray-100 text-center">
                   <div className="px-2">
-                    <p className="text-xl font-black text-gray-900">{formatStudyTime(todaySeconds)}</p>
-                    <p className="text-xs text-gray-400 mt-1">Today</p>
+                    <p className="text-xl font-black text-[#001233]">{formatStudyTime(todaySeconds)}</p>
+                    <p className="text-xs text-slate-400 mt-1">Today</p>
                   </div>
                   <div className="px-2">
-                    <p className="text-xl font-black text-gray-900">{formatStudyTime(weekSeconds)}</p>
-                    <p className="text-xs text-gray-400 mt-1">Last 7 days</p>
+                    <p className="text-xl font-black text-[#001233]">{formatStudyTime(weekSeconds)}</p>
+                    <p className="text-xs text-slate-400 mt-1">Last 7 days</p>
                   </div>
                   <div className="px-2">
-                    <p className="text-xl font-black text-gray-900">{formatStudyTime(yearSeconds)}</p>
-                    <p className="text-xs text-gray-400 mt-1">This year</p>
+                    <p className="text-xl font-black text-[#001233]">{formatStudyTime(yearSeconds)}</p>
+                    <p className="text-xs text-slate-400 mt-1">This year</p>
                   </div>
                 </div>
-                <p className="text-xs text-gray-400 mt-4 text-center">
+                <p className="text-xs text-slate-400 mt-4 text-center">
                   Active time in your portal — tracked automatically while you learn.
                 </p>
               </div>
@@ -451,11 +452,11 @@ export default function StudentAnalyticsPage() {
 
             {/* Practice by category — separate quiz vs assignment pies */}
             <div className="grid lg:grid-cols-2 gap-4">
-              <div className="bg-white border border-gray-200 p-5">
-                <h2 className="font-semibold text-gray-900 mb-1">Quizzes by Category</h2>
-                <p className="text-xs text-gray-400 mb-4">Portal tests only</p>
+              <div className="portal-card">
+                <h2 className="font-semibold text-[#001233] mb-1">Quizzes by Category</h2>
+                <p className="text-xs text-slate-400 mb-4">Portal tests only</p>
                 {quizCategoryRows.length === 0 ? (
-                  <p className="text-sm text-gray-400 py-6 text-center">
+                  <p className="text-sm text-slate-400 py-6 text-center">
                     No quiz data yet — try a{" "}
                     <Link href="/portal/tests" className="text-secondary-color font-semibold underline">portal test</Link>.
                   </p>
@@ -464,11 +465,11 @@ export default function StudentAnalyticsPage() {
                 )}
               </div>
 
-              <div className="bg-white border border-gray-200 p-5">
-                <h2 className="font-semibold text-gray-900 mb-1">Assignments by Category</h2>
-                <p className="text-xs text-gray-400 mb-4">Quiz assignments &amp; AI practice</p>
+              <div className="portal-card">
+                <h2 className="font-semibold text-[#001233] mb-1">Assignments by Category</h2>
+                <p className="text-xs text-slate-400 mb-4">Quiz assignments &amp; AI practice</p>
                 {assignmentCategoryRows.length === 0 ? (
-                  <p className="text-sm text-gray-400 py-6 text-center">
+                  <p className="text-sm text-slate-400 py-6 text-center">
                     No data yet — complete a{" "}
                     <Link href="/portal/assignments" className="text-secondary-color font-semibold underline">quiz assignment</Link>
                     {" "}or{" "}
@@ -481,33 +482,33 @@ export default function StudentAnalyticsPage() {
             </div>
 
             {/* Practice by month */}
-            <div className="bg-white border border-gray-200 p-5">
-              <h2 className="font-semibold text-gray-900 mb-4">Practice by Month · {currentYear}</h2>
+            <div className="portal-card">
+              <h2 className="font-semibold text-[#001233] mb-4">Practice by Month · {currentYear}</h2>
               <div className="flex items-end gap-1.5 h-44">
                 {monthCounts.map((count, i) => (
                   <div key={i} className="flex-1 flex flex-col items-center justify-end h-full gap-1">
                     {count > 0 && <span className="text-[10px] font-bold text-gray-600">{count}</span>}
-                    <div className="w-full bg-[#00c1ff] transition-all duration-500"
+                    <div className="w-full bg-[#00c1ff] rounded-t-md transition-all duration-500"
                       style={{ height: `${(count / maxMonth) * 100}%`, minHeight: count > 0 ? 3 : 0 }} />
-                    <span className="text-[10px] text-gray-400">{MONTH_LABELS[i]}</span>
+                    <span className="text-[10px] text-slate-400">{MONTH_LABELS[i]}</span>
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-gray-400 mt-3 text-center">Questions from tests, quiz assignments &amp; AI practice</p>
+              <p className="text-xs text-slate-400 mt-3 text-center">Questions from tests, quiz assignments &amp; AI practice</p>
             </div>
 
             {/* Practice CTA */}
-            <div className="bg-purple-50 border border-purple-200 p-4 flex items-center justify-between flex-wrap gap-3">
+            <div className="rounded-2xl bg-purple-50 border border-purple-200 p-4 flex items-center justify-between flex-wrap gap-3">
               <p className="text-sm text-purple-900 font-medium flex items-center gap-2">
                 <MdAutoAwesome size={16} /> Keep your streak going — practise your weakest topics now.
               </p>
               <div className="flex flex-wrap gap-2">
                 <Link href="/portal/assignments"
-                  className="border border-purple-300 text-purple-800 text-sm font-bold px-4 py-2 hover:bg-purple-100 transition-colors">
+                  className="rounded-xl border border-purple-300 text-purple-800 text-sm font-bold px-4 py-2 hover:bg-purple-100 transition-colors">
                   Quiz Assignments
                 </Link>
                 <Link href="/portal/practice"
-                  className="bg-purple-700 hover:bg-purple-800 text-white text-sm font-bold px-4 py-2 transition-colors">
+                  className="rounded-xl bg-purple-700 hover:bg-purple-800 text-white text-sm font-bold px-4 py-2 transition-colors">
                   Start AI Practice
                 </Link>
               </div>

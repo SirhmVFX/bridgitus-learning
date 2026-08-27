@@ -3,7 +3,9 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import PortalLayout from "@/components/PortalLayout";
+import Pagination from "@/components/Pagination";
 import { useStudentAuth } from "@/lib/studentAuth";
+import { paginate } from "@/lib/pagination";
 import {
   getTestsByGrade,
   getAllStudentAttempts,
@@ -112,29 +114,29 @@ function AttemptResultPanel({
     <div className="space-y-4">
       {/* Summary */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-white border border-gray-200 p-4 text-center">
+        <div className="stat-card text-center !py-4">
           <p
             className={`text-3xl font-black ${attempt.passed ? "text-emerald-600" : "text-red-500"}`}
           >
             {attempt.percentage}%
           </p>
-          <p className="text-xs text-gray-500 mt-0.5">Score</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400 mt-0.5">Score</p>
         </div>
-        <div className="bg-white border border-gray-200 p-4 text-center">
-          <p className="text-3xl font-black text-gray-900">
+        <div className="stat-card text-center !py-4">
+          <p className="text-3xl font-black text-[#001233]">
             {attempt.score}/{attempt.totalPoints}
           </p>
-          <p className="text-xs text-gray-500 mt-0.5">Points</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400 mt-0.5">Points</p>
         </div>
         <div
-          className={`border p-4 text-center ${attempt.passed ? "bg-emerald-50 border-emerald-300" : "bg-red-50 border-red-200"}`}
+          className={`rounded-2xl border p-4 text-center ${attempt.passed ? "bg-emerald-50 border-emerald-300" : "bg-red-50 border-red-200"}`}
         >
           <p
             className={`text-xl font-black ${attempt.passed ? "text-emerald-700" : "text-red-600"}`}
           >
             {attempt.passed ? "PASSED" : "FAILED"}
           </p>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Pass mark: {test.passMark}%
           </p>
         </div>
@@ -160,14 +162,14 @@ function AttemptResultPanel({
             return (
               <div
                 key={q.id}
-                className={`border overflow-hidden ${correct ? "border-emerald-200" : "border-red-200"}`}
+                className={`rounded-2xl border overflow-hidden ${correct ? "border-emerald-200" : "border-red-200"}`}
               >
                 <div
                   className={`px-4 py-3 flex items-start justify-between gap-3 ${correct ? "bg-emerald-50" : "bg-red-50"}`}
                 >
                   <div className="flex items-start gap-3 flex-1 min-w-0">
                     <div
-                      className={`w-7 h-7 flex items-center justify-center text-xs font-bold shrink-0 ${correct ? "bg-emerald-500 text-white" : "bg-red-500 text-white"}`}
+                      className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${correct ? "bg-emerald-500 text-white" : "bg-red-500 text-white"}`}
                     >
                       {i + 1}
                     </div>
@@ -181,7 +183,7 @@ function AttemptResultPanel({
                         onClick={() => handleCreateSimilar(q)}
                         disabled={creatingSimFor === q.id}
                         title="Practice similar questions"
-                        className="flex items-center gap-1 text-xs bg-purple-100 text-purple-700 font-semibold px-2 py-1 hover:bg-purple-200 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-1 text-xs rounded-full bg-purple-100 text-purple-700 font-semibold px-2.5 py-1 hover:bg-purple-200 transition-colors disabled:opacity-50"
                       >
                         {creatingSimFor === q.id ? (
                           <>
@@ -278,7 +280,7 @@ function AttemptResultPanel({
 
       {/* Teacher feedback */}
       {attempt.adminComment && (
-        <div className="bg-secondary-color/5 border border-secondary-color/20 p-4">
+        <div className="rounded-2xl bg-secondary-color/5 border border-secondary-color/20 p-4">
           <p className="text-xs font-semibold text-secondary-color mb-1">
             Teacher Feedback
           </p>
@@ -290,13 +292,13 @@ function AttemptResultPanel({
       <div className="flex gap-3">
         <button
           onClick={() => window.print()}
-          className="flex items-center gap-2 text-sm btn-secondary py-2"
+          className="flex items-center gap-2 text-sm portal-btn-secondary"
         >
           <MdPrint size={15} /> Print / Save as PDF
         </button>
         <Link
           href="/portal/practice"
-          className="flex items-center gap-2 text-sm bg-purple-600 text-white font-semibold px-4 py-2 hover:bg-purple-700 transition-colors"
+          className="flex items-center gap-2 text-sm rounded-xl bg-purple-600 text-white font-semibold px-4 py-2 hover:bg-purple-700 transition-colors"
         >
           <MdAutoAwesome size={15} /> Go to Practice
         </Link>
@@ -395,7 +397,7 @@ function TestRunner({
   const answered = Object.keys(answers).length;
 
   return (
-    <div className="bg-white border border-gray-200 overflow-hidden">
+    <div className="portal-card !p-0 overflow-hidden">
       <div className="bg-secondary-color text-white px-6 py-4 flex items-center justify-between">
         <div>
           <h2 className="font-bold text-lg">{test.title}</h2>
@@ -404,12 +406,12 @@ function TestRunner({
           </p>
         </div>
         <div className="flex items-center gap-3 text-sm">
-          <span className="bg-white/20 px-3 py-1">
+          <span className="bg-white/20 rounded-full px-3 py-1">
             {answered}/{test.questions.length} answered
           </span>
           {timeLeft !== null && (
             <span
-              className={`bg-white/20 px-3 py-1 flex items-center gap-1 ${timeLeft < 60 ? "bg-red-600/80" : ""}`}
+              className={`bg-white/20 rounded-full px-3 py-1 flex items-center gap-1 ${timeLeft < 60 ? "bg-red-600/80" : ""}`}
             >
               <MdTimer size={14} />
               {formatTime(timeLeft)}
@@ -425,7 +427,7 @@ function TestRunner({
       </div>
       <div className="p-6">
         <div className="flex items-center gap-3 mb-4 flex-wrap">
-          <span className="w-8 h-8 bg-secondary-color text-white text-sm font-bold flex items-center justify-center shrink-0">
+          <span className="w-8 h-8 rounded-xl bg-secondary-color text-white text-sm font-bold flex items-center justify-center shrink-0">
             {current + 1}
           </span>
           <span className="text-xs text-gray-400 font-medium uppercase tracking-wide">
@@ -463,13 +465,13 @@ function TestRunner({
             {q.options.map((opt, i) => (
               <label
                 key={i}
-                className={`flex items-center gap-3 p-4 border-2 cursor-pointer transition-all ${answers[q.id] === opt ? "border-secondary-color bg-secondary-color/5" : "border-gray-200 hover:border-gray-300"}`}
+                className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${answers[q.id] === opt ? "border-secondary-color bg-secondary-color/5" : "border-gray-200 hover:border-gray-300"}`}
               >
                 <div
-                  className={`w-5 h-5 border-2 shrink-0 flex items-center justify-center ${answers[q.id] === opt ? "border-secondary-color bg-secondary-color" : "border-gray-300"}`}
+                  className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center ${answers[q.id] === opt ? "border-secondary-color bg-secondary-color" : "border-gray-300"}`}
                 >
                   {answers[q.id] === opt && (
-                    <div className="w-2 h-2 bg-white" />
+                    <div className="w-2 h-2 rounded-full bg-white" />
                   )}
                 </div>
                 <input
@@ -491,7 +493,7 @@ function TestRunner({
             {["True", "False"].map((opt) => (
               <label
                 key={opt}
-                className={`flex-1 flex items-center justify-center gap-2 p-4 border-2 cursor-pointer font-semibold transition-all ${answers[q.id] === opt.toLowerCase() ? "border-secondary-color bg-secondary-color/5 text-secondary-color" : "border-gray-200 hover:border-gray-300 text-gray-600"}`}
+                className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-xl border-2 cursor-pointer font-semibold transition-all ${answers[q.id] === opt.toLowerCase() ? "border-secondary-color bg-secondary-color/5 text-secondary-color" : "border-gray-200 hover:border-gray-300 text-gray-600"}`}
               >
                 <input
                   type="radio"
@@ -515,7 +517,7 @@ function TestRunner({
             onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
             placeholder="Type your answer here…"
             rows={4}
-            className="w-full p-4 border-2 border-gray-200 text-sm outline-none focus:border-secondary-color resize-none transition-colors"
+            className="w-full p-4 rounded-xl border-2 border-gray-200 text-sm outline-none focus:border-secondary-color resize-none transition-colors"
           />
         )}
       </div>
@@ -524,7 +526,7 @@ function TestRunner({
         <button
           onClick={() => setCurrent(Math.max(0, current - 1))}
           disabled={current === 0}
-          className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-sm font-medium text-gray-600 disabled:opacity-40 hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 disabled:opacity-40 hover:bg-gray-50 transition-colors"
         >
           <MdArrowBack size={16} /> Previous
         </button>
@@ -533,7 +535,7 @@ function TestRunner({
             <button
               key={i}
               onClick={() => setCurrent(i)}
-              className={`w-7 h-7 text-xs font-bold transition-all ${i === current ? "bg-secondary-color text-white" : answers[test.questions[i].id] ? "bg-emerald-500 text-white" : "bg-gray-100 text-gray-500"}`}
+              className={`w-7 h-7 rounded-full text-xs font-bold transition-all ${i === current ? "bg-secondary-color text-white" : answers[test.questions[i].id] ? "bg-emerald-500 text-white" : "bg-gray-100 text-gray-500"}`}
             >
               {i + 1}
             </button>
@@ -542,7 +544,7 @@ function TestRunner({
         {current < test.questions.length - 1 ? (
           <button
             onClick={() => setCurrent(current + 1)}
-            className="flex items-center gap-2 px-4 py-2 bg-secondary-color text-white text-sm font-medium hover:bg-secondary-color/90 transition-colors"
+            className="flex items-center gap-2 portal-btn-primary !py-2"
           >
             Next <MdArrowForward size={16} />
           </button>
@@ -550,7 +552,7 @@ function TestRunner({
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="flex items-center gap-2 px-5 py-2 bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:opacity-60 transition-colors"
+            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:opacity-60 transition-colors"
           >
             <MdSend size={16} />
             {submitting ? "Submitting…" : "Submit Test"}
@@ -578,6 +580,7 @@ export default function TestsPage() {
     attempt: TestAttempt;
     test: Test;
   } | null>(null);
+  const [page, setPage] = useState(1);
 
   async function loadData() {
     if (!student?.grade || !student?.id) return;
@@ -622,10 +625,12 @@ export default function TestsPage() {
     return isMaterialCompleted(completions, test.linkedMaterialId);
   }
 
+  const pageSlice = paginate(tests, page);
+
   if (activeTest && !submitted) {
     return (
       <PortalLayout>
-        <div className="max-w-3xl mx-auto space-y-4">
+        <div className="w-full space-y-4">
           <button
             onClick={() => setActiveTest(null)}
             className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700"
@@ -654,7 +659,7 @@ export default function TestsPage() {
   if (viewingResult) {
     return (
       <PortalLayout>
-        <div className="max-w-3xl mx-auto space-y-5">
+        <div className="w-full space-y-5">
           <button
             onClick={() => setViewingResult(null)}
             className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700"
@@ -662,10 +667,11 @@ export default function TestsPage() {
             <MdArrowBack size={16} /> Back to Tests
           </button>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-1">Results</p>
+            <h1 className="text-2xl lg:text-[1.75rem] font-extrabold text-[#001233] tracking-tight">
               {viewingResult.test.title}
             </h1>
-            <p className="text-gray-500 text-sm mt-0.5">
+            <p className="text-slate-500 text-sm mt-1">
               {viewingResult.test.subject} · Grade {viewingResult.test.grade} ·
               Attempt #{viewingResult.attempt.attemptNumber}
             </p>
@@ -682,16 +688,17 @@ export default function TestsPage() {
 
   return (
     <PortalLayout>
-      <div className="max-w-4xl mx-auto space-y-5">
+      <div className="w-full space-y-5">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Quizzes</h1>
-          <p className="text-gray-500 text-sm mt-0.5">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-1">Assess</p>
+          <h1 className="text-2xl lg:text-[1.75rem] font-extrabold text-[#001233] tracking-tight">Quizzes</h1>
+          <p className="text-slate-500 text-sm mt-1">
             Grade {student?.grade} quizzes
           </p>
         </div>
 
         {submitted && (
-          <div className="bg-emerald-50 border border-emerald-300 p-4 flex items-center gap-3">
+          <div className="rounded-2xl bg-emerald-50 border border-emerald-300 p-4 flex items-center gap-3">
             <MdCheckCircle size={22} className="text-emerald-600 shrink-0" />
             <div>
               <p className="text-sm font-semibold text-emerald-800">
@@ -708,17 +715,17 @@ export default function TestsPage() {
         {loading ? (
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="bg-white border h-32 animate-pulse" />
+              <div key={i} className="portal-card h-32 animate-pulse bg-slate-100" />
             ))}
           </div>
         ) : tests.length === 0 ? (
-          <div className="bg-white border border-gray-200 p-16 text-center">
-            <MdQuiz size={48} className="mx-auto text-gray-300 mb-3" />
-            <p className="text-gray-500 font-medium">No tests available yet.</p>
+          <div className="portal-card p-16 text-center">
+            <MdQuiz size={48} className="mx-auto text-slate-300 mb-3" />
+            <p className="text-slate-500 font-medium">No tests available yet.</p>
           </div>
         ) : (
           <div className="space-y-4">
-            {tests.map((test) => {
+            {pageSlice.items.map((test) => {
               const myAttempts = attemptsForTest(test.id!);
               const approved = myAttempts.filter(
                 (a) => a.status === "approved"
@@ -739,7 +746,7 @@ export default function TestsPage() {
               return (
                 <div
                   key={test.id}
-                  className={`bg-white border overflow-hidden ${!matUnlocked ? "opacity-70 border-gray-200" : "border-gray-200"}`}
+                  className={`portal-card hover-lift !p-0 overflow-hidden ${!matUnlocked ? "opacity-70" : ""}`}
                 >
                   <div
                     className={`h-1 ${!matUnlocked ? "bg-gray-200" : test.type === "exam" ? "bg-red-500" : "bg-secondary-color"}`}
@@ -749,11 +756,11 @@ export default function TestsPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <span
-                            className={`text-xs font-bold px-2 py-0.5 ${test.type === "exam" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"}`}
+                            className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${test.type === "exam" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"}`}
                           >
                             {test.type.toUpperCase()}
                           </span>
-                          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5">
+                          <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-0.5 rounded-full">
                             {test.subject}
                           </span>
                           {test.timeLimit && test.timeLimit > 0 && (
@@ -762,12 +769,12 @@ export default function TestsPage() {
                             </span>
                           )}
                           {!matUnlocked && (
-                            <span className="text-xs text-amber-700 bg-amber-100 px-2 py-0.5 flex items-center gap-0.5 font-semibold">
+                            <span className="text-xs text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full flex items-center gap-0.5 font-semibold">
                               <MdLock size={11} /> Locked
                             </span>
                           )}
                         </div>
-                        <h3 className="font-semibold text-gray-900 text-lg">
+                        <h3 className="font-semibold text-[#001233] text-lg">
                           {test.title}
                         </h3>
                         {test.description && (
@@ -778,7 +785,7 @@ export default function TestsPage() {
 
                         {/* Prerequisite notice */}
                         {!matUnlocked && linkedTitle && (
-                          <div className="mt-2 flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 px-3 py-2">
+                          <div className="mt-2 flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
                             <MdMenuBook size={15} className="shrink-0" />
                             Complete{" "}
                             <strong className="mx-1">
@@ -825,7 +832,7 @@ export default function TestsPage() {
                               setSubmitted(false);
                               setActiveTest(test);
                             }}
-                            className="bg-secondary-color text-white text-sm font-semibold px-4 py-2 hover:bg-secondary-color/90 transition-colors"
+                            className="portal-btn-primary !text-sm"
                           >
                             {myAttempts.length === 0 ? "Start Test" : "Retry"}
                           </button>
@@ -842,7 +849,7 @@ export default function TestsPage() {
                           {myAttempts.map((att) => (
                             <div
                               key={att.id}
-                              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold ${
+                              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
                                 att.status === "approved"
                                   ? att.passed
                                     ? "bg-emerald-100 text-emerald-700"
@@ -879,7 +886,7 @@ export default function TestsPage() {
                           ))}
                         </div>
                         {myAttempts.some((a) => a.adminComment) && (
-                          <div className="mt-2 p-3 bg-blue-50 border border-blue-100">
+                          <div className="mt-2 p-3 rounded-xl bg-blue-50 border border-blue-100">
                             <p className="text-xs font-semibold text-blue-700 mb-1">
                               Teacher Feedback:
                             </p>
@@ -898,6 +905,7 @@ export default function TestsPage() {
                 </div>
               );
             })}
+            <Pagination slice={pageSlice} onPageChange={setPage} />
           </div>
         )}
       </div>

@@ -29,42 +29,48 @@ import {
   MdPushPin,
   MdAutoAwesome,
   MdInsights,
+  MdSearch,
 } from "react-icons/md";
 
 const NAV = [
-  { href: "/portal/dashboard", label: "Dashboard", icon: MdDashboard },
+  { href: "/portal/dashboard", label: "Dashboard", icon: MdDashboard, group: "overview" },
   {
     href: "/portal/materials",
     label: "Learning Materials",
     icon: MdMenuBook,
     requiresPaid: true,
+    group: "learning",
   },
-  { href: "/portal/tests", label: "Quizzes", icon: MdQuiz, requiresPaid: true },
+  { href: "/portal/tests", label: "Quizzes", icon: MdQuiz, requiresPaid: true, group: "learning" },
   {
     href: "/portal/assignments",
     label: "Assignments",
     icon: MdAssignment,
     requiresPaid: true,
+    group: "learning",
   },
   {
     href: "/portal/practice",
     label: "AI Practice",
     icon: MdAutoAwesome,
     requiresPaid: true,
+    group: "learning",
   },
   {
     href: "/portal/progress",
     label: "My Progress",
     icon: MdBarChart,
     requiresPaid: true,
+    group: "insights",
   },
   {
     href: "/portal/analytics",
     label: "My Analytics",
     icon: MdInsights,
     requiresPaid: true,
+    group: "insights",
   },
-  { href: "/portal/account", label: "My Account", icon: MdPerson },
+  { href: "/portal/account", label: "My Account", icon: MdPerson, group: "account" },
 ];
 
 const FREE_PATHS = ["/portal/login", "/portal/payment", "/portal/suspended"];
@@ -79,6 +85,7 @@ export default function PortalLayout({
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -86,7 +93,6 @@ export default function PortalLayout({
   const isSuspended =
     student?.status === "suspended" || student?.status === "inactive";
 
-  // Persist expired status when plan date has passed
   useEffect(() => {
     if (!student?.id) return;
     if (student.paymentStatus === "paid" && isPlanExpired(student)) {
@@ -100,7 +106,6 @@ export default function PortalLayout({
       router.replace("/portal/login");
       return;
     }
-    // Suspended / inactive students can only reach the suspended page or login
     if (
       student &&
       isSuspended &&
@@ -120,7 +125,6 @@ export default function PortalLayout({
     }
   }, [user, student, loading, isPaid, isSuspended, pathname, router]);
 
-  // Load announcements for the notification bell
   useEffect(() => {
     if (student?.grade) {
       getAnnouncementsForStudent(student.grade)
@@ -129,8 +133,6 @@ export default function PortalLayout({
     }
   }, [student?.grade]);
 
-  // Time-online tracker: accumulate active (tab visible) seconds and flush to
-  // Firestore every minute and when the tab is hidden/closed.
   useEffect(() => {
     const studentId = student?.id;
     if (!studentId) return;
@@ -141,7 +143,6 @@ export default function PortalLayout({
       const now = Date.now();
       const sec = Math.round((now - lastTick) / 1000);
       lastTick = now;
-      // Ignore tiny slices and anything implausibly large (sleep/wake gaps)
       if (sec >= 5 && sec <= 15 * 60) {
         recordStudyTime(studentId, sec).catch(() => {});
       }
@@ -167,7 +168,6 @@ export default function PortalLayout({
     };
   }, [student?.id]);
 
-  // Close notif panel on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
@@ -180,8 +180,8 @@ export default function PortalLayout({
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f4f6fb]">
-        <div className="w-8 h-8 border-4 border-secondary-color border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#eef1f6]">
+        <div className="w-9 h-9 border-4 border-[#00369b] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -191,236 +191,267 @@ export default function PortalLayout({
     router.replace("/portal/login");
   }
 
+  function NavLink({
+    href,
+    icon: Icon,
+    label,
+    locked,
+  }: {
+    href: string;
+    icon: React.ElementType;
+    label: string;
+    locked?: boolean;
+  }) {
+    const isActive = pathname === href || pathname.startsWith(href + "/");
+    return (
+      <Link
+        href={locked ? "/portal/payment" : href}
+        onClick={() => setSidebarOpen(false)}
+        className={`nav-item ${isActive ? "active" : ""} ${locked ? "locked" : ""}`}
+      >
+        <Icon size={17} />
+        <span className="flex-1">{label}</span>
+        {locked && <MdLock size={13} className="opacity-50" />}
+      </Link>
+    );
+  }
+
   const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-secondary-color text-white">
-      {/* Logo */}
-      <div className="px-5 py-5 border-b border-white/10 flex items-center justify-between">
+    <div className="flex flex-col h-full bg-[#001233] text-white">
+      <div className="px-5 py-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-primary-color flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-[#00369b] flex items-center justify-center shrink-0 border border-white/10">
             <MdSchool size={20} className="text-white" />
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-blue-300">
+            <p className="text-[10px] uppercase tracking-[0.18em] text-[#00c1ff] font-bold">
               Bridgitus
             </p>
-            <p className="text-sm font-semibold">Learning Portal</p>
+            <p className="text-sm font-semibold text-white">Learning</p>
           </div>
         </div>
         <button
-          className="lg:hidden text-white/50 hover:text-white"
+          className="lg:hidden text-white/50 hover:text-white transition-colors"
           onClick={() => setSidebarOpen(false)}
         >
-          <MdClose size={18} />
+          <MdClose size={20} />
         </button>
       </div>
 
-      {/* Student info */}
-      <div className="px-5 py-4 border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary-color/30 flex items-center justify-center shrink-0">
-            {student?.avatar ? (
-              <Image
-                src={student.avatar}
-                alt="avatar"
-                width={40}
-                height={40}
-                className="object-cover w-10 h-10"
-              />
-            ) : (
-              <span className="text-white font-bold text-sm">
-                {student?.firstName?.[0] ?? "S"}
-              </span>
-            )}
-          </div>
-          <div className="overflow-hidden">
-            <p className="text-sm font-semibold truncate">
-              {student?.firstName} {student?.lastName}
-            </p>
-            <p className="text-xs text-blue-300 truncate">
-              {student?.studentId}
-            </p>
-          </div>
-        </div>
-        <div className="mt-2 flex items-center gap-2 flex-wrap">
+      <nav className="flex-1 py-2 overflow-y-auto">
+        <p className="nav-section-label">Overview</p>
+        {NAV.filter((n) => n.group === "overview").map((item) => (
+          <NavLink
+            key={item.href}
+            href={item.href}
+            icon={item.icon}
+            label={item.label}
+            locked={item.requiresPaid && !isPaid}
+          />
+        ))}
+
+        <p className="nav-section-label">Learning</p>
+        {NAV.filter((n) => n.group === "learning").map((item) => (
+          <NavLink
+            key={item.href}
+            href={item.href}
+            icon={item.icon}
+            label={item.label}
+            locked={item.requiresPaid && !isPaid}
+          />
+        ))}
+
+        <p className="nav-section-label">Insights</p>
+        {NAV.filter((n) => n.group === "insights").map((item) => (
+          <NavLink
+            key={item.href}
+            href={item.href}
+            icon={item.icon}
+            label={item.label}
+            locked={item.requiresPaid && !isPaid}
+          />
+        ))}
+
+        <p className="nav-section-label">Account</p>
+        {NAV.filter((n) => n.group === "account").map((item) => (
+          <NavLink
+            key={item.href}
+            href={item.href}
+            icon={item.icon}
+            label={item.label}
+            locked={item.requiresPaid && !isPaid}
+          />
+        ))}
+      </nav>
+
+      <div className="p-4 border-t border-white/10 space-y-3">
+        <div className="flex items-center gap-2 px-2 flex-wrap">
           {student?.grade && (
-            <span className="bg-primary-color/30 px-3 py-0.5 text-xs text-blue-200">
+            <span className="rounded-full bg-[#00c1ff]/15 text-[#00c1ff] px-2.5 py-0.5 text-[11px] font-bold">
               Grade {student.grade}
             </span>
           )}
           {isPaid ? (
-            <span className="bg-emerald-500/30 text-emerald-300 text-xs px-2 py-0.5 font-semibold">
-              ✓ PAID
+            <span className="rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] px-2.5 py-0.5 font-bold">
+              Paid
             </span>
           ) : student?.paymentStatus === "expired" ||
             (student && isPlanExpired(student)) ? (
-            <span className="bg-red-500/30 text-red-300 text-xs px-2 py-0.5 font-semibold">
-              EXPIRED
+            <span className="rounded-full bg-red-500/20 text-red-300 text-[11px] px-2.5 py-0.5 font-bold">
+              Expired
             </span>
           ) : (
-            <span className="bg-amber-500/30 text-amber-300 text-xs px-2 py-0.5 font-semibold">
-              PAYMENT PENDING
+            <span className="rounded-full bg-amber-500/20 text-amber-300 text-[11px] px-2.5 py-0.5 font-bold">
+              Payment pending
             </span>
           )}
         </div>
-      </div>
-
-      {/* Nav */}
-      <nav className="flex-1 py-4 overflow-y-auto">
-        {NAV.map((item) => {
-          const isActive =
-            pathname === item.href || pathname.startsWith(item.href + "/");
-          const locked = item.requiresPaid && !isPaid;
-          return (
-            <Link
-              key={item.href}
-              href={locked ? "/portal/payment" : item.href}
-              onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-5 py-3 text-sm font-medium transition-all ${
-                isActive
-                  ? "bg-white/10 text-white border-l-2 border-primary-color"
-                  : locked
-                    ? "text-white/30 cursor-pointer"
-                    : "text-white/60 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              <item.icon size={18} />
-              <span className="flex-1">{item.label}</span>
-              {locked && <MdLock size={13} className="text-white/30" />}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Sign out */}
-      <div className="p-4 border-t border-white/10 space-y-1">
-        <button
-          onClick={handleSignOut}
-          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all"
-        >
-          <MdLogout size={18} /> Sign Out
-        </button>
+        <div className="flex items-center gap-3 px-2 py-2 rounded-2xl bg-white/5">
+          <div className="w-9 h-9 rounded-full bg-[#00369b] flex items-center justify-center shrink-0 overflow-hidden">
+            {student?.avatar ? (
+              <Image
+                src={student.avatar}
+                alt="avatar"
+                width={36}
+                height={36}
+                className="object-cover w-9 h-9"
+              />
+            ) : (
+              <span className="text-white text-sm font-bold">
+                {student?.firstName?.[0] ?? "S"}
+              </span>
+            )}
+          </div>
+          <div className="overflow-hidden flex-1">
+            <p className="text-sm font-semibold text-white truncate">
+              {student?.firstName} {student?.lastName}
+            </p>
+            <p className="text-[11px] text-[#00c1ff] font-semibold truncate">
+              {student?.studentId}
+            </p>
+          </div>
+          <button
+            onClick={handleSignOut}
+            className="p-2 text-white/40 hover:text-white transition-colors"
+            title="Sign out"
+          >
+            <MdLogout size={16} />
+          </button>
+        </div>
       </div>
     </div>
   );
 
   return (
-    <div className="flex min-h-screen">
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:flex lg:flex-col w-64 min-h-screen">
+    <div className="flex min-h-screen bg-[#eef1f6]">
+      <aside className="hidden lg:flex lg:flex-col w-[272px] min-h-screen sticky top-0 h-screen">
         <SidebarContent />
       </aside>
 
-      {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-[#001233]/60 backdrop-blur-sm"
             onClick={() => setSidebarOpen(false)}
           />
-          <aside className="absolute left-0 top-0 bottom-0 w-64 flex flex-col">
+          <aside className="absolute left-0 top-0 bottom-0 w-[272px] flex flex-col animate-[slideUp_0.25s_ease]">
             <SidebarContent />
           </aside>
         </div>
       )}
 
-      {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Topbar */}
-        <header className="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 lg:px-6 h-14 flex items-center justify-between">
-          <button
-            className="lg:hidden p-2 text-gray-600 hover:text-gray-900"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <MdMenu size={22} />
-          </button>
-          <div className="flex-1 lg:flex-none" />
-          {/* Payment banner */}
-          {!isPaid && (
-            <Link
-              href="/portal/payment"
-              className="hidden sm:flex items-center gap-2 bg-amber-50 border border-amber-300 text-amber-700 text-xs font-semibold px-3 py-1.5 mr-3"
+        <header className="sticky top-0 z-40 px-4 lg:px-6 pt-4 pb-2">
+          <div className="bg-white/90 backdrop-blur-md border border-slate-200 rounded-2xl px-4 lg:px-5 h-14 flex items-center gap-3">
+            <button
+              className="lg:hidden p-2 text-slate-500 hover:text-slate-900 transition-colors rounded-xl hover:bg-slate-50"
+              onClick={() => setSidebarOpen(true)}
             >
-              <MdLock size={13} /> Complete payment to unlock all features
-            </Link>
-          )}
-          <div className="flex items-center gap-2">
-            {/* Notification bell */}
+              <MdMenu size={22} />
+            </button>
+
+            <div className="shell-search hidden sm:flex">
+              <MdSearch size={18} className="text-slate-400 shrink-0" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search portal…"
+                aria-label="Search"
+              />
+              <span className="shell-kbd">⌘K</span>
+            </div>
+
+            <div className="flex-1" />
+
+            {!isPaid && (
+              <Link
+                href="/portal/payment"
+                className="hidden md:inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold px-3 py-1.5 hover:bg-amber-100 transition-colors"
+              >
+                <MdLock size={12} /> Unlock access
+              </Link>
+            )}
+
             <div className="relative" ref={notifRef}>
               <button
                 onClick={() => setNotifOpen(!notifOpen)}
-                className="relative p-2 text-gray-400 hover:text-gray-700 transition-colors"
+                className="relative p-2 text-slate-400 hover:text-slate-700 transition-colors rounded-xl hover:bg-slate-50"
               >
-                <MdNotifications size={22} />
+                <MdNotifications size={20} />
                 {announcements.length > 0 && (
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#00c1ff] rounded-full" />
                 )}
               </button>
 
-              {/* Notification dropdown */}
               {notifOpen && (
-                <div className="absolute right-0 top-full mt-1 w-80 sm:w-96 bg-white border border-gray-200 z-50 max-h-96 overflow-y-auto">
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                    <h3 className="font-semibold text-gray-900 text-sm flex items-center gap-2">
-                      <MdCampaign size={16} className="text-secondary-color" />
+                <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white border border-slate-200 rounded-2xl z-50 max-h-96 overflow-y-auto animate-[slideUp_0.2s_ease]">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                    <h3 className="font-semibold text-slate-900 text-sm flex items-center gap-2">
+                      <MdCampaign size={16} className="text-[#00369b]" />
                       Announcements
                     </h3>
                     <button
                       onClick={() => setNotifOpen(false)}
-                      className="text-gray-400 hover:text-gray-600"
+                      className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-50"
                     >
                       <MdClose size={16} />
                     </button>
                   </div>
                   {announcements.length === 0 ? (
                     <div className="px-4 py-8 text-center">
-                      <MdCampaign
-                        size={32}
-                        className="mx-auto text-gray-300 mb-2"
-                      />
-                      <p className="text-sm text-gray-500 font-medium">
-                        No notifications
-                      </p>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        You&apos;re all caught up!
-                      </p>
+                      <MdCampaign size={32} className="mx-auto text-slate-300 mb-2" />
+                      <p className="text-sm text-slate-500 font-medium">No notifications</p>
+                      <p className="text-xs text-slate-400 mt-0.5">You&apos;re all caught up!</p>
                     </div>
                   ) : (
-                    <div>
-                      {announcements.map((a) => (
-                        <div
-                          key={a.id}
-                          className={`border-b border-gray-50 px-4 py-3 last:border-0 ${a.pinned ? "bg-amber-50" : ""}`}
-                        >
-                          <div className="flex items-start gap-2">
-                            {a.pinned ? (
-                              <MdPushPin
-                                size={14}
-                                className="text-amber-500 shrink-0 mt-0.5"
-                              />
-                            ) : (
-                              <MdCampaign
-                                size={14}
-                                className="text-secondary-color shrink-0 mt-0.5"
-                              />
-                            )}
-                            <div>
-                              <p className="text-sm font-semibold text-gray-900">
-                                {a.title}
-                              </p>
-                              <p className="text-xs text-gray-500 mt-0.5 leading-relaxed line-clamp-3">
-                                {a.body.replace(/<[^>]+>/g, "").slice(0, 180)}
-                              </p>
-                            </div>
+                    announcements.map((a) => (
+                      <div
+                        key={a.id}
+                        className={`border-b border-slate-50 px-4 py-3 last:border-0 ${
+                          a.pinned ? "bg-amber-50/80" : ""
+                        }`}
+                      >
+                        <div className="flex items-start gap-2">
+                          {a.pinned ? (
+                            <MdPushPin size={14} className="text-amber-500 shrink-0 mt-0.5" />
+                          ) : (
+                            <MdCampaign size={14} className="text-[#00369b] shrink-0 mt-0.5" />
+                          )}
+                          <div>
+                            <p className="text-sm font-semibold text-slate-900">{a.title}</p>
+                            <p className="text-xs text-slate-500 mt-0.5 leading-relaxed line-clamp-3">
+                              {a.body.replace(/<[^>]+>/g, "").slice(0, 180)}
+                            </p>
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))
                   )}
                 </div>
               )}
             </div>
 
-            <div className="w-8 h-8 bg-secondary-color flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-[#00369b] flex items-center justify-center">
               <span className="text-white text-xs font-bold">
                 {student?.firstName?.[0] ?? "S"}
               </span>
@@ -428,12 +459,10 @@ export default function PortalLayout({
           </div>
         </header>
 
-        {/* Payment nudge banner */}
         {!isPaid && !FREE_PATHS.some((p) => pathname.startsWith(p)) && (
-          <div className="bg-amber-50 border-b border-amber-200 px-4 lg:px-6 py-2.5 flex items-center justify-between gap-4">
+          <div className="mx-4 lg:mx-6 mb-2 rounded-2xl bg-amber-50 border border-amber-200 px-4 py-2.5 flex items-center justify-between gap-4">
             <p className="text-xs text-amber-800 font-medium flex items-center gap-1.5">
-              <MdLock size={13} /> Your portal access is limited until payment
-              is complete.
+              <MdLock size={13} /> Portal access is limited until payment is complete.
             </p>
             <Link
               href="/portal/payment"
@@ -444,8 +473,11 @@ export default function PortalLayout({
           </div>
         )}
 
-        {/* Page content */}
-        <main className="flex-1 p-4 lg:p-6 overflow-x-hidden">{children}</main>
+        <main className="flex-1 px-4 lg:px-6 pb-8 pt-2 overflow-x-hidden">
+          <div className="page-enter" key={pathname}>
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );

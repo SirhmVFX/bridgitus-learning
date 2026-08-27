@@ -148,18 +148,19 @@ export default function AccountPage() {
         student.paymentStatus === "failed" ? "Failed" :
           student.paymentStatus === "expired" ? "⚠ Expired" : "Pending Payment";
 
-  const inputCls = "w-full px-4 py-2.5 border border-gray-200 text-sm outline-none focus:border-secondary-color transition-colors";
+  const inputCls = "portal-input";
 
   return (
     <PortalLayout>
-      <div className="max-w-3xl mx-auto space-y-5">
+      <div className="w-full space-y-5">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Account</h1>
-          <p className="text-gray-500 text-sm mt-0.5">Manage your profile and security settings</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-1">Settings</p>
+          <h1 className="text-2xl lg:text-[1.75rem] font-extrabold text-[#001233] tracking-tight">My Account</h1>
+          <p className="text-slate-500 text-sm mt-1">Manage your profile and security settings</p>
         </div>
 
         {/* Profile card */}
-        <div className="bg-white border border-gray-200 p-6">
+        <div className="portal-card">
           <div className="flex items-start gap-5">
             {/* Avatar */}
             <div className="relative shrink-0">
@@ -168,7 +169,7 @@ export default function AccountPage() {
                   ? <img src={student.avatar} alt="avatar" className="w-full h-full object-cover" /> // eslint-disable-line @next/next/no-img-element
                   : <span className="text-white text-xl font-bold">{initials}</span>}
               </div>
-              <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-secondary-color text-white flex items-center justify-center cursor-pointer hover:bg-secondary-color/90 transition-colors">
+              <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-secondary-color text-white flex items-center justify-center cursor-pointer hover:bg-secondary-color/90 transition-colors">
                 {avatarUploading
                   ? <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   : <MdUpload size={14} />}
@@ -178,26 +179,26 @@ export default function AccountPage() {
 
             {/* Name + badges */}
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-[#001233]">
                 {editing ? (
                   <span className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="admin-input py-2" placeholder="First name" />
-                    <input value={lastName} onChange={(e) => setLastName(e.target.value)} className="admin-input py-2" placeholder="Last name" />
+                    <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="portal-input py-2" placeholder="First name" />
+                    <input value={lastName} onChange={(e) => setLastName(e.target.value)} className="portal-input py-2" placeholder="Last name" />
                   </span>
                 ) : (
                   <>{student.firstName} {student.lastName}</>
                 )}
               </h2>
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                <span className="inline-flex items-center gap-1 bg-secondary-color/10 text-secondary-color text-xs font-bold px-2 py-0.5">
+                <span className="inline-flex items-center gap-1 bg-secondary-color/10 text-secondary-color text-xs font-bold px-2.5 py-0.5 rounded-full">
                   <MdBadge size={12} /> {student.studentId}
                 </span>
-                <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 text-xs font-semibold px-2 py-0.5">
+                <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">
                   <MdSchool size={12} /> Grade {student.grade}
                 </span>
-                <span className={`text-xs font-semibold px-2 py-0.5 ${student.status === "active" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-600"
+                <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${student.status === "active" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-600"
                   }`}>{student.status}</span>
-                <span className={`text-xs font-semibold px-2 py-0.5 flex items-center gap-1 ${paymentColor}`}>
+                <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1 ${paymentColor}`}>
                   <MdPayment size={11} /> {paymentLabel}
                 </span>
               </div>
@@ -218,7 +219,7 @@ export default function AccountPage() {
             {editing ? (
               <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3}
                 placeholder="Tell us a bit about yourself…"
-                className="w-full p-3 border border-gray-200 text-sm outline-none focus:border-secondary-color resize-none transition-colors" />
+                className="portal-input resize-none" />
             ) : (
               <p className="text-sm text-gray-600 italic">{student.bio || "No bio added yet."}</p>
             )}
@@ -227,7 +228,7 @@ export default function AccountPage() {
           {editing && (
             <div className="mt-4 flex items-center gap-3">
               <button onClick={handleSaveProfile} disabled={saving}
-                className="flex items-center gap-2 bg-secondary-color text-white text-sm font-semibold px-4 py-2 hover:bg-secondary-color/90 disabled:opacity-60 transition-colors">
+                className="flex items-center gap-2 portal-btn-primary disabled:opacity-60">
                 <MdSave size={15} />{saving ? "Saving…" : "Save Changes"}
               </button>
               {saveOk && <span className="flex items-center gap-1 text-sm text-emerald-600"><MdCheckCircle size={15} /> Saved</span>}
@@ -236,8 +237,8 @@ export default function AccountPage() {
         </div>
 
         {/* Student info */}
-        <div className="bg-white border border-gray-200 p-6">
-          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <div className="portal-card">
+          <h3 className="font-semibold text-[#001233] mb-4 flex items-center gap-2">
             <MdPerson size={16} className="text-secondary-color" /> Student Information
           </h3>
           <div className="grid sm:grid-cols-2 gap-4 text-sm">
@@ -297,8 +298,8 @@ export default function AccountPage() {
         </div>
 
         {/* Parent info */}
-        <div className="bg-white border border-gray-200 p-6">
-          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <div className="portal-card">
+          <h3 className="font-semibold text-[#001233] mb-4 flex items-center gap-2">
             <MdPhone size={16} className="text-secondary-color" /> Parent / Guardian
           </h3>
           <div className="grid sm:grid-cols-2 gap-4 text-sm">
@@ -316,7 +317,7 @@ export default function AccountPage() {
         </div>
 
         {/* Payment status */}
-        <div className={`border p-5 ${student.paymentStatus === "paid" || student.paymentStatus === "waived" ? "bg-emerald-50 border-emerald-200" : student.paymentStatus === "expired" ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"}`}>
+        <div className={`rounded-2xl border p-5 ${student.paymentStatus === "paid" || student.paymentStatus === "waived" ? "bg-emerald-50 border-emerald-200" : student.paymentStatus === "expired" ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"}`}>
           <p className="text-xs font-semibold uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <MdPayment size={14} /> Payment & Plan Status
           </p>
@@ -324,7 +325,7 @@ export default function AccountPage() {
           {/* Status + plan info */}
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div className="space-y-2">
-              <span className={`text-sm font-bold px-3 py-1 ${paymentColor}`}>{paymentLabel}</span>
+              <span className={`text-sm font-bold px-3 py-1 rounded-full ${paymentColor}`}>{paymentLabel}</span>
 
               {currentPlan ? (
                 <>
@@ -383,7 +384,7 @@ export default function AccountPage() {
                 const urgent = !expired && daysLeft <= 7;
 
                 return (
-                  <div className={`mt-2 p-3 border ${expired ? "bg-red-50 border-red-300" : urgent ? "bg-amber-50 border-amber-300" : "bg-emerald-50 border-emerald-200"}`}>
+                  <div className={`mt-2 p-3 rounded-xl border ${expired ? "bg-red-50 border-red-300" : urgent ? "bg-amber-50 border-amber-300" : "bg-emerald-50 border-emerald-200"}`}>
                     <p className={`text-xs font-semibold mb-1 ${expired ? "text-red-700" : urgent ? "text-amber-700" : "text-emerald-700"}`}>
                       Plan Expiry
                     </p>
@@ -435,7 +436,7 @@ export default function AccountPage() {
             <div className="flex flex-col gap-2">
               {(student.paymentStatus === "pending" || student.paymentStatus === "expired") && (
                 <a href="/portal/payment"
-                  className="bg-secondary-color text-white text-sm font-semibold px-4 py-2 hover:bg-secondary-color/90 transition-colors text-center">
+                  className="portal-btn-primary text-center inline-block">
                   {student.paymentStatus === "expired" ? "Renew Plan →" : "Complete Payment →"}
                 </a>
               )}
@@ -444,8 +445,8 @@ export default function AccountPage() {
         </div>
 
         {/* Change Password */}
-        <div className="bg-white border border-gray-200 p-6">
-          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <div className="portal-card">
+          <h3 className="font-semibold text-[#001233] mb-4 flex items-center gap-2">
             <MdLock size={16} className="text-secondary-color" /> Change Password
           </h3>
           <form onSubmit={handlePasswordChange} className="space-y-4">
@@ -460,17 +461,17 @@ export default function AccountPage() {
                   required minLength={min} className={inputCls} placeholder="••••••••" />
               </div>
             ))}
-            {pwError && <p className="text-sm text-red-600 bg-red-50 border border-red-200 px-4 py-2.5">{pwError}</p>}
-            {pwOk && <p className="text-sm text-emerald-600 bg-emerald-50 border border-emerald-200 px-4 py-2.5 flex items-center gap-2"><MdCheckCircle size={15} /> Password changed!</p>}
+            {pwError && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">{pwError}</p>}
+            {pwOk && <p className="text-sm text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2.5 flex items-center gap-2"><MdCheckCircle size={15} /> Password changed!</p>}
             <button type="submit" disabled={pwSaving}
-              className="flex items-center gap-2 bg-secondary-color text-white text-sm font-semibold px-5 py-2.5 hover:bg-secondary-color/90 disabled:opacity-60 transition-colors">
+              className="flex items-center gap-2 portal-btn-primary disabled:opacity-60">
               <MdLock size={15} />{pwSaving ? "Updating…" : "Update Password"}
             </button>
           </form>
         </div>
 
         {/* Credentials */}
-        <div className="bg-secondary-color/5 border border-secondary-color/20 p-5">
+        <div className="rounded-2xl bg-secondary-color/5 border border-secondary-color/20 p-5">
           <p className="text-xs font-semibold text-secondary-color uppercase tracking-wide mb-3">Your Login Credentials</p>
           <div className="flex flex-wrap gap-6 text-sm">
             <div>
