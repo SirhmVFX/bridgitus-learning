@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import PortalLayout from "@/components/PortalLayout";
+import Pagination from "@/components/Pagination";
 import { useStudentAuth } from "@/lib/studentAuth";
+import { paginate } from "@/lib/pagination";
 import {
   getMaterialsByGrade,
   getMaterialCompletions,
@@ -91,9 +93,8 @@ function MaterialCard({
     .join(". ");
 
   return (
-    <div className={`bg-white border transition-all ${isCompleted ? "border-emerald-300 bg-emerald-50/30" :
-        isLocked ? "border-gray-200 opacity-60" :
-          "border-gray-200"
+    <div className={`portal-card hover-lift !p-0 overflow-hidden transition-all ${isCompleted ? "!border-emerald-300 !bg-emerald-50/30" :
+        isLocked ? "opacity-60" : ""
       }`}>
       {/* Status stripe */}
       <div className={`h-1 w-full ${isCompleted ? "bg-emerald-500" : isLocked ? "bg-gray-200" : "bg-secondary-color"}`} />
@@ -103,7 +104,7 @@ function MaterialCard({
         <div className="flex items-start gap-4">
           {/* Number + complete toggle */}
           <div className="flex flex-col items-center gap-2 shrink-0 pt-0.5">
-            <div className={`w-8 h-8 flex items-center justify-center text-sm font-bold ${isCompleted ? "bg-emerald-500 text-white" :
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold ${isCompleted ? "bg-emerald-500 text-white" :
                 isLocked ? "bg-gray-200 text-gray-400" :
                   "bg-secondary-color text-white"
               }`}>
@@ -126,11 +127,11 @@ function MaterialCard({
           {/* Main content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1.5">
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold ${TYPE_COLORS[material.type] ?? TYPE_COLORS.mixed}`}>
+              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${TYPE_COLORS[material.type] ?? TYPE_COLORS.mixed}`}>
                 {TYPE_ICONS[material.type]}
                 {material.type.charAt(0).toUpperCase() + material.type.slice(1)}
               </span>
-              <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5">{material.subject}</span>
+              <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-0.5 rounded-full">{material.subject}</span>
               {material.estimatedMinutes && (
                 <span className="text-xs text-gray-400 flex items-center gap-0.5">
                   <MdTimer size={12} /> {formatTime(material.estimatedMinutes)}
@@ -187,7 +188,7 @@ function MaterialCard({
                         href={material.fileUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 bg-secondary-color text-white text-xs font-semibold px-3 py-1.5 hover:bg-secondary-color/90 transition-colors"
+                        className="inline-flex items-center gap-1.5 portal-btn-primary !text-xs !px-3 !py-1.5"
                       >
                         <MdOpenInNew size={13} />
                         {material.type === "pdf" ? "Open PDF" :
@@ -197,7 +198,7 @@ function MaterialCard({
                       <a
                         href={toDownloadUrl(material.fileUrl, material.fileName)}
                         download={material.fileName ?? ""}
-                        className="inline-flex items-center gap-1.5 border border-secondary-color text-secondary-color text-xs font-semibold px-3 py-1.5 hover:bg-secondary-color hover:text-white transition-colors"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-secondary-color text-secondary-color text-xs font-semibold px-3 py-1.5 hover:bg-secondary-color hover:text-white transition-colors"
                       >
                         <MdDownload size={13} /> Download
                       </a>
@@ -208,7 +209,7 @@ function MaterialCard({
                       href={material.linkUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 bg-amber-500 text-white text-xs font-semibold px-3 py-1.5 hover:bg-amber-600 transition-colors"
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 text-white text-xs font-semibold px-3 py-1.5 hover:bg-amber-600 transition-colors"
                     >
                       <MdOpenInNew size={13} />
                       {material.linkLabel ?? "Open Resource"}
@@ -221,7 +222,7 @@ function MaterialCard({
 
           {/* Thumbnail */}
           {material.thumbnailUrl && !isLocked && (
-            <div className="w-20 h-16 shrink-0 hidden sm:block overflow-hidden">
+            <div className="w-20 h-16 shrink-0 hidden sm:block overflow-hidden rounded-xl">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={material.thumbnailUrl} alt="" className="w-full h-full object-cover" />
             </div>
@@ -242,6 +243,7 @@ export default function MaterialsPage() {
   const [toggling, setToggling] = useState<string | null>(null);
   const [selectedSubject, setSelectedSubject] = useState("all");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
 
   async function load() {
     if (!student?.grade || !student?.id) return;
@@ -255,6 +257,10 @@ export default function MaterialsPage() {
   }
 
   useEffect(() => { load(); }, [student]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, selectedSubject]);
 
   async function handleToggleComplete(material: LearningMaterial) {
     if (!student?.id || toggling) return;
@@ -283,6 +289,7 @@ export default function MaterialsPage() {
     const qMatch = !search || m.title.toLowerCase().includes(search.toLowerCase());
     return sMatch && qMatch;
   });
+  const pageSlice = paginate(filtered, page);
 
   // Progress stats
   const totalCount = materials.length;
@@ -304,24 +311,25 @@ export default function MaterialsPage() {
 
   return (
     <PortalLayout>
-      <div className="max-w-4xl mx-auto space-y-5">
+      <div className="w-full space-y-5">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Learning Materials</h1>
-          <p className="text-gray-500 text-sm mt-0.5">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-1">Learn</p>
+          <h1 className="text-2xl lg:text-[1.75rem] font-extrabold text-[#001233] tracking-tight">Learning Materials</h1>
+          <p className="text-slate-500 text-sm mt-1">
             Grade {student?.grade} · Complete each material in order to unlock the next
           </p>
         </div>
 
         {/* Progress bar */}
         {!loading && totalCount > 0 && (
-          <div className="bg-white border border-gray-200 p-5">
+          <div className="portal-card">
             <div className="flex items-center justify-between mb-2">
               <div>
-                <p className="font-semibold text-gray-900 text-sm">
+                <p className="font-semibold text-[#001233] text-sm">
                   Your Progress — {completedCount} of {totalCount} completed
                 </p>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-xs text-slate-400 mt-0.5">
                   {leftMins > 0
                     ? `About ${formatTime(leftMins)} of content remaining`
                     : totalCount > 0
@@ -329,11 +337,11 @@ export default function MaterialsPage() {
                       : ""}
                 </p>
               </div>
-              <span className="text-2xl font-black text-secondary-color">{completedPct}%</span>
+              <span className="text-2xl font-black text-[#00369b]">{completedPct}%</span>
             </div>
-            <div className="h-3 bg-gray-100 w-full">
+            <div className="h-3 bg-slate-100 w-full rounded-full overflow-hidden">
               <div
-                className="h-full bg-secondary-color transition-all duration-500"
+                className="h-full bg-[#00369b] transition-all duration-500 rounded-full"
                 style={{ width: `${completedPct}%` }}
               />
             </div>
@@ -358,30 +366,30 @@ export default function MaterialsPage() {
         )}
 
         {/* Filters */}
-        <div className="bg-white border border-gray-200 p-4 flex flex-wrap gap-3 items-center">
+        <div className="portal-card !py-4 flex flex-wrap gap-3 items-center">
           <div className="relative flex-1 min-w-44">
-            <MdSearch size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <MdSearch size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search materials…"
-              className="w-full border border-gray-200 pl-8 pr-3 py-2 text-sm outline-none focus:border-secondary-color"
+              className="portal-input !pl-8"
             />
           </div>
           <div className="flex items-center gap-2">
-            <MdFilterList size={15} className="text-gray-400" />
+            <MdFilterList size={15} className="text-slate-400" />
             <select
               value={selectedSubject}
               onChange={(e) => setSelectedSubject(e.target.value)}
-              className="border border-gray-200 px-3 py-2 text-sm outline-none focus:border-secondary-color"
+              className="portal-input !w-auto"
             >
               {subjects.map((s) => (
                 <option key={s} value={s}>{s === "all" ? "All Subjects" : s}</option>
               ))}
             </select>
           </div>
-          <span className="text-xs text-gray-400 ml-auto">
+          <span className="text-xs text-slate-400 ml-auto">
             {filtered.length} resource{filtered.length !== 1 ? "s" : ""}
           </span>
         </div>
@@ -390,35 +398,39 @@ export default function MaterialsPage() {
         {loading ? (
           <div className="space-y-3">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white border border-gray-100 h-28 animate-pulse" />
+              <div key={i} className="portal-card h-28 animate-pulse bg-slate-100" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="bg-white border border-gray-100 p-16 text-center">
-            <MdMenuBook size={48} className="mx-auto text-gray-300 mb-3" />
-            <p className="text-gray-500 font-medium">No materials available yet.</p>
-            <p className="text-gray-400 text-sm mt-1">Your teacher will add resources here soon.</p>
+          <div className="portal-card p-16 text-center">
+            <MdMenuBook size={48} className="mx-auto text-slate-300 mb-3" />
+            <p className="text-slate-500 font-medium">No materials available yet.</p>
+            <p className="text-slate-400 text-sm mt-1">Your teacher will add resources here soon.</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {filtered.map((m, index) => (
-              <MaterialCard
-                key={m.id}
-                material={m}
-                index={index}
-                isCompleted={isMaterialCompleted(completions, m.id!)}
-                isLocked={isLocked(index)}
-                studentGrade={student!.grade}
-                onToggleComplete={handleToggleComplete}
-                toggling={toggling === m.id}
-              />
-            ))}
+            {pageSlice.items.map((m, i) => {
+              const index = pageSlice.start - 1 + i;
+              return (
+                <MaterialCard
+                  key={m.id}
+                  material={m}
+                  index={index}
+                  isCompleted={isMaterialCompleted(completions, m.id!)}
+                  isLocked={isLocked(index)}
+                  studentGrade={student!.grade}
+                  onToggleComplete={handleToggleComplete}
+                  toggling={toggling === m.id}
+                />
+              );
+            })}
+            <Pagination slice={pageSlice} onPageChange={setPage} />
           </div>
         )}
 
         {/* All done celebration */}
         {!loading && completedCount > 0 && completedCount === totalCount && (
-          <div className="bg-emerald-50 border border-emerald-300 p-5 text-center">
+          <div className="rounded-2xl bg-emerald-50 border border-emerald-300 p-5 text-center">
             <p className="text-emerald-700 font-bold text-lg">🎉 You&apos;ve completed all materials!</p>
             <p className="text-emerald-600 text-sm mt-1">
               Check the Tests &amp; Assignments sections for assessments.

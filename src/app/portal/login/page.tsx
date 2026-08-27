@@ -102,7 +102,7 @@ export default function LoginPage() {
             />
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-8">
+          <div className="bg-white rounded-2xl border border-slate-200 p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h2>
             <p className="text-gray-500 text-sm mb-8">
               Sign in with your Student ID and password

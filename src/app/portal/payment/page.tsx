@@ -312,7 +312,7 @@ function PaymentPageInner() {
                   <div
                     key={plan.id}
                     className={`bg-white flex flex-col relative overflow-hidden ${plan.highlighted
-                      ? "ring-2 ring-secondary-color shadow-lg"
+                      ? "ring-2 ring-secondary-color"
                       : "border border-gray-200"
                       }`}
                   >

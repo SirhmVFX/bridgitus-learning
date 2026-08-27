@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import PortalLayout from "@/components/PortalLayout";
+import Pagination from "@/components/Pagination";
 import { useStudentAuth } from "@/lib/studentAuth";
+import { paginate } from "@/lib/pagination";
 import {
   getLearningGaps, upsertLearningGap, savePracticeAttempt,
   type AIQuestion, type LearningGap,
@@ -330,6 +332,13 @@ function GapSelector({
   onSelect: (gap: LearningGap) => void;
   generating: string | null;
 }) {
+  const [page, setPage] = useState(1);
+  const pageSlice = paginate(gaps, page);
+
+  useEffect(() => {
+    setPage(1);
+  }, [gaps]);
+
   const badge = (acc: number) =>
     acc < 40 ? "bg-red-100 text-red-700" :
       acc < 60 ? "bg-amber-100 text-amber-700" :
@@ -348,30 +357,35 @@ function GapSelector({
           <p className="text-sm text-gray-400 mt-1">Your accuracy is strong across all topics. Keep it up!</p>
         </div>
       ) : (
-        <div className="divide-y divide-gray-50">
-          {gaps.map((gap) => (
-            <div key={gap.id} className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors">
-              <div>
-                <p className="text-sm font-semibold text-gray-900">{gap.topic}</p>
-                <p className="text-xs text-gray-500">{gap.subject}{gap.subtopic ? ` · ${gap.subtopic}` : ""}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className={`text-xs font-bold px-2 py-0.5 ${badge(gap.accuracy)}`}>
-                    {gap.accuracy}% accuracy
-                  </span>
-                  <span className="text-xs text-gray-400">{gap.attemptCount} attempt{gap.attemptCount !== 1 ? "s" : ""}</span>
+        <>
+          <div className="divide-y divide-gray-50">
+            {pageSlice.items.map((gap) => (
+              <div key={gap.id} className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors">
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">{gap.topic}</p>
+                  <p className="text-xs text-gray-500">{gap.subject}{gap.subtopic ? ` · ${gap.subtopic}` : ""}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className={`text-xs font-bold px-2 py-0.5 ${badge(gap.accuracy)}`}>
+                      {gap.accuracy}% accuracy
+                    </span>
+                    <span className="text-xs text-gray-400">{gap.attemptCount} attempt{gap.attemptCount !== 1 ? "s" : ""}</span>
+                  </div>
                 </div>
+                <button
+                  onClick={() => onSelect(gap)}
+                  disabled={generating === gap.id}
+                  className="flex items-center gap-2 px-4 py-2 bg-purple-700 text-white text-sm font-semibold hover:bg-purple-800 disabled:opacity-60 transition-colors shrink-0">
+                  {generating === gap.id
+                    ? <><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Generating…</>
+                    : <><MdAutoAwesome size={14} /> Practice</>}
+                </button>
               </div>
-              <button
-                onClick={() => onSelect(gap)}
-                disabled={generating === gap.id}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-700 text-white text-sm font-semibold hover:bg-purple-800 disabled:opacity-60 transition-colors shrink-0">
-                {generating === gap.id
-                  ? <><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Generating…</>
-                  : <><MdAutoAwesome size={14} /> Practice</>}
-              </button>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+          <div className="px-6 py-3 border-t border-gray-100">
+            <Pagination slice={pageSlice} onPageChange={setPage} />
+          </div>
+        </>
       )}
     </div>
   );
@@ -473,27 +487,28 @@ export default function PracticePage() {
 
   return (
     <PortalLayout>
-      <div className="max-w-3xl mx-auto space-y-5">
+      <div className="w-full space-y-5">
         {/* Page header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <MdAutoAwesome className="text-purple-600" /> AI Practice
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-1">Practice</p>
+            <h1 className="text-2xl lg:text-[1.75rem] font-extrabold text-[#001233] tracking-tight flex items-center gap-2">
+              <MdAutoAwesome className="text-[#00c1ff]" /> AI Practice
             </h1>
-            <p className="text-gray-500 text-sm mt-0.5">
+            <p className="text-slate-500 text-sm mt-1">
               Personalised questions targeting your weak areas
             </p>
           </div>
           {(pageState === "running" || pageState === "results") && (
             <button onClick={handleRetry}
-              className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700">
+              className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700">
               <MdArrowBack size={16} /> Back to Gaps
             </button>
           )}
         </div>
 
         {error && (
-          <div className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-center gap-2">
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-center gap-2">
             <MdCancel size={16} className="shrink-0" /> {error}
           </div>
         )}
@@ -501,7 +516,7 @@ export default function PracticePage() {
         {pageState === "loading" && (
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="bg-white border h-20 animate-pulse" />
+              <div key={i} className="portal-card h-20 animate-pulse bg-slate-100" />
             ))}
           </div>
         )}

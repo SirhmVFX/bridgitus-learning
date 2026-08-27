@@ -2,84 +2,307 @@
 
 @theme inline {
   --font-open-sans: var(--font-open-sans);
+  --font-sans: var(--font-jakarta), var(--font-open-sans), ui-sans-serif, system-ui, sans-serif;
   --color-primary-color: #00c1ff;
   --color-secondary-color: #00369b;
+  --color-portal-bg: #eef1f6;
+  --color-portal-sidebar: #001233;
 }
 
 body {
-  font-family: var(--font-open-sans);
+  font-family: var(--font-sans);
+  background: #eef1f6;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ── Portal global overrides: no rounded corners, no shadows ── */
-.portal-root *,
-.portal-root *::before,
-.portal-root *::after {
-  border-radius: 0 !important;
-  box-shadow: none !important;
+/* Soft portal UI — rounded cards, light elevation */
+.portal-card,
+.stat-card,
+.portal-btn-primary,
+.portal-btn-secondary,
+.portal-badge,
+.portal-input {
+  border-radius: 14px;
 }
 
-/* Tailwind utility overrides — zero out all radius/shadow utilities in the portal */
-[class*="rounded"] {
-  border-radius: 0 !important;
-}
-
-[class*="shadow"] {
-  box-shadow: none !important;
-}
-
-/* ── Portal-specific UI components ── */
-.portal-card {
+.portal-card,
+.stat-card {
   background: #fff;
   border: 1px solid #e2e8f0;
   padding: 20px 24px;
+  box-shadow: none;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+/* Soften legacy sharp white panels across portal pages */
+.portal-soft-panel,
+main .bg-white.border {
+  border-radius: 14px;
+  box-shadow: none;
+  border-color: #e2e8f0;
+}
+
+.stat-card:hover,
+.portal-card.hover-lift:hover {
+  transform: translateY(-1px);
+  border-color: #cbd5e1;
+  box-shadow: none;
 }
 
 .portal-input {
   width: 100%;
-  padding: 10px 12px;
+  padding: 10px 14px;
   border: 1px solid #e2e8f0;
   background: #fff;
   font-size: 0.875rem;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background 0.2s;
 }
 
 .portal-input:focus {
   border-color: #00369b;
+  box-shadow: none;
+  background: #f8fafc;
 }
 
 .portal-btn-primary {
   background: #00369b;
   color: #fff;
-  padding: 10px 20px;
+  padding: 10px 18px;
   font-size: 0.875rem;
   font-weight: 600;
-  border: none;
+  border: 1px solid #00369b;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.15s, border-color 0.2s;
+  box-shadow: none;
 }
 
 .portal-btn-primary:hover {
   background: #002370;
+  border-color: #002370;
+  transform: translateY(-1px);
 }
 
 .portal-btn-primary:disabled {
   opacity: 0.55;
+  box-shadow: none;
+  transform: none;
 }
 
-/* Badge — no radius */
+.portal-btn-secondary {
+  background: #fff;
+  color: #334155;
+  padding: 10px 18px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.portal-btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
 .portal-badge {
-  display: inline-block;
-  padding: 2px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+}
+
+/* Sidebar nav */
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 10px;
+  padding: 10px 14px;
+  color: #94a3b8;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.18s, background 0.18s;
+  text-decoration: none;
+  border-radius: 12px;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.nav-item.active {
+  background: rgba(0, 193, 255, 0.12);
+  color: #fff;
+}
+
+.nav-item.active::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 999px;
+  background: #00c1ff;
+}
+
+.nav-item.locked {
+  color: rgba(148, 163, 184, 0.45);
+}
+
+.nav-section-label {
+  padding: 18px 20px 8px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #475569;
+}
+
+.shell-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 8px 14px;
+  min-width: 200px;
+  max-width: 420px;
+  flex: 1;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.shell-search:focus-within {
+  border-color: #00369b;
+  box-shadow: none;
+  background: #fff;
+}
+
+.shell-search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.875rem;
+  color: #0f172a;
+}
+
+.shell-kbd {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #94a3b8;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 2px 6px;
+  background: #fff;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.pagination-meta {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pagination-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-btn.active {
+  background: #001233;
+  border-color: #001233;
+  color: #fff;
+}
+
+.page-enter {
+  animation: pageEnter 0.35s ease both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.stat-card {
+  animation: popIn 0.4s ease both;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.02s; }
+.stat-card:nth-child(2) { animation-delay: 0.06s; }
+.stat-card:nth-child(3) { animation-delay: 0.1s; }
+.stat-card:nth-child(4) { animation-delay: 0.14s; }
+
+.animate-spin {
+  border-radius: 50% !important;
 }
 
 /* ── Print / Save as PDF ──────────────────────────────── */
 @media print {
-  /* Hide navigation, sidebars, and action buttons */
   aside,
   header,
   nav,
@@ -88,7 +311,6 @@ body {
     display: none !important;
   }
 
-  /* Full-width content */
   body,
   main,
   .flex-1 {
@@ -98,13 +320,11 @@ body {
     margin: 0 !important;
   }
 
-  /* Remove shadows / ring borders that look bad on paper */
   * {
     box-shadow: none !important;
     text-shadow: none !important;
   }
 
-  /* Keep colour backgrounds for pass/fail indicators */
   .bg-emerald-50,
   .bg-red-50,
   .bg-blue-50,
@@ -114,12 +334,10 @@ body {
     print-color-adjust: exact;
   }
 
-  /* Page breaks */
   .border {
     break-inside: avoid;
   }
 
-  /* Score rings / charts keep their colours */
   svg {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;

@@ -271,10 +271,11 @@ export default function ProgressPage() {
 
   return (
     <PortalLayout>
-      <div className="max-w-4xl mx-auto space-y-5">
+      <div className="w-full space-y-5">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Progress</h1>
-          <p className="text-gray-500 text-sm mt-0.5">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-1">Track</p>
+          <h1 className="text-2xl lg:text-[1.75rem] font-extrabold text-[#001233] tracking-tight">My Progress</h1>
+          <p className="text-slate-500 text-sm mt-1">
             Track your academic performance and credibility
           </p>
         </div>
@@ -282,13 +283,13 @@ export default function ProgressPage() {
         {loading ? (
           <div className="grid sm:grid-cols-2 gap-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white border h-36 animate-pulse" />
+              <div key={i} className="stat-card h-36 animate-pulse bg-slate-100" />
             ))}
           </div>
         ) : (
           <>
             {/* Credibility hero card */}
-            <div className="bg-secondary-color p-6 text-white">
+            <div className="rounded-2xl bg-gradient-to-br from-[#001233] via-[#00369b] to-[#0050c8] p-6 text-white/20">
               <div className="flex items-start justify-between flex-wrap gap-4">
                 <div>
                   <p className="text-white/60 text-xs uppercase tracking-wide mb-1">
@@ -296,7 +297,7 @@ export default function ProgressPage() {
                   </p>
                   <div className="flex items-end gap-3">
                     <p className="text-6xl font-black">{credibilityScore}</p>
-                    <span className="mb-1.5 bg-white/20 text-white text-sm font-bold px-3 py-0.5">
+                    <span className="mb-1.5 bg-white/20 text-white text-sm font-bold px-3 py-0.5 rounded-full">
                       {credLevel.label}
                     </span>
                   </div>
@@ -309,7 +310,7 @@ export default function ProgressPage() {
                         <span
                           key={b.id}
                           title={b.description}
-                          className="bg-white/20 px-2 py-1 text-xs font-medium flex items-center gap-1"
+                          className="bg-white/20 rounded-full px-2.5 py-1 text-xs font-medium flex items-center gap-1"
                         >
                           {b.icon} {b.label}
                         </span>
@@ -361,36 +362,39 @@ export default function ProgressPage() {
                   c: "bg-amber-50 text-amber-600",
                 },
               ].map((s) => (
-                <div
-                  key={s.label}
-                  className="bg-white border border-gray-200 p-4 flex flex-col items-center text-center"
-                >
-                  <div
-                    className={`w-9 h-9 flex items-center justify-center text-base mb-2 ${s.c}`}
-                  >
-                    {s.icon}
+                <div key={s.label} className="stat-card">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400">
+                      {s.label}
+                    </p>
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0 ${s.c}`}
+                    >
+                      {s.icon}
+                    </div>
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{s.value}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+                  <p className="text-3xl font-extrabold text-[#001233] mt-3 tracking-tight">
+                    {s.value}
+                  </p>
                 </div>
               ))}
             </div>
 
             {/* Materials progress */}
             {totalMats > 0 && (
-              <div className="bg-white border border-gray-200 p-5">
+              <div className="portal-card">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+                  <h2 className="font-semibold text-[#001233] flex items-center gap-2">
                     <MdMenuBook size={16} className="text-indigo-500" />
                     Materials Progress
                   </h2>
-                  <span className="text-sm font-bold text-gray-900">
+                  <span className="text-sm font-bold text-[#001233]">
                     {matPct}%
                   </span>
                 </div>
-                <div className="h-2.5 bg-gray-100 mb-4">
+                <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden mb-4">
                   <div
-                    className="h-full bg-indigo-500 transition-all duration-700"
+                    className="h-full bg-indigo-500 transition-all duration-700 rounded-full"
                     style={{ width: `${matPct}%` }}
                   />
                 </div>
@@ -400,11 +404,11 @@ export default function ProgressPage() {
                     return (
                       <div
                         key={m.id}
-                        className={`flex items-center justify-between px-3 py-2 text-sm ${done ? "bg-emerald-50" : "bg-gray-50"}`}
+                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-sm ${done ? "bg-emerald-50" : "bg-slate-50"}`}
                       >
                         <div className="flex items-center gap-2">
                           <span
-                            className={`w-4 h-4 flex items-center justify-center text-xs font-bold ${done ? "bg-emerald-500 text-white" : "bg-gray-200 text-gray-400"}`}
+                            className={`w-4 h-4 rounded-md flex items-center justify-center text-xs font-bold ${done ? "bg-emerald-500 text-white" : "bg-gray-200 text-gray-400"}`}
                           >
                             {done ? "✓" : ""}
                           </span>
@@ -430,8 +434,8 @@ export default function ProgressPage() {
 
             {/* Subject progress */}
             {progress.length > 0 && (
-              <div className="bg-white border border-gray-200 p-5">
-                <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="portal-card">
+                <h2 className="font-semibold text-[#001233] mb-4 flex items-center gap-2">
                   <MdBarChart size={16} className="text-secondary-color" />{" "}
                   Progress by Subject
                 </h2>
@@ -442,13 +446,13 @@ export default function ProgressPage() {
                         <p className="text-sm text-gray-700 font-medium">
                           {p.subject} · Grade {p.grade}
                         </p>
-                        <p className="text-sm font-bold text-gray-900">
+                        <p className="text-sm font-bold text-[#001233]">
                           {p.overallScore}%
                         </p>
                       </div>
-                      <div className="h-2.5 bg-gray-100">
+                      <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full transition-all duration-700"
+                          className="h-full transition-all duration-700 rounded-full"
                           style={{
                             width: `${p.overallScore}%`,
                             background:
@@ -470,10 +474,10 @@ export default function ProgressPage() {
 
             {/* Test history */}
             {approvedAttempts.length > 0 && (
-              <div className="bg-white border border-gray-200 overflow-hidden">
+              <div className="portal-card !p-0 overflow-hidden">
                 <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
                   <MdTrendingUp size={16} className="text-secondary-color" />
-                  <h2 className="font-semibold text-gray-900">Test History</h2>
+                  <h2 className="font-semibold text-[#001233]">Test History</h2>
                 </div>
                 <div className="divide-y divide-gray-50">
                   {approvedAttempts.map((a) => (
@@ -501,7 +505,7 @@ export default function ProgressPage() {
                           </p>
                         </div>
                         <span
-                          className={`text-xs font-semibold px-2 py-0.5 ${a.passed ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-600"}`}
+                          className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${a.passed ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-600"}`}
                         >
                           {a.passed ? "Pass" : "Fail"}
                         </span>
@@ -568,9 +572,9 @@ export default function ProgressPage() {
               if (topicRows.length === 0 && gaps.length === 0) return null;
 
               return (
-                <div className="bg-white border border-gray-200 p-5">
+                <div className="portal-card">
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <h2 className="font-semibold text-[#001233] flex items-center gap-2">
                       <MdAutoAwesome size={16} className="text-purple-600" />{" "}
                       Topic Accuracy &amp; Learning Gaps
                     </h2>
@@ -583,7 +587,7 @@ export default function ProgressPage() {
                   </div>
 
                   {topicRows.length === 0 ? (
-                    <div className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200">
+                    <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200">
                       <MdCheckCircle
                         size={20}
                         className="text-emerald-600 shrink-0"
@@ -609,14 +613,14 @@ export default function ProgressPage() {
                                 </span>
                               </div>
                               <span
-                                className={`text-xs font-bold px-2 py-0.5 ${c.badge}`}
+                                className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${c.badge}`}
                               >
                                 {accuracy}%
                               </span>
                             </div>
-                            <div className="h-2 bg-gray-100">
+                            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
                               <div
-                                className="h-full transition-all duration-700"
+                                className="h-full transition-all duration-700 rounded-full"
                                 style={{
                                   width: `${accuracy}%`,
                                   background: c.bar,
@@ -627,7 +631,7 @@ export default function ProgressPage() {
                         );
                       })}
                       {gaps.filter((g) => g.accuracy < 60).length > 0 && (
-                        <div className="mt-3 flex items-start gap-2 bg-amber-50 border border-amber-200 px-3 py-2">
+                        <div className="mt-3 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
                           <MdWarning
                             size={16}
                             className="text-amber-600 shrink-0 mt-0.5"
@@ -659,8 +663,8 @@ export default function ProgressPage() {
             })()}
 
             {/* Badges */}
-            <div className="bg-white border border-gray-200 p-5">
-              <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="portal-card">
+              <h2 className="font-semibold text-[#001233] mb-4 flex items-center gap-2">
                 <MdEmojiEvents size={16} className="text-amber-500" />{" "}
                 Achievements
               </h2>
@@ -669,7 +673,7 @@ export default function ProgressPage() {
                   <div
                     key={b.id}
                     title={b.description}
-                    className={`flex flex-col items-center gap-1.5 p-3 border text-center transition-all ${
+                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border text-center transition-all ${
                       b.earned
                         ? "border-amber-300 bg-amber-50"
                         : "border-gray-100 bg-gray-50 opacity-40 grayscale"
