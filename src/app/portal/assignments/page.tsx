@@ -19,6 +19,13 @@ import {
   type MaterialCompletion,
 } from "@/lib/firestore";
 import { QuestionReadAloud } from "@/components/QuestionReadAloud";
+import { uploadToCloudinary } from "@/lib/cloudinary";
+import {
+  formatSchedule,
+  isNotYetOpen,
+  isPastDue,
+  effectiveDueAt,
+} from "@/lib/schedule";
 import {
   MdAssignment,
   MdOpenInNew,
@@ -31,6 +38,8 @@ import {
   MdExpandLess,
   MdAutoAwesome,
   MdPrint,
+  MdAttachFile,
+  MdSchedule,
 } from "react-icons/md";
 import type { Question } from "@/lib/firestore";
 
@@ -41,6 +50,9 @@ const TYPE_LABELS: Record<string, string> = {
   document: "Document",
   quiz: "Quiz",
 };
+
+const SUBMISSION_ACCEPT = ".pdf,.doc,.docx,.png,.jpg,.jpeg";
+const SUBMISSION_FOLDER = "bridgitus/submissions";
 
 function AssignmentCard({
   assignment,
@@ -64,14 +76,49 @@ function AssignmentCard({
   const [submission, setSubmission] = useState<AssignmentSubmission | null>(null);
   const [marking, setMarking] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [attachmentUrl, setAttachmentUrl] = useState<string | undefined>();
+  const [attachmentName, setAttachmentName] = useState<string | undefined>();
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
 
   useEffect(() => {
     if (!assignment.id) return;
-    getSubmission(assignment.id, studentId).then(setSubmission);
+    getSubmission(assignment.id, studentId).then((sub) => {
+      setSubmission(sub);
+      if (sub?.attachmentUrl) {
+        setAttachmentUrl(sub.attachmentUrl);
+        setAttachmentName(sub.attachmentName);
+      }
+    });
   }, [assignment.id, studentId, refreshToken]);
 
+  const notOpen = isNotYetOpen(assignment);
+  const pastDue = isPastDue(assignment);
+  const scheduleBlocked = notOpen || pastDue;
+  const canAct = isUnlocked && !scheduleBlocked;
+  const dueLabel = effectiveDueAt(assignment);
+  const requiresAttachment =
+    assignment.type === "document" || assignment.type === "custom";
+
+  async function handleAttachmentChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadError("");
+    try {
+      const url = await uploadToCloudinary(file, SUBMISSION_FOLDER);
+      setAttachmentUrl(url);
+      setAttachmentName(file.name);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Upload failed.");
+      e.target.value = "";
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function markStarted() {
-    if (!isUnlocked || !assignment.id) return;
+    if (!canAct || !assignment.id) return;
     setMarking(true);
     try {
       await upsertSubmission({
@@ -92,27 +139,58 @@ function AssignmentCard({
   }
 
   async function markSubmitted() {
-    if (!assignment.id) return;
+    if (!assignment.id || !canAct) return;
+    if (requiresAttachment && !attachmentUrl) {
+      setUploadError("Please attach your work before submitting.");
+      return;
+    }
     setMarking(true);
+    setUploadError("");
     try {
       await upsertSubmission({
         assignmentId: assignment.id,
         studentId,
         studentUid,
         status: "submitted",
+        ...(attachmentUrl
+          ? { attachmentUrl, attachmentName: attachmentName ?? "attachment" }
+          : {}),
       });
       await upsertStudentProgress(studentId, assignment.grade, assignment.subject, {
         assignmentCompleted: true,
       });
-      setSubmission((current) => current ? { ...current, status: "submitted" } : null);
+      setSubmission((current) =>
+        current
+          ? {
+              ...current,
+              status: "submitted",
+              attachmentUrl,
+              attachmentName,
+            }
+          : {
+              assignmentId: assignment.id!,
+              studentId,
+              studentUid,
+              status: "submitted",
+              attachmentUrl,
+              attachmentName,
+            }
+      );
     } finally {
       setMarking(false);
     }
   }
 
   const status = submission?.status ?? "not_started";
-  const isOverdue = assignment.dueDate ? new Date(assignment.dueDate) < new Date() : false;
   const hasQuiz = (assignment.questions?.length ?? 0) > 0 || assignment.type === "quiz";
+  const canSubmitWork =
+    canAct &&
+    !hasQuiz &&
+    (status === "in_progress" || status === "not_started");
+  const showAttachmentInput =
+    canAct &&
+    !hasQuiz &&
+    (status === "not_started" || status === "in_progress");
 
   const statusStyle: Record<string, string> = {
     not_started: "bg-gray-100 text-gray-600",
@@ -135,8 +213,8 @@ function AssignmentCard({
       : "bg-secondary-color";
 
   return (
-    <div className={`portal-card hover-lift !p-0 overflow-hidden transition-all ${!isUnlocked ? "opacity-65" : isOverdue && status === "not_started" ? "!border-red-200" : ""}`}>
-      <div className={`h-1 ${!isUnlocked ? "bg-gray-200" : assignment.type === "ixl" ? "bg-orange-500" : assignment.type === "deltamath" ? "bg-blue-600" : "bg-secondary-color"}`} />
+    <div className={`portal-card hover-lift !p-0 overflow-hidden transition-all ${!isUnlocked || scheduleBlocked ? "opacity-65" : pastDue && status === "not_started" ? "!border-red-200" : ""}`}>
+      <div className={`h-1 ${!isUnlocked || scheduleBlocked ? "bg-gray-200" : assignment.type === "ixl" ? "bg-orange-500" : assignment.type === "deltamath" ? "bg-blue-600" : "bg-secondary-color"}`} />
       <div className="p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
@@ -151,8 +229,13 @@ function AssignmentCard({
                   <MdLock size={11} /> Locked
                 </span>
               )}
-              {isOverdue && status === "not_started" && isUnlocked && (
-                <span className="text-xs bg-red-100 text-red-600 px-2.5 py-0.5 rounded-full font-semibold">Overdue</span>
+              {notOpen && isUnlocked && (
+                <span className="text-xs bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-0.5">
+                  <MdSchedule size={11} /> Not open
+                </span>
+              )}
+              {pastDue && status === "not_started" && isUnlocked && (
+                <span className="text-xs bg-red-100 text-red-600 px-2.5 py-0.5 rounded-full font-semibold">Closed</span>
               )}
             </div>
 
@@ -167,10 +250,16 @@ function AssignmentCard({
             )}
 
             <div className="flex flex-wrap gap-4 mt-1 text-xs text-gray-400">
-              {assignment.dueDate && (
-                <span className={`flex items-center gap-1 ${isOverdue ? "text-red-500" : ""}`}>
+              {assignment.startAt && (
+                <span className="flex items-center gap-1">
+                  <MdSchedule size={11} />
+                  Start: {formatSchedule(assignment.startAt)}
+                </span>
+              )}
+              {dueLabel && (
+                <span className={`flex items-center gap-1 ${pastDue ? "text-red-500" : ""}`}>
                   <MdCalendarToday size={11} />
-                  Due: {new Date(assignment.dueDate).toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" })}
+                  Due: {formatSchedule(dueLabel)}
                 </span>
               )}
               {assignment.maxScore && <span>Max: {assignment.maxScore}</span>}
@@ -179,7 +268,19 @@ function AssignmentCard({
               )}
             </div>
 
-              {status === "graded" && submission?.feedback && (
+            {(submission?.attachmentUrl || attachmentUrl) && (status === "submitted" || status === "graded") && (
+              <a
+                href={submission?.attachmentUrl ?? attachmentUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-secondary-color hover:underline"
+              >
+                <MdLink size={13} />
+                {submission?.attachmentName ?? attachmentName ?? "View uploaded file"}
+              </a>
+            )}
+
+            {status === "graded" && submission?.feedback && (
               <div className="mt-2 p-3 rounded-xl bg-emerald-50 border border-emerald-100">
                 <p className="text-xs font-semibold text-emerald-700 mb-0.5">Teacher Feedback:</p>
                 <p className="text-xs text-emerald-600">{submission.feedback}</p>
@@ -189,73 +290,151 @@ function AssignmentCard({
 
           {isUnlocked && (
             <div className="flex flex-col items-end gap-2 shrink-0">
-              {assignment.platformUrl && (
-                <a
-                  href={assignment.platformUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={status === "not_started" && !hasQuiz ? markStarted : undefined}
-                  className={`inline-flex items-center gap-1.5 text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors ${assignment.type === "ixl" ? "bg-orange-500 hover:bg-orange-600" : "bg-blue-600 hover:bg-blue-700"}`}
-                >
-                  <MdOpenInNew size={13} />
-                  Open in {assignment.type === "ixl" ? "IXL" : "DeltaMath"}
-                </a>
-              )}
+              {notOpen ? (
+                <div className="text-sm text-slate-500 text-right max-w-[11rem]">
+                  <div className="flex items-center justify-end gap-1.5 font-medium">
+                    <MdSchedule size={15} /> Opens
+                  </div>
+                  <p className="text-xs mt-0.5">{formatSchedule(assignment.startAt)}</p>
+                </div>
+              ) : pastDue ? (
+                <>
+                  <div className="text-sm text-red-500 text-right max-w-[11rem]">
+                    <div className="flex items-center justify-end gap-1.5 font-medium">
+                      <MdLock size={15} /> Closed
+                    </div>
+                    <p className="text-xs mt-0.5">{formatSchedule(dueLabel)}</p>
+                  </div>
+                  {hasQuiz && status === "graded" && submission && onViewResults && (
+                    <button
+                      type="button"
+                      onClick={() => onViewResults(assignment, submission)}
+                      className="rounded-xl bg-emerald-600 text-white text-xs font-bold px-3 py-2 hover:bg-emerald-700 transition-colors"
+                    >
+                      View Results
+                    </button>
+                  )}
+                </>
+              ) : (
+                <>
+                  {assignment.platformUrl && (
+                    <a
+                      href={assignment.platformUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={status === "not_started" && !hasQuiz ? markStarted : undefined}
+                      className={`inline-flex items-center gap-1.5 text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors ${assignment.type === "ixl" ? "bg-orange-500 hover:bg-orange-600" : "bg-blue-600 hover:bg-blue-700"}`}
+                    >
+                      <MdOpenInNew size={13} />
+                      Open in {assignment.type === "ixl" ? "IXL" : "DeltaMath"}
+                    </a>
+                  )}
 
-              {hasQuiz && status !== "graded" && onStartQuiz && (
-                <button
-                  type="button"
-                  onClick={() => onStartQuiz(assignment)}
-                  className="portal-btn-primary !text-xs !px-3 !py-2"
-                >
-                  Take Quiz
-                </button>
-              )}
+                  {hasQuiz && status !== "graded" && onStartQuiz && (
+                    <button
+                      type="button"
+                      onClick={() => onStartQuiz(assignment)}
+                      className="portal-btn-primary !text-xs !px-3 !py-2"
+                    >
+                      Take Quiz
+                    </button>
+                  )}
 
-              {hasQuiz && status === "graded" && submission && onViewResults && (
-                <button
-                  type="button"
-                  onClick={() => onViewResults(assignment, submission)}
-                  className="rounded-xl bg-emerald-600 text-white text-xs font-bold px-3 py-2 hover:bg-emerald-700 transition-colors"
-                >
-                  View Results
-                </button>
-              )}
+                  {hasQuiz && status === "graded" && submission && onViewResults && (
+                    <button
+                      type="button"
+                      onClick={() => onViewResults(assignment, submission)}
+                      className="rounded-xl bg-emerald-600 text-white text-xs font-bold px-3 py-2 hover:bg-emerald-700 transition-colors"
+                    >
+                      View Results
+                    </button>
+                  )}
 
-              {hasQuiz && status === "graded" && onStartQuiz && (
-                <button
-                  type="button"
-                  onClick={() => onStartQuiz(assignment)}
-                  className="rounded-xl border border-secondary-color text-secondary-color text-xs font-bold px-3 py-2 hover:bg-secondary-color hover:text-white transition-colors"
-                >
-                  Retake Quiz
-                </button>
-              )}
+                  {hasQuiz && status === "graded" && onStartQuiz && (
+                    <button
+                      type="button"
+                      onClick={() => onStartQuiz(assignment)}
+                      className="rounded-xl border border-secondary-color text-secondary-color text-xs font-bold px-3 py-2 hover:bg-secondary-color hover:text-white transition-colors"
+                    >
+                      Retake Quiz
+                    </button>
+                  )}
 
-              {status === "in_progress" && !hasQuiz && (
-                <button
-                  type="button"
-                  onClick={markSubmitted}
-                  disabled={marking}
-                  className="flex items-center gap-1.5 text-sm text-blue-600 font-medium hover:underline disabled:opacity-60"
-                >
-                  <MdCheckCircle size={15} /> Mark as Done
-                </button>
-              )}
+                  {status === "in_progress" && !hasQuiz && (
+                    <button
+                      type="button"
+                      onClick={markSubmitted}
+                      disabled={marking || uploading || (requiresAttachment && !attachmentUrl)}
+                      className="flex items-center gap-1.5 text-sm text-blue-600 font-medium hover:underline disabled:opacity-60"
+                    >
+                      <MdCheckCircle size={15} /> Mark as Done
+                    </button>
+                  )}
 
-              {status === "not_started" && !assignment.platformUrl && !hasQuiz && (
-                <button
-                  type="button"
-                  onClick={markStarted}
-                  disabled={marking}
-                  className="portal-btn-primary !text-xs !px-3 !py-2 disabled:opacity-60"
-                >
-                  Start
-                </button>
+                  {status === "not_started" && !assignment.platformUrl && !hasQuiz && (
+                    <button
+                      type="button"
+                      onClick={markStarted}
+                      disabled={marking}
+                      className="portal-btn-primary !text-xs !px-3 !py-2 disabled:opacity-60"
+                    >
+                      Start
+                    </button>
+                  )}
+                </>
               )}
             </div>
           )}
         </div>
+
+        {showAttachmentInput && (
+          <div className="mt-4 border-t border-gray-100 pt-4">
+            <label className="block text-xs font-semibold text-gray-500 mb-2">
+              {requiresAttachment ? "Attachment (required)" : "Optional attachment"}
+            </label>
+            <div className="flex flex-wrap items-center gap-3">
+              <label className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 cursor-pointer hover:border-secondary-color transition-colors">
+                <MdAttachFile size={14} />
+                {uploading ? "Uploading…" : attachmentName ? "Replace file" : "Attach file"}
+                <input
+                  type="file"
+                  accept={SUBMISSION_ACCEPT}
+                  className="hidden"
+                  onChange={handleAttachmentChange}
+                  disabled={uploading || marking}
+                />
+              </label>
+              {attachmentUrl && attachmentName && (
+                <a
+                  href={attachmentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-secondary-color font-medium hover:underline"
+                >
+                  <MdLink size={13} />
+                  {attachmentName}
+                </a>
+              )}
+              <span className="text-[11px] text-gray-400">PDF, DOC, DOCX, PNG, JPG</span>
+            </div>
+            {requiresAttachment && !attachmentUrl && (
+              <p className="mt-1.5 text-[11px] text-amber-700">
+                Attach your completed work before marking as done.
+              </p>
+            )}
+            {uploadError && <p className="mt-1.5 text-xs text-red-600">{uploadError}</p>}
+            {canSubmitWork && status === "not_started" && assignment.platformUrl && attachmentUrl && (
+              <button
+                type="button"
+                onClick={markSubmitted}
+                disabled={marking || uploading}
+                className="mt-3 flex items-center gap-1.5 text-sm text-blue-600 font-medium hover:underline disabled:opacity-60"
+              >
+                <MdCheckCircle size={15} /> Submit with attachment
+              </button>
+            )}
+          </div>
+        )}
 
         {isUnlocked && (assignment.content || assignment.fileUrl) && (
           <div className="mt-4 border-t border-gray-100 pt-4">
@@ -427,6 +606,18 @@ function QuizResultPanel({
 
       {simError && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2">{simError}</p>}
 
+      {submission.attachmentUrl && (
+        <a
+          href={submission.attachmentUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 text-sm font-medium px-3 py-2 hover:bg-gray-100 transition-colors"
+        >
+          <MdLink size={15} />
+          {submission.attachmentName ?? "View attachment"}
+        </a>
+      )}
+
       <div className="portal-card !p-0 overflow-hidden">
         <div className="px-4 py-3 border-b border-gray-100 font-semibold text-[#001233] text-sm">
           Question breakdown
@@ -545,12 +736,34 @@ function QuizRunner({
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [attachmentUrl, setAttachmentUrl] = useState<string | undefined>();
+  const [attachmentName, setAttachmentName] = useState<string | undefined>();
+  const [uploading, setUploading] = useState(false);
 
   const questions = assignment.questions ?? [];
   const totalPoints = assignment.totalPoints ?? questions.reduce((sum, q) => sum + (q.points ?? 0), 0);
+  const requiresAttachment =
+    assignment.type === "document" || assignment.type === "custom";
 
   function handleAnswer(questionId: string, value: string) {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
+  }
+
+  async function handleAttachmentChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError("");
+    try {
+      const url = await uploadToCloudinary(file, SUBMISSION_FOLDER);
+      setAttachmentUrl(url);
+      setAttachmentName(file.name);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed.");
+      e.target.value = "";
+    } finally {
+      setUploading(false);
+    }
   }
 
   function grade() {
@@ -577,6 +790,10 @@ function QuizRunner({
       setError("Assignment is not available.");
       return;
     }
+    if (requiresAttachment && !attachmentUrl) {
+      setError("Please attach your work before submitting.");
+      return;
+    }
 
     setSubmitting(true);
     setError("");
@@ -594,6 +811,9 @@ function QuizRunner({
         percentage,
         passed,
         attemptNumber: 1,
+        ...(attachmentUrl
+          ? { attachmentUrl, attachmentName: attachmentName ?? "attachment" }
+          : {}),
       };
 
       await upsertSubmission(submission);
@@ -722,11 +942,42 @@ function QuizRunner({
         ))}
       </div>
 
+      <div className="border-t border-gray-100 pt-4">
+        <label className="block text-xs font-semibold text-gray-500 mb-2">
+          {requiresAttachment ? "Attachment (required)" : "Optional attachment"}
+        </label>
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 cursor-pointer hover:border-secondary-color transition-colors">
+            <MdAttachFile size={14} />
+            {uploading ? "Uploading…" : attachmentName ? "Replace file" : "Attach file"}
+            <input
+              type="file"
+              accept={SUBMISSION_ACCEPT}
+              className="hidden"
+              onChange={handleAttachmentChange}
+              disabled={uploading || submitting}
+            />
+          </label>
+          {attachmentUrl && attachmentName && (
+            <a
+              href={attachmentUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-secondary-color font-medium hover:underline"
+            >
+              <MdLink size={13} />
+              {attachmentName}
+            </a>
+          )}
+          <span className="text-[11px] text-gray-400">PDF, DOC, DOCX, PNG, JPG</span>
+        </div>
+      </div>
+
       <div className="flex flex-wrap gap-3 items-center">
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={submitting}
+          disabled={submitting || uploading || (requiresAttachment && !attachmentUrl)}
           className="portal-btn-primary disabled:opacity-60"
         >
           {submitting ? "Submitting…" : "Submit Quiz"}
@@ -877,7 +1128,11 @@ export default function AssignmentsPage() {
                 isUnlocked={isAssignmentUnlocked(assignment)}
                 prerequisiteTitle={assignment.linkedMaterialId ? materialTitles[assignment.linkedMaterialId] : undefined}
                 refreshToken={refreshToken}
-                onStartQuiz={(a) => { setResultView(null); setActiveQuiz(a); }}
+                onStartQuiz={(a) => {
+                  if (isNotYetOpen(a) || isPastDue(a)) return;
+                  setResultView(null);
+                  setActiveQuiz(a);
+                }}
                 onViewResults={(a, s) => setResultView({ assignment: a, submission: s })}
               />
             ))}

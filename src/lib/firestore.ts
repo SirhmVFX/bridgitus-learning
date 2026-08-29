@@ -86,6 +86,10 @@ export interface Test {
   grade: string; subject: string; type: "test" | "exam";
   questions: Question[]; totalPoints: number; passMark: number;
   maxAttempts: number; timeLimit?: number; linkedMaterialId?: string;
+  /** ISO datetime-local string */
+  startAt?: string;
+  /** ISO datetime-local string */
+  dueAt?: string;
   published: boolean; createdAt?: Timestamp; updatedAt?: Timestamp;
 }
 
@@ -95,7 +99,10 @@ export interface TestAttempt {
   answers: Record<string, string>; score: number; totalPoints: number;
   percentage: number; passed: boolean; attemptNumber: number;
   status: "pending_review" | "approved" | "rejected";
-  adminComment?: string; submittedAt?: Timestamp; reviewedAt?: Timestamp;
+  adminComment?: string;
+  attachmentUrl?: string;
+  attachmentName?: string;
+  submittedAt?: Timestamp; reviewedAt?: Timestamp;
 }
 
 export interface Assignment {
@@ -104,7 +111,10 @@ export interface Assignment {
   type: "ixl" | "deltamath" | "custom" | "document" | "quiz";
   platformUrl?: string; platform?: "ixl" | "deltamath" | "other";
   content?: string; fileUrl?: string; fileName?: string;
+  /** @deprecated Prefer dueAt */
   dueDate?: string; maxScore?: number; linkedMaterialId?: string;
+  startAt?: string;
+  dueAt?: string;
   questions?: Question[]; totalPoints?: number; passMark?: number;
   timeLimit?: number; maxAttempts?: number;
   targetGrades: string[]; targetStudentIds?: string[];
@@ -116,7 +126,10 @@ export interface AssignmentSubmission {
   status: "not_started" | "in_progress" | "submitted" | "graded";
   answers?: Record<string, string>; score?: number; totalPoints?: number;
   percentage?: number; passed?: boolean; attemptNumber?: number;
-  feedback?: string; submittedAt?: Timestamp; gradedAt?: Timestamp;
+  feedback?: string;
+  attachmentUrl?: string;
+  attachmentName?: string;
+  submittedAt?: Timestamp; gradedAt?: Timestamp;
 }
 
 export interface StudentProgress {
