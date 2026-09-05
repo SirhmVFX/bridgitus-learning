@@ -96,6 +96,7 @@ export interface Test {
 export interface TestAttempt {
   id?: string; testId: string; testTitle?: string;
   studentId: string; studentUid: string;
+  studentName?: string;
   answers: Record<string, string>; score: number; totalPoints: number;
   percentage: number; passed: boolean; attemptNumber: number;
   status: "pending_review" | "approved" | "rejected";
@@ -123,6 +124,7 @@ export interface Assignment {
 
 export interface AssignmentSubmission {
   id?: string; assignmentId: string; studentId: string; studentUid: string;
+  studentName?: string;
   status: "not_started" | "in_progress" | "submitted" | "graded";
   answers?: Record<string, string>; score?: number; totalPoints?: number;
   percentage?: number; passed?: boolean; attemptNumber?: number;

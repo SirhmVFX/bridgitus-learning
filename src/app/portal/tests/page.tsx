@@ -338,6 +338,7 @@ function TestRunner({
   test,
   studentId,
   studentUid,
+  studentName,
   studentGrade,
   attemptNumber,
   onSubmit,
@@ -345,6 +346,7 @@ function TestRunner({
   test: Test;
   studentId: string;
   studentUid: string;
+  studentName: string;
   studentGrade: string;
   attemptNumber: number;
   onSubmit: (attempt: TestAttempt | null) => void;
@@ -419,6 +421,7 @@ function TestRunner({
         testTitle: test.title,
         studentId,
         studentUid,
+        studentName,
         answers,
         score,
         totalPoints: test.totalPoints,
@@ -724,6 +727,7 @@ export default function TestsPage() {
             test={activeTest}
             studentId={student!.id!}
             studentUid={user!.uid}
+            studentName={`${student!.firstName} ${student!.lastName}`.trim()}
             studentGrade={student!.grade}
             attemptNumber={attemptsForTest(activeTest.id!).length + 1}
             onSubmit={(attempt) => {

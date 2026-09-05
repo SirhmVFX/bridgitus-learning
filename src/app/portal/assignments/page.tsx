@@ -58,6 +58,7 @@ function AssignmentCard({
   assignment,
   studentId,
   studentUid,
+  studentName,
   isUnlocked,
   prerequisiteTitle,
   onStartQuiz,
@@ -67,6 +68,7 @@ function AssignmentCard({
   assignment: Assignment;
   studentId: string;
   studentUid: string;
+  studentName: string;
   isUnlocked: boolean;
   prerequisiteTitle?: string;
   onStartQuiz?: (assignment: Assignment) => void;
@@ -125,12 +127,14 @@ function AssignmentCard({
         assignmentId: assignment.id,
         studentId,
         studentUid,
+        studentName,
         status: "in_progress",
       });
       setSubmission({
         assignmentId: assignment.id,
         studentId,
         studentUid,
+        studentName,
         status: "in_progress",
       });
     } finally {
@@ -151,6 +155,7 @@ function AssignmentCard({
         assignmentId: assignment.id,
         studentId,
         studentUid,
+        studentName,
         status: "submitted",
         ...(attachmentUrl
           ? { attachmentUrl, attachmentName: attachmentName ?? "attachment" }
@@ -722,6 +727,7 @@ function QuizRunner({
   assignment,
   studentId,
   studentUid,
+  studentName,
   studentGrade,
   onCancel,
   onComplete,
@@ -729,6 +735,7 @@ function QuizRunner({
   assignment: Assignment;
   studentId: string;
   studentUid: string;
+  studentName: string;
   studentGrade: string;
   onCancel: () => void;
   onComplete: (assignment: Assignment, submission: AssignmentSubmission) => void;
@@ -804,6 +811,7 @@ function QuizRunner({
         assignmentId: assignment.id,
         studentId,
         studentUid,
+        studentName,
         status: "graded",
         answers,
         score,
@@ -1113,6 +1121,7 @@ export default function AssignmentsPage() {
             assignment={activeQuiz}
             studentId={student!.id!}
             studentUid={user!.uid}
+            studentName={`${student!.firstName} ${student!.lastName}`.trim()}
             studentGrade={student!.grade}
             onCancel={() => setActiveQuiz(null)}
             onComplete={handleCompleteQuiz}
@@ -1125,6 +1134,7 @@ export default function AssignmentsPage() {
                 assignment={assignment}
                 studentId={student!.id!}
                 studentUid={user!.uid}
+                studentName={`${student!.firstName} ${student!.lastName}`.trim()}
                 isUnlocked={isAssignmentUnlocked(assignment)}
                 prerequisiteTitle={assignment.linkedMaterialId ? materialTitles[assignment.linkedMaterialId] : undefined}
                 refreshToken={refreshToken}
