@@ -19,7 +19,7 @@ import {
   type LearningMaterial,
   type MaterialCompletion,
   type LearningGap,
-  type PracticeAttempt,
+  type AiPracticeAttempt,
 } from "@/lib/firestore";
 import {
   MdBarChart,
@@ -182,7 +182,7 @@ export default function ProgressPage() {
   const [completions, setCompletions] = useState<MaterialCompletion[]>([]);
   const [assignmentsCompleted, setAssignmentsCompleted] = useState(0);
   const [gaps, setGaps] = useState<LearningGap[]>([]);
-  const [practiceAttempts, setPracticeAttempts] = useState<PracticeAttempt[]>(
+  const [practiceAttempts, setPracticeAttempts] = useState<AiPracticeAttempt[]>(
     []
   );
   const [loading, setLoading] = useState(true);

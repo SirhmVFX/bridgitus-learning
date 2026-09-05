@@ -1,6 +1,7 @@
 "use client";
 
 import Button from "@/components/Button";
+import ModalPortal from "@/components/ModalPortal";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { format, isSameDay } from "date-fns";
@@ -1942,8 +1943,9 @@ function Register() {
             </div>
           </div>
         ) : step7 ? (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="w-full max-w-md bg-white p-8 text-center">
+          <ModalPortal>
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-md bg-white p-8 text-center rounded-2xl">
               <h1 className="mb-3 text-2xl font-bold text-gray-900">Registration Submitted Successfully!</h1>
               <p className="mb-6 text-gray-600">Thank you for registering with Bridgitus. Check your email for login credentials.</p>
               <div className="flex gap-3">
@@ -1952,6 +1954,7 @@ function Register() {
               </div>
             </div>
           </div>
+          </ModalPortal>
         ) : null}
       </div>
     </>

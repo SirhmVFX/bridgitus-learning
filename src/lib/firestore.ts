@@ -381,6 +381,152 @@ export async function upsertSubmission(sub: Omit<AssignmentSubmission, "id">): P
 }
 
 // ─────────────────────────────────────────────────────────────
+// PRACTICE PAPERS (NAPLAN / Selective Entry)
+// ─────────────────────────────────────────────────────────────
+
+export type PracticeProgram = "naplan" | "selective";
+
+export interface PracticePaper {
+  id?: string;
+  program: PracticeProgram;
+  title: string;
+  description: string;
+  yearLevels: string[];
+  subject: string;
+  type: "quiz" | "exam" | "test" | "document" | "custom";
+  questions?: Question[];
+  totalPoints?: number;
+  passMark?: number;
+  timeLimit?: number;
+  maxAttempts?: number;
+  fileUrl?: string;
+  fileName?: string;
+  content?: string;
+  startAt?: string;
+  dueAt?: string;
+  published: boolean;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
+}
+
+export interface PracticeAttempt {
+  id?: string;
+  paperId: string;
+  paperTitle?: string;
+  program: PracticeProgram;
+  studentId: string;
+  studentUid: string;
+  studentName?: string;
+  answers?: Record<string, string>;
+  score?: number;
+  totalPoints?: number;
+  percentage?: number;
+  passed?: boolean;
+  attemptNumber: number;
+  status: "submitted" | "graded" | "pending_review";
+  feedback?: string;
+  attachmentUrl?: string;
+  attachmentName?: string;
+  submittedAt?: Timestamp;
+  gradedAt?: Timestamp;
+}
+
+function sanitizeUndefined<T extends Record<string, unknown>>(obj: T): T {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, v]) => v !== undefined)
+  ) as T;
+}
+
+/** Normalize "Year 8" / "Grade 8" / "8" → "8" */
+export function normalizeYearGrade(value: string | null | undefined): string {
+  if (!value) return "";
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/^year\s+/i, "")
+    .replace(/^grade\s+/i, "")
+    .replace(/^yr\s+/i, "");
+}
+
+export function paperMatchesStudentGrade(
+  paper: PracticePaper,
+  studentGrade: string
+): boolean {
+  const g = normalizeYearGrade(studentGrade);
+  if (!g) return false;
+  return (paper.yearLevels ?? []).some((y) => normalizeYearGrade(y) === g);
+}
+
+export async function getPracticePapers(program: PracticeProgram): Promise<PracticePaper[]> {
+  const snap = await getDocs(
+    query(collection(db, "practicePapers"), where("program", "==", program))
+  );
+  return snap.docs
+    .map((d) => ({ id: d.id, ...(d.data() as PracticePaper) }))
+    .filter((p) => p.published)
+    .sort((a, b) => (b.createdAt as Timestamp)?.toMillis() - (a.createdAt as Timestamp)?.toMillis() || 0);
+}
+
+export async function getPracticePapersForStudent(
+  program: PracticeProgram,
+  studentGrade: string
+): Promise<PracticePaper[]> {
+  const papers = await getPracticePapers(program);
+  return papers.filter((p) => paperMatchesStudentGrade(p, studentGrade));
+}
+
+export async function getPracticePaperById(id: string): Promise<PracticePaper | null> {
+  const snap = await getDoc(doc(db, "practicePapers", id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...(snap.data() as PracticePaper) };
+}
+
+export async function getAttemptsByPaper(
+  paperId: string,
+  studentId?: string
+): Promise<PracticeAttempt[]> {
+  const snap = await getDocs(
+    query(collection(db, "practiceAttempts"), where("paperId", "==", paperId))
+  );
+  return snap.docs
+    .map((d) => ({ id: d.id, ...(d.data() as PracticeAttempt) }))
+    .filter((a) => Boolean(a.paperId) && (!studentId || a.studentId === studentId))
+    .sort((a, b) => (b.submittedAt as Timestamp)?.toMillis() - (a.submittedAt as Timestamp)?.toMillis() || 0);
+}
+
+export async function getStudentPracticeAttempts(
+  studentId: string,
+  program?: PracticeProgram
+): Promise<PracticeAttempt[]> {
+  const snap = await getDocs(
+    query(collection(db, "practiceAttempts"), where("studentId", "==", studentId))
+  );
+  return snap.docs
+    .map((d) => ({ id: d.id, ...(d.data() as PracticeAttempt) }))
+    .filter((a) => Boolean(a.paperId) && (!program || a.program === program))
+    .sort((a, b) => (b.submittedAt as Timestamp)?.toMillis() - (a.submittedAt as Timestamp)?.toMillis() || 0);
+}
+
+export async function submitPracticeAttempt(
+  attempt: Omit<PracticeAttempt, "id" | "submittedAt" | "gradedAt">
+): Promise<string> {
+  const ref = await addDoc(collection(db, "practiceAttempts"), {
+    ...sanitizeUndefined(attempt as unknown as Record<string, unknown>),
+    submittedAt: serverTimestamp(),
+  });
+  await incrementPlanUsage(attempt.studentId, { assessments: 1 }).catch(() => {});
+  return ref.id;
+}
+
+export async function getPracticeAttemptById(id: string): Promise<PracticeAttempt | null> {
+  const snap = await getDoc(doc(db, "practiceAttempts", id));
+  if (!snap.exists()) return null;
+  const data = snap.data() as PracticeAttempt;
+  if (!data.paperId) return null;
+  return { id: snap.id, ...data };
+}
+
+// ─────────────────────────────────────────────────────────────
 // PROGRESS
 // ─────────────────────────────────────────────────────────────
 
@@ -628,7 +774,8 @@ export interface LearningGap {
   updatedAt?: Timestamp;
 }
 
-export interface PracticeAttempt {
+/** AI adaptive practice attempt — not NAPLAN/Selective exam-prep papers. */
+export interface AiPracticeAttempt {
   id?: string;
   studentId: string;
   studentUid: string;
@@ -797,25 +944,30 @@ export function formatStudyTime(totalSeconds: number): string {
   return m > 0 ? `${h} hr ${m} min` : `${h} hr`;
 }
 
-// ── Practice Attempts ────────────────────────────────────────────────────
+// ── AI Practice Attempts ────────────────────────────────────────────────────
 
-export async function savePracticeAttempt(attempt: Omit<PracticeAttempt, "id">): Promise<string> {
+function isExamPrepAttemptDoc(data: Record<string, unknown>): boolean {
+  return Boolean(data.paperId || data.program === "naplan" || data.program === "selective");
+}
+
+export async function savePracticeAttempt(attempt: Omit<AiPracticeAttempt, "id">): Promise<string> {
   const ref = await addDoc(collection(db, "practiceAttempts"), {
     ...attempt, submittedAt: serverTimestamp(),
   });
   return ref.id;
 }
 
-export async function getPracticeAttempts(studentId: string): Promise<PracticeAttempt[]> {
+export async function getPracticeAttempts(studentId: string): Promise<AiPracticeAttempt[]> {
   const snap = await getDocs(query(
     collection(db, "practiceAttempts"),
     where("studentId", "==", studentId)
   ));
   return snap.docs
     .map(d => {
-      const data = d.data() as PracticeAttempt;
+      const data = d.data() as AiPracticeAttempt & Record<string, unknown>;
       return { ...data, id: d.id, topic: displayTopic(data.topic, data.subject) };
     })
+    .filter((a) => !isExamPrepAttemptDoc(a as unknown as Record<string, unknown>))
     .sort((a, b) => (b.submittedAt as Timestamp)?.toMillis() - (a.submittedAt as Timestamp)?.toMillis() || 0);
 }
 
