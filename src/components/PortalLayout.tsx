@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import ModalPortal from "@/components/ModalPortal";
 import { useStudentAuth } from "@/lib/studentAuth";
 import {
   getAnnouncementsForStudent,
@@ -30,6 +31,8 @@ import {
   MdAutoAwesome,
   MdInsights,
   MdSearch,
+  MdFactCheck,
+  MdEmojiEvents,
 } from "react-icons/md";
 
 const NAV = [
@@ -55,6 +58,20 @@ const NAV = [
     icon: MdAutoAwesome,
     requiresPaid: true,
     group: "learning",
+  },
+  {
+    href: "/portal/naplan",
+    label: "NAPLAN",
+    icon: MdFactCheck,
+    requiresPaid: true,
+    group: "exam-prep",
+  },
+  {
+    href: "/portal/selective",
+    label: "Selective Entry",
+    icon: MdEmojiEvents,
+    requiresPaid: true,
+    group: "exam-prep",
   },
   {
     href: "/portal/progress",
@@ -261,6 +278,17 @@ export default function PortalLayout({
           />
         ))}
 
+        <p className="nav-section-label">Exam Prep</p>
+        {NAV.filter((n) => n.group === "exam-prep").map((item) => (
+          <NavLink
+            key={item.href}
+            href={item.href}
+            icon={item.icon}
+            label={item.label}
+            locked={item.requiresPaid && !isPaid}
+          />
+        ))}
+
         <p className="nav-section-label">Insights</p>
         {NAV.filter((n) => n.group === "insights").map((item) => (
           <NavLink
@@ -404,7 +432,16 @@ export default function PortalLayout({
               </button>
 
               {notifOpen && (
-                <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white border border-slate-200 rounded-2xl z-50 max-h-96 overflow-y-auto animate-[slideUp_0.2s_ease]">
+                <ModalPortal>
+                <div
+                  className="fixed z-[1000] w-80 sm:w-96 bg-white border border-slate-200 rounded-2xl max-h-96 overflow-y-auto"
+                  style={{
+                    top: notifRef.current
+                      ? notifRef.current.getBoundingClientRect().bottom + 8
+                      : 64,
+                    right: 16,
+                  }}
+                >
                   <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
                     <h3 className="font-semibold text-slate-900 text-sm flex items-center gap-2">
                       <MdCampaign size={16} className="text-[#00369b]" />
@@ -448,6 +485,7 @@ export default function PortalLayout({
                     ))
                   )}
                 </div>
+                </ModalPortal>
               )}
             </div>
 
@@ -473,7 +511,7 @@ export default function PortalLayout({
           </div>
         )}
 
-        <main className="flex-1 px-4 lg:px-6 pb-8 pt-2 overflow-x-hidden">
+        <main className="flex-1 px-4 lg:px-6 pb-8 pt-2 min-w-0">
           <div className="page-enter" key={pathname}>
             {children}
           </div>

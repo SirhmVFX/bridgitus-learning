@@ -28,7 +28,7 @@ import {
   MdMenuBook, MdQuiz, MdAssignment, MdBarChart,
   MdCheckCircle, MdPending, MdTrendingUp, MdStar,
   MdPushPin, MdCampaign, MdArrowForward, MdTimer,
-  MdOndemandVideo, MdVideocam,
+  MdOndemandVideo, MdVideocam, MdFactCheck, MdEmojiEvents,
 } from "react-icons/md";
 
 const YOUTUBE_URL = "https://youtube.com/@BridgitusLearning";
@@ -142,6 +142,18 @@ export default function DashboardPage() {
                 className="rounded-xl bg-[#00c1ff] hover:bg-[#33d0ff] text-[#001233] text-sm font-bold px-4 py-2 transition-all hover:-translate-y-0.5 border border-[#00a8e0]"
               >
                 Take a Quiz →
+              </Link>
+              <Link
+                href="/portal/naplan"
+                className="rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white text-sm font-semibold px-4 py-2 transition-all hover:-translate-y-0.5 inline-flex items-center gap-1.5"
+              >
+                <MdFactCheck size={16} /> NAPLAN
+              </Link>
+              <Link
+                href="/portal/selective"
+                className="rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white text-sm font-semibold px-4 py-2 transition-all hover:-translate-y-0.5 inline-flex items-center gap-1.5"
+              >
+                <MdEmojiEvents size={16} /> Selective Entry
               </Link>
               <a
                 href={YOUTUBE_URL}
@@ -261,6 +273,37 @@ export default function DashboardPage() {
                 <p className="text-xs text-slate-400 mt-1">{s.sub}</p>
               </div>
             ))}
+          </div>
+        )}
+
+        {!loading && (
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Link
+              href="/portal/naplan"
+              className="portal-card hover-lift flex items-center gap-4 !border-[#00369b]/15"
+            >
+              <div className="w-11 h-11 rounded-2xl bg-emerald-50 flex items-center justify-center shrink-0">
+                <MdFactCheck size={20} className="text-emerald-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-slate-900">NAPLAN Practice</p>
+                <p className="text-xs text-slate-500">Year-level exam prep papers</p>
+              </div>
+              <MdArrowForward size={16} className="text-slate-400 shrink-0" />
+            </Link>
+            <Link
+              href="/portal/selective"
+              className="portal-card hover-lift flex items-center gap-4 !border-amber-200"
+            >
+              <div className="w-11 h-11 rounded-2xl bg-amber-50 flex items-center justify-center shrink-0">
+                <MdEmojiEvents size={20} className="text-amber-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-slate-900">Selective Entry</p>
+                <p className="text-xs text-slate-500">Years 8–9 practice papers</p>
+              </div>
+              <MdArrowForward size={16} className="text-slate-400 shrink-0" />
+            </Link>
           </div>
         )}
 
@@ -504,10 +547,22 @@ export default function DashboardPage() {
                     color: "bg-blue-50 text-[#00369b] hover:bg-blue-100",
                   },
                   {
+                    href: "/portal/naplan",
+                    icon: MdFactCheck,
+                    label: "NAPLAN",
+                    color: "bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
+                  },
+                  {
+                    href: "/portal/selective",
+                    icon: MdEmojiEvents,
+                    label: "Selective",
+                    color: "bg-amber-50 text-amber-700 hover:bg-amber-100",
+                  },
+                  {
                     href: "/portal/assignments",
                     icon: MdAssignment,
                     label: "Assignments",
-                    color: "bg-amber-50 text-amber-700 hover:bg-amber-100",
+                    color: "bg-orange-50 text-orange-700 hover:bg-orange-100",
                   },
                   {
                     href: "/portal/progress",

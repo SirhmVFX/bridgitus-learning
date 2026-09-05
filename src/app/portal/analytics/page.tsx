@@ -7,13 +7,14 @@ import {
   getAllStudentAttempts, getPracticeAttempts, getAllLearningGapsForStudent,
   getStudySessions, getTestsByGrade, getAssignmentsForStudent, getSubmissionsByStudent,
   getAssignmentById, upsertLearningGap, formatStudyTime,
-  type TestAttempt, type PracticeAttempt, type LearningGap,
+  getStudentPracticeAttempts,
+  type TestAttempt, type AiPracticeAttempt, type LearningGap,
   type StudySession, type Test, type Question, type AIQuestion,
-  type Assignment, type AssignmentSubmission,
+  type Assignment, type AssignmentSubmission, type PracticeAttempt,
 } from "@/lib/firestore";
 import { Timestamp } from "firebase/firestore";
 import {
-  MdQuiz, MdTimer, MdExtension, MdAutoAwesome,
+  MdQuiz, MdTimer, MdExtension, MdAutoAwesome, MdSchool, MdEmojiEvents,
 } from "react-icons/md";
 import Link from "next/link";
 import { PracticePieChart, SkillMountainChart } from "@/components/AnalyticsCharts";
@@ -64,7 +65,7 @@ function isAnswerCorrect(q: Question | AIQuestion, given: string): boolean {
 
 function collectAnswered(
   attempts: TestAttempt[],
-  practice: PracticeAttempt[],
+  practice: AiPracticeAttempt[],
   testsById: Map<string, Test>,
   quizSubs: AssignmentSubmission[] = [],
   assignmentsById: Map<string, Assignment> = new Map()
@@ -200,12 +201,14 @@ async function settledValue<T>(p: Promise<T>, fallback: T): Promise<T> {
 export default function StudentAnalyticsPage() {
   const { student } = useStudentAuth();
   const [attempts, setAttempts] = useState<TestAttempt[]>([]);
-  const [practice, setPractice] = useState<PracticeAttempt[]>([]);
+  const [practice, setPractice] = useState<AiPracticeAttempt[]>([]);
   const [gaps, setGaps] = useState<LearningGap[]>([]);
   const [sessions, setSessions] = useState<StudySession[]>([]);
   const [tests, setTests] = useState<Test[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [quizSubs, setQuizSubs] = useState<AssignmentSubmission[]>([]);
+  const [naplanAttempts, setNaplanAttempts] = useState<PracticeAttempt[]>([]);
+  const [selectiveAttempts, setSelectiveAttempts] = useState<PracticeAttempt[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -214,7 +217,7 @@ export default function StudentAnalyticsPage() {
 
     (async () => {
       setLoading(true);
-      const [att, pa, g, ss, t, asg, subs] = await Promise.all([
+      const [att, pa, g, ss, t, asg, subs, naplan, selective] = await Promise.all([
         settledValue(getAllStudentAttempts(student.id!), []),
         settledValue(getPracticeAttempts(student.id!), []),
         settledValue(getAllLearningGapsForStudent(student.id!), []),
@@ -222,6 +225,8 @@ export default function StudentAnalyticsPage() {
         settledValue(getTestsByGrade(student.grade), []),
         settledValue(getAssignmentsForStudent(student.grade, student.id!), []),
         settledValue(getSubmissionsByStudent(student.id!), []),
+        settledValue(getStudentPracticeAttempts(student.id!, "naplan"), []),
+        settledValue(getStudentPracticeAttempts(student.id!, "selective"), []),
       ]);
 
       const quizAssignments = asg.filter((a) => a.type === "quiz");
@@ -287,6 +292,8 @@ export default function StudentAnalyticsPage() {
       setTests(t);
       setAssignments([...byId.values()]);
       setQuizSubs(subs);
+      setNaplanAttempts(naplan);
+      setSelectiveAttempts(selective);
       setLoading(false);
     })();
 
@@ -447,6 +454,123 @@ export default function StudentAnalyticsPage() {
                 <p className="text-xs text-slate-400 mt-4 text-center">
                   Active time in your portal — tracked automatically while you learn.
                 </p>
+              </div>
+            </div>
+
+            {/* Exam prep analytics */}
+            <div className="grid lg:grid-cols-2 gap-4">
+              <div className="portal-card">
+                <h2 className="font-semibold text-[#001233] mb-1 flex items-center gap-2">
+                  <MdSchool size={16} className="text-[#00369b]" /> NAPLAN Practice
+                </h2>
+                <p className="text-xs text-slate-400 mb-4">Years 2–9 exam prep attempts</p>
+                {naplanAttempts.length === 0 ? (
+                  <p className="text-sm text-slate-400 py-6 text-center">
+                    No NAPLAN attempts yet — try{" "}
+                    <Link href="/portal/naplan" className="text-secondary-color font-semibold underline">
+                      NAPLAN practice
+                    </Link>
+                    .
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-3 gap-3 text-center">
+                      <div>
+                        <p className="text-2xl font-extrabold text-[#001233]">{naplanAttempts.length}</p>
+                        <p className="text-xs text-slate-400">Attempts</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-extrabold text-[#001233]">
+                          {naplanAttempts.filter((a) => a.status === "graded").length}
+                        </p>
+                        <p className="text-xs text-slate-400">Graded</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-extrabold text-[#001233]">
+                          {(() => {
+                            const graded = naplanAttempts.filter(
+                              (a) => typeof a.percentage === "number",
+                            );
+                            if (!graded.length) return "—";
+                            return `${Math.round(
+                              graded.reduce((s, a) => s + (a.percentage ?? 0), 0) / graded.length,
+                            )}%`;
+                          })()}
+                        </p>
+                        <p className="text-xs text-slate-400">Avg score</p>
+                      </div>
+                    </div>
+                    <div className="divide-y divide-slate-100">
+                      {naplanAttempts.slice(0, 5).map((a) => (
+                        <div key={a.id} className="flex items-center justify-between py-2 text-sm">
+                          <span className="font-medium text-slate-800 truncate max-w-[60%]">
+                            {a.paperTitle ?? "Paper"}
+                          </span>
+                          <span className="text-slate-500">
+                            {typeof a.percentage === "number" ? `${a.percentage}%` : a.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="portal-card">
+                <h2 className="font-semibold text-[#001233] mb-1 flex items-center gap-2">
+                  <MdEmojiEvents size={16} className="text-amber-500" /> Selective Entry Prep
+                </h2>
+                <p className="text-xs text-slate-400 mb-4">Years 8–9 exam prep attempts</p>
+                {selectiveAttempts.length === 0 ? (
+                  <p className="text-sm text-slate-400 py-6 text-center">
+                    No Selective attempts yet — try{" "}
+                    <Link href="/portal/selective" className="text-secondary-color font-semibold underline">
+                      Selective Entry prep
+                    </Link>
+                    .
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-3 gap-3 text-center">
+                      <div>
+                        <p className="text-2xl font-extrabold text-[#001233]">{selectiveAttempts.length}</p>
+                        <p className="text-xs text-slate-400">Attempts</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-extrabold text-[#001233]">
+                          {selectiveAttempts.filter((a) => a.status === "graded").length}
+                        </p>
+                        <p className="text-xs text-slate-400">Graded</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-extrabold text-[#001233]">
+                          {(() => {
+                            const graded = selectiveAttempts.filter(
+                              (a) => typeof a.percentage === "number",
+                            );
+                            if (!graded.length) return "—";
+                            return `${Math.round(
+                              graded.reduce((s, a) => s + (a.percentage ?? 0), 0) / graded.length,
+                            )}%`;
+                          })()}
+                        </p>
+                        <p className="text-xs text-slate-400">Avg score</p>
+                      </div>
+                    </div>
+                    <div className="divide-y divide-slate-100">
+                      {selectiveAttempts.slice(0, 5).map((a) => (
+                        <div key={a.id} className="flex items-center justify-between py-2 text-sm">
+                          <span className="font-medium text-slate-800 truncate max-w-[60%]">
+                            {a.paperTitle ?? "Paper"}
+                          </span>
+                          <span className="text-slate-500">
+                            {typeof a.percentage === "number" ? `${a.percentage}%` : a.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
