@@ -79,6 +79,8 @@ export interface Question {
   options?: string[]; correctAnswer: string; points: number;
   explanation?: string; workedSolution?: string;
   imageUrl?: string;        // optional diagram/illustration for the question
+  videoUrl?: string;
+  videoName?: string;
 }
 
 export interface Test {
@@ -743,6 +745,8 @@ export interface AIQuestion {
   subtopic?: string;
   difficulty?: string;
   imageUrl?: string;        // optional diagram/illustration for the question
+  videoUrl?: string;
+  videoName?: string;
 }
 
 export interface QuestionSet {
@@ -781,6 +785,7 @@ export interface AiPracticeAttempt {
   id?: string;
   studentId: string;
   studentUid: string;
+  studentName?: string;
   questionSetId?: string;
   questions: AIQuestion[];
   answers: Record<string, string>;
