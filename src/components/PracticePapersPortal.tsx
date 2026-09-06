@@ -22,6 +22,7 @@ import {
   type PracticeProgram,
   type Question,
 } from "@/lib/firestore";
+import QuestionVideo from "@/components/QuestionVideo";
 import {
   MdQuiz,
   MdTimer,
@@ -215,6 +216,11 @@ function PaperQuizRunner({
             className="max-h-72 border border-gray-200 object-contain mb-6"
           />
         )}
+
+        {q.videoUrl && (
+          <QuestionVideo url={q.videoUrl} name={q.videoName} />
+        )}
+
         {q.type === "multiple_choice" && q.options && (
           <div className="space-y-3">
             {q.options.map((opt, i) => (
@@ -552,7 +558,7 @@ export default function PracticePapersPortal({
             paper={activePaper}
             studentId={student!.id!}
             studentUid={user!.uid}
-            studentName={`${student!.firstName} ${student!.lastName}`}
+            studentName={`${student!.firstName} ${student!.lastName}`.trim()}
             attemptNumber={attemptsFor(activePaper.id!).length + 1}
             onDone={async () => {
               setActivePaper(null);
@@ -571,7 +577,7 @@ export default function PracticePapersPortal({
           paper={activePaper}
           studentId={student!.id!}
           studentUid={user!.uid}
-          studentName={`${student!.firstName} ${student!.lastName}`}
+          studentName={`${student!.firstName} ${student!.lastName}`.trim()}
           attemptNumber={attemptsFor(activePaper.id!).length + 1}
           onDone={async () => {
             setActivePaper(null);

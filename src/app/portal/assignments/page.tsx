@@ -18,6 +18,7 @@ import {
   type AssignmentSubmission,
   type MaterialCompletion,
 } from "@/lib/firestore";
+import QuestionVideo from "@/components/QuestionVideo";
 import { QuestionReadAloud } from "@/components/QuestionReadAloud";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import {
@@ -662,6 +663,9 @@ function QuizResultPanel({
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={q.imageUrl} alt="Question diagram" className="max-h-48 border border-gray-200 object-contain" />
                     )}
+                    {q.videoUrl && (
+                      <QuestionVideo url={q.videoUrl} name={q.videoName} className="mb-2" />
+                    )}
                     <div>
                       <p className="text-xs font-semibold text-gray-500 mb-1">Your answer:</p>
                       <p className={`text-sm px-3 py-1.5 border ${correct ? "border-emerald-300 bg-emerald-50 text-emerald-800" : "border-red-200 bg-red-50 text-red-700"}`}>
@@ -907,6 +911,10 @@ function QuizRunner({
               // eslint-disable-next-line @next/next/no-img-element
               <img src={question.imageUrl} alt="Question diagram"
                 className="max-h-56 border border-gray-200 object-contain mb-3" />
+            )}
+
+            {question.videoUrl && (
+              <QuestionVideo url={question.videoUrl} name={question.videoName} className="mb-3" />
             )}
 
             {question.type === "multiple_choice" && question.options?.map((option) => (

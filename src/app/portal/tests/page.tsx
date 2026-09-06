@@ -20,6 +20,7 @@ import {
   type Question,
   type MaterialCompletion,
 } from "@/lib/firestore";
+import QuestionVideo from "@/components/QuestionVideo";
 import { QuestionReadAloud } from "@/components/QuestionReadAloud";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import {
@@ -186,9 +187,10 @@ function AttemptResultPanel({
                     >
                       {i + 1}
                     </div>
-                    <p className="text-sm font-medium text-gray-800 leading-snug line-clamp-2">
-                      {q.text}
-                    </p>
+                    <div
+                      className="text-sm font-medium text-gray-800 leading-snug line-clamp-2"
+                      dangerouslySetInnerHTML={{ __html: q.text }}
+                    />
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {!correct && (
@@ -226,6 +228,17 @@ function AttemptResultPanel({
 
                 {expanded && (
                   <div className="px-4 py-4 bg-white space-y-3">
+                    {q.imageUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={q.imageUrl}
+                        alt="Question diagram"
+                        className="max-h-48 border border-gray-200 object-contain"
+                      />
+                    )}
+                    {q.videoUrl && (
+                      <QuestionVideo url={q.videoUrl} name={q.videoName} className="mb-1" />
+                    )}
                     {/* Student answer */}
                     <div>
                       <p className="text-xs font-semibold text-gray-500 mb-1">
@@ -510,6 +523,10 @@ function TestRunner({
             alt="Question diagram"
             className="max-h-72 border border-gray-200 object-contain mb-6"
           />
+        )}
+
+        {q.videoUrl && (
+          <QuestionVideo url={q.videoUrl} name={q.videoName} />
         )}
 
         {q.type === "multiple_choice" && q.options && (

@@ -9,6 +9,7 @@ import {
   getLearningGaps, upsertLearningGap, savePracticeAttempt,
   type AIQuestion, type LearningGap,
 } from "@/lib/firestore";
+import QuestionVideo from "@/components/QuestionVideo";
 import {
   MdAutoAwesome, MdArrowBack, MdArrowForward, MdSend,
   MdCheckCircle, MdCancel, MdExpandMore, MdExpandLess,
@@ -32,6 +33,7 @@ function PracticeRunner({
   meta,
   studentId,
   studentUid,
+  studentName,
   studentGrade,
   onDone,
 }: {
@@ -39,6 +41,7 @@ function PracticeRunner({
   meta: PracticeMeta;
   studentId: string;
   studentUid: string;
+  studentName: string;
   studentGrade: string;
   onDone: (answers: Record<string, string>) => void;
 }) {
@@ -62,9 +65,17 @@ function PracticeRunner({
       }
       const percentage = totalPoints > 0 ? Math.round((score / totalPoints) * 100) : 0;
       await savePracticeAttempt({
-        studentId, studentUid,
-        questions, answers, score, totalPoints, percentage,
-        subject: meta.subject, topic: meta.topic, difficulty: meta.difficulty,
+        studentId,
+        studentUid,
+        studentName,
+        questions,
+        answers,
+        score,
+        totalPoints,
+        percentage,
+        subject: meta.subject,
+        topic: meta.topic,
+        difficulty: meta.difficulty,
       });
       await upsertLearningGap(studentId, meta.subject, meta.topic, undefined, percentage);
       onDone(answers);
@@ -120,6 +131,10 @@ function PracticeRunner({
           // eslint-disable-next-line @next/next/no-img-element
           <img src={q.imageUrl} alt="Question diagram"
             className="max-h-72 border border-gray-200 object-contain mb-6" />
+        )}
+
+        {q.videoUrl && (
+          <QuestionVideo url={q.videoUrl} name={q.videoName} />
         )}
 
         {q.type === "multiple_choice" && q.options && (
@@ -273,6 +288,9 @@ function ResultsPanel({
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={q.imageUrl} alt="Question diagram"
                         className="max-h-56 border border-gray-200 object-contain" />
+                    )}
+                    {q.videoUrl && (
+                      <QuestionVideo url={q.videoUrl} name={q.videoName} className="" />
                     )}
                     <div>
                       <p className="text-xs font-semibold text-gray-500 mb-1">Your answer:</p>
@@ -531,6 +549,7 @@ export default function PracticePage() {
             meta={meta}
             studentId={student!.id!}
             studentUid={user!.uid}
+            studentName={`${student!.firstName} ${student!.lastName}`.trim()}
             studentGrade={student!.grade}
             onDone={handleDone}
           />
