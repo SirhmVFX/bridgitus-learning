@@ -13,6 +13,7 @@ import {
   type Announcement,
 } from "@/lib/firestore";
 import { hasPortalAccess, isPlanExpired } from "@/lib/payment";
+import { formatAnnouncementWhen } from "@/lib/schedule";
 import {
   MdDashboard,
   MdMenuBook,
@@ -476,6 +477,11 @@ export default function PortalLayout({
                           )}
                           <div>
                             <p className="text-sm font-semibold text-slate-900">{a.title}</p>
+                            {formatAnnouncementWhen(a.createdAt) && (
+                              <p className="text-[11px] text-slate-400 mt-0.5">
+                                {formatAnnouncementWhen(a.createdAt)}
+                              </p>
+                            )}
                             <p className="text-xs text-slate-500 mt-0.5 leading-relaxed line-clamp-3">
                               {a.body.replace(/<[^>]+>/g, "").slice(0, 180)}
                             </p>

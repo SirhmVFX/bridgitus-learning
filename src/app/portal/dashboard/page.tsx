@@ -24,6 +24,7 @@ import {
   type StudySession,
   type OnlineSession,
 } from "@/lib/firestore";
+import { formatAnnouncementWhen } from "@/lib/schedule";
 import {
   MdMenuBook, MdQuiz, MdAssignment, MdBarChart,
   MdCheckCircle, MdPending, MdTrendingUp, MdStar,
@@ -209,6 +210,11 @@ export default function DashboardPage() {
                 )}
                 <div>
                   <p className="text-sm font-semibold text-slate-900">{a.title}</p>
+                  {formatAnnouncementWhen(a.createdAt) && (
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      {formatAnnouncementWhen(a.createdAt)}
+                    </p>
+                  )}
                   <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
                     {a.body.replace(/<[^>]+>/g, "").slice(0, 160)}
                   </p>
