@@ -55,3 +55,28 @@ export function dueDateFromDueAt(dueAt?: string): string {
   if (!dueAt) return "";
   return dueAt.slice(0, 10);
 }
+
+/** Format Firestore Timestamp / Date / ISO string for announcement notifications. */
+export function formatAnnouncementWhen(
+  value?: { toDate?: () => Date; seconds?: number } | Date | string | null,
+): string {
+  if (!value) return "";
+  let d: Date | null = null;
+  if (value instanceof Date) {
+    d = value;
+  } else if (typeof value === "string") {
+    d = new Date(value);
+  } else if (typeof value === "object" && typeof value.toDate === "function") {
+    d = value.toDate();
+  } else if (typeof value === "object" && typeof value.seconds === "number") {
+    d = new Date(value.seconds * 1000);
+  }
+  if (!d || Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString("en-AU", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
