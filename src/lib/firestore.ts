@@ -85,7 +85,7 @@ export interface Question {
 
 export interface Test {
   id?: string; title: string; description: string;
-  grade: string; subject: string; type: "test" | "exam";
+  grade: string; subject: string; type: "test" | "exam" | "diagnostic" | "assessment";
   questions: Question[]; totalPoints: number; passMark: number;
   maxAttempts: number; timeLimit?: number; linkedMaterialId?: string;
   /** ISO datetime-local string */
