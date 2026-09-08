@@ -45,7 +45,7 @@ const NAV = [
     requiresPaid: true,
     group: "learning",
   },
-  { href: "/portal/tests", label: "Quizzes", icon: MdQuiz, requiresPaid: true, group: "learning" },
+  { href: "/portal/tests", label: "Assessments", icon: MdQuiz, requiresPaid: true, group: "learning" },
   {
     href: "/portal/assignments",
     label: "Assignments",

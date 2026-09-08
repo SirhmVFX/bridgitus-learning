@@ -21,6 +21,11 @@ import {
   type MaterialCompletion,
 } from "@/lib/firestore";
 import QuestionVideo from "@/components/QuestionVideo";
+import {
+  assessmentTypeLabel,
+  assessmentTypePillClass,
+  assessmentTypeBarClass,
+} from "@/lib/assessmentTypes";
 import { QuestionReadAloud } from "@/components/QuestionReadAloud";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import {
@@ -795,9 +800,9 @@ export default function TestsPage() {
       <div className="w-full space-y-5">
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-1">Assess</p>
-          <h1 className="text-2xl lg:text-[1.75rem] font-extrabold text-[#001233] tracking-tight">Quizzes</h1>
+          <h1 className="text-2xl lg:text-[1.75rem] font-extrabold text-[#001233] tracking-tight">Assessments</h1>
           <p className="text-slate-500 text-sm mt-1">
-            Grade {student?.grade} quizzes
+            Grade {student?.grade} assessments
           </p>
         </div>
 
@@ -806,7 +811,7 @@ export default function TestsPage() {
             <MdCheckCircle size={22} className="text-emerald-600 shrink-0" />
             <div>
               <p className="text-sm font-semibold text-emerald-800">
-                Quiz submitted successfully!
+                Assessment submitted successfully!
               </p>
               <p className="text-xs text-emerald-600 mt-0.5">
                 Your result is pending teacher review. You&apos;ll see it once
@@ -859,16 +864,16 @@ export default function TestsPage() {
                   className={`portal-card hover-lift !p-0 overflow-hidden ${!matUnlocked || scheduleBlocked ? "opacity-70" : ""}`}
                 >
                   <div
-                    className={`h-1 ${!matUnlocked || scheduleBlocked ? "bg-gray-200" : test.type === "exam" ? "bg-red-500" : "bg-secondary-color"}`}
+                    className={`h-1 ${!matUnlocked || scheduleBlocked ? "bg-gray-200" : assessmentTypeBarClass(test.type)}`}
                   />
                   <div className="p-5">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <span
-                            className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${test.type === "exam" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"}`}
+                            className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${assessmentTypePillClass(test.type)}`}
                           >
-                            {test.type.toUpperCase()}
+                            {assessmentTypeLabel(test.type).toUpperCase()}
                           </span>
                           <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-0.5 rounded-full">
                             {test.subject}

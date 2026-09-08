@@ -142,7 +142,7 @@ export default function DashboardPage() {
                 href="/portal/tests"
                 className="rounded-xl bg-[#00c1ff] hover:bg-[#33d0ff] text-[#001233] text-sm font-bold px-4 py-2 transition-all hover:-translate-y-0.5 border border-[#00a8e0]"
               >
-                Take a Quiz →
+                Take an Assessment →
               </Link>
               <Link
                 href="/portal/naplan"
@@ -549,7 +549,7 @@ export default function DashboardPage() {
                   {
                     href: "/portal/tests",
                     icon: MdQuiz,
-                    label: "Quizzes",
+                    label: "Assessments",
                     color: "bg-blue-50 text-[#00369b] hover:bg-blue-100",
                   },
                   {
