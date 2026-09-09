@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import Button from "./Button";
 import Image from "next/image";
-import { Cancel, ChevronDown, ChevronUp, Mail, Menu, Phone, Star } from "./Icons";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import Button from "./Button";
+import { Cancel, ChevronDown, ChevronUp, Mail, Menu, Phone } from "./Icons";
 import { getSiteContent } from "@/lib/firestore";
+import { CLASSES, SEO_PAGES } from "@/lib/marketingContent";
 
 const DEFAULTS = {
   phone: "+61433600592",
@@ -14,128 +15,238 @@ const DEFAULTS = {
   rating: "5 star rating from 5000+ verified reviews",
 };
 
-function Header() {
+const PRIMARY = [
+  { href: "/", label: "Home" },
+  { href: "/about", label: "About" },
+  { href: "/features", label: "Features" },
+  { href: "/smart-learning-passport", label: "Passport" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/contact", label: "Contact" },
+];
+
+export default function Header() {
   const [open, setOpen] = useState(false);
+  const [openLearn, setOpenLearn] = useState(false);
   const [openMobile, setOpenMobile] = useState(false);
-  const [openMobileMenu, setOpenMobileMenu] = useState(false);
+  const [openMobileClasses, setOpenMobileClasses] = useState(false);
+  const [openMobileLearn, setOpenMobileLearn] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [info, setInfo] = useState(DEFAULTS);
 
   useEffect(() => {
-    // Try header_info first, fall back to contact_info
     getSiteContent("header_info")
-      .then((d) => { if (d && Object.keys(d).length) setInfo({ ...DEFAULTS, ...(d as typeof DEFAULTS) }); else return getSiteContent("contact_info"); })
-      .then((d) => { if (d && Object.keys(d).length) setInfo((prev) => ({ ...prev, ...(d as typeof DEFAULTS) })); })
-      .catch(() => { });
+      .then((d) => {
+        if (d && Object.keys(d).length) setInfo({ ...DEFAULTS, ...(d as typeof DEFAULTS) });
+        else return getSiteContent("contact_info");
+      })
+      .then((d) => {
+        if (d && Object.keys(d).length) setInfo((prev) => ({ ...prev, ...(d as typeof DEFAULTS) }));
+      })
+      .catch(() => {});
   }, []);
 
-  const NAV_CLASSES = [
-    { href: "/classes/#regular", label: "Regular Tutoring" },
-    { href: "/classes/#special-math", label: "Special Math Class" },
-    { href: "/classes/#special-science", label: "Special Science Class" },
-    { href: "/classes/#english", label: "Special English Class" },
-    { href: "/classes/#hsc", label: "HSC Class" },
-    { href: "/classes/#vce", label: "VCE Class" },
-    { href: "/classes/#scholarship", label: "Scholarship Preparatory Class" },
-    { href: "/classes/#college", label: "College Preparatory Class" },
-  ];
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = openMobile ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [openMobile]);
+
+  const bar = scrolled || openMobile
+    ? "bg-white/95 backdrop-blur-md border-b border-[#001233]/8 shadow-sm"
+    : "bg-white/85 backdrop-blur-md border-b border-transparent";
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-[9999999]">
-      {/* Top bar */}
-      <div className="hidden md:block py-3 bg-[#161616]">
-        <div className="w-full max-w-[1250px] mx-auto px-4 md:px-6 flex items-center justify-between">
+    <header className="fixed top-0 left-0 right-0 z-[1000]">
+      <div className="hidden md:block bg-[#001233]">
+        <div className="mkt-container flex items-center justify-between py-2 text-[11px] text-white/80">
           <div className="flex items-center gap-5">
             {info.phone && (
-              <div className="flex items-center gap-2">
+              <Link href={`tel:${info.phone}`} className="inline-flex items-center gap-1.5 hover:text-white">
                 <Phone />
-                <Link href={`tel:${info.phone}`} className="md:text-[8px] lg:text-[11px] xl:text-[12px] text-white">{info.phone}</Link>
-              </div>
+                {info.phone}
+              </Link>
             )}
             {info.email && (
-              <div className="flex items-center gap-2">
+              <Link href={`mailto:${info.email}`} className="inline-flex items-center gap-1.5 hover:text-white">
                 <Mail />
-                <Link href={`mailto:${info.email}`} className="md:text-[8px] lg:text-[11px] xl:text-[12px] text-white">{info.email}</Link>
-              </div>
+                {info.email}
+              </Link>
             )}
           </div>
-          {info.rating && (
-            <span className="md:text-[8px] lg:text-[11px] xl:text-[12px] flex items-center gap-2 text-white">
-              <Star />{info.rating}
-            </span>
-          )}
+          {info.rating && <span className="text-white/70">{info.rating}</span>}
         </div>
       </div>
 
-      {/* Main nav */}
-      <div className="bg-white border-b border-b-black/5">
-        <div className="w-full max-w-[1250px] mx-auto flex justify-between items-center py-1 px-4 md:px-6">
-          <div className="md:w-[70px] lg:w-[150px] xl:w-[170px] w-[160px] flex flex-col items-center">
-            <Image width={1000} height={1000} src="/assets/FullLogo.png" alt="logo" className="w-full h-full object-contain" />
-            {info.abn && <p className="text-[10px] font-bold text-blue-900">ABN: {info.abn}</p>}
-          </div>
+      <div className={`transition-all duration-300 ${bar}`}>
+        <div className="mkt-container flex items-center justify-between py-2.5 gap-4">
+          <Link href="/" className="shrink-0 w-[140px] md:w-[160px]">
+            <Image
+              width={320}
+              height={120}
+              src="/assets/FullLogo.png"
+              alt="Bridgitus"
+              className="w-full h-auto object-contain"
+              priority
+            />
+            {info.abn && (
+              <p className="text-[9px] font-bold tracking-wide text-[#00369b]">ABN: {info.abn}</p>
+            )}
+          </Link>
 
-          {/* Desktop nav */}
-          <div className="hidden md:block">
-            <ul className="flex gap-4 items-center">
-              {[
-                { href: "/", label: "Home" },
-                { href: "/about", label: "About Us" },
-                { href: "/services", label: "Our Services" },
-              ].map((item) => (
-                <Link key={item.href} className="md:text-[8px] lg:text-[11px] xl:text-[12px]" href={item.href}>{item.label}</Link>
-              ))}
-              <li className="relative cursor-pointer flex justify-center items-center" onMouseOver={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
-                <Link href="/classes" className="md:text-[8px] lg:text-[11px] xl:text-[12px] cursor-pointer z-50">Classes</Link>
-                {open && (
-                  <div className="absolute top-5 left-0 flex flex-col gap-3 bg-white/90 w-[210px] px-3 pb-3 pt-10 backdrop-blur-md border border-gray-100 z-50"
-                    onMouseOver={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
-                    {NAV_CLASSES.map((c) => (
-                      <Link key={c.href} href={c.href} className="md:text-[8px] lg:text-[11px] xl:text-[12px] hover:text-secondary-color">{c.label}</Link>
+          <nav className="hidden lg:flex items-center gap-1">
+            {PRIMARY.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="px-2.5 py-2 text-[13px] font-medium text-[#001233] transition hover:text-[#00369b]"
+              >
+                {item.label}
+              </Link>
+            ))}
+
+            <div
+              className="relative"
+              onMouseEnter={() => setOpenLearn(true)}
+              onMouseLeave={() => setOpenLearn(false)}
+            >
+              <button
+                type="button"
+                className="px-2.5 py-2 text-[13px] font-medium text-[#001233] inline-flex items-center gap-1"
+              >
+                Learn <ChevronDown />
+              </button>
+              {openLearn && (
+                <div className="absolute top-full left-0 pt-2">
+                  <div className="w-[280px] rounded-xl border border-[#001233]/8 bg-white p-3 shadow-xl">
+                    {SEO_PAGES.map((p) => (
+                      <Link
+                        key={p.href}
+                        href={p.href}
+                        className="block rounded-lg px-3 py-2 text-sm text-[#001233]/80 hover:bg-[#e8eef8] hover:text-[#00369b]"
+                      >
+                        {p.label}
+                      </Link>
                     ))}
                   </div>
-                )}
-              </li>
-              <Link className="md:text-[8px] lg:text-[11px] xl:text-[12px] z-50" href="/pricing">Pricing</Link>
-              <Link className="md:text-[8px] lg:text-[11px] xl:text-[12px] z-50" href="/contact">Contact</Link>
-              <Link className="md:text-[8px] lg:text-[11px] xl:text-[12px] z-50 text-secondary-color font-semibold" href="/portal/login">Student Portal</Link>
-              <Button style="link" href="/register">Register Now</Button>
-            </ul>
-          </div>
+                </div>
+              )}
+            </div>
 
-          {/* Mobile hamburger */}
-          <button className="md:hidden block cursor-pointer z-[9999999999999] p-2" onClick={() => setOpenMobile(!openMobile)}>
+            <div
+              className="relative"
+              onMouseEnter={() => setOpen(true)}
+              onMouseLeave={() => setOpen(false)}
+            >
+              <Link
+                href="/classes"
+                className="px-2.5 py-2 text-[13px] font-medium text-[#001233] inline-flex items-center gap-1"
+              >
+                Classes <ChevronDown />
+              </Link>
+              {open && (
+                <div className="absolute top-full left-0 pt-2">
+                  <div className="w-[240px] rounded-xl border border-[#001233]/8 bg-white p-3 shadow-xl">
+                    {CLASSES.map((c) => (
+                      <Link
+                        key={c.href}
+                        href={c.href}
+                        className="block rounded-lg px-3 py-2 text-sm text-[#001233]/80 hover:bg-[#e8eef8] hover:text-[#00369b]"
+                      >
+                        {c.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Link href="/portal/login" className="ml-1 px-2.5 py-2 text-[13px] font-semibold text-[#00369b]">
+              Portal
+            </Link>
+            <Button style="link" href="/register">
+              Register
+            </Button>
+          </nav>
+
+          <button
+            type="button"
+            className="lg:hidden p-2 text-[#001233]"
+            onClick={() => setOpenMobile((v) => !v)}
+            aria-label="Menu"
+          >
             {openMobile ? <Cancel /> : <Menu />}
           </button>
         </div>
 
-        {/* Mobile nav */}
         {openMobile && (
-          <div className="fixed top-[60px] left-0 right-0 z-[9999999] bg-white border-t border-gray-100 p-4 max-h-[80vh] overflow-y-auto">
-            <ul className="flex flex-col gap-4">
-              {[
-                { href: "/", label: "Home" },
-                { href: "/about", label: "About Us" },
-                { href: "/services", label: "Our Services" },
-              ].map((item) => (
-                <Link key={item.href} href={item.href} onClick={() => setOpenMobile(false)} className="text-sm font-medium">{item.label}</Link>
+          <div className="lg:hidden border-t border-[#001233]/8 bg-white max-h-[80vh] overflow-y-auto px-4 py-4">
+            <ul className="flex flex-col gap-1">
+              {PRIMARY.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpenMobile(false)}
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-[#001233]"
+                >
+                  {item.label}
+                </Link>
               ))}
-              <div>
-                <div className="flex justify-between items-center" onClick={() => setOpenMobileMenu(!openMobileMenu)}>
-                  <Link href="/classes" className="text-sm font-medium" onClick={() => setOpenMobile(false)}>Classes</Link>
-                  <button className="p-1">{openMobileMenu ? <ChevronUp /> : <ChevronDown />}</button>
-                </div>
-                {openMobileMenu && (
-                  <div className="flex flex-col gap-3 pl-4 mt-3">
-                    {NAV_CLASSES.map((c) => (
-                      <Link key={c.href} href={c.href} onClick={() => setOpenMobile(false)} className="text-sm text-gray-600">{c.label}</Link>
-                    ))}
-                  </div>
-                )}
+              <button
+                type="button"
+                className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium"
+                onClick={() => setOpenMobileLearn((v) => !v)}
+              >
+                Learn {openMobileLearn ? <ChevronUp /> : <ChevronDown />}
+              </button>
+              {openMobileLearn &&
+                SEO_PAGES.map((p) => (
+                  <Link
+                    key={p.href}
+                    href={p.href}
+                    onClick={() => setOpenMobile(false)}
+                    className="pl-6 py-2 text-sm text-[#001233]/70"
+                  >
+                    {p.label}
+                  </Link>
+                ))}
+              <button
+                type="button"
+                className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium"
+                onClick={() => setOpenMobileClasses((v) => !v)}
+              >
+                Classes {openMobileClasses ? <ChevronUp /> : <ChevronDown />}
+              </button>
+              {openMobileClasses &&
+                CLASSES.map((c) => (
+                  <Link
+                    key={c.href}
+                    href={c.href}
+                    onClick={() => setOpenMobile(false)}
+                    className="pl-6 py-2 text-sm text-[#001233]/70"
+                  >
+                    {c.label}
+                  </Link>
+                ))}
+              <Link
+                href="/portal/login"
+                onClick={() => setOpenMobile(false)}
+                className="rounded-lg px-3 py-2.5 text-sm font-semibold text-[#00369b]"
+              >
+                Student Portal
+              </Link>
+              <div className="pt-2">
+                <Button style="link" href="/register">
+                  Register Now
+                </Button>
               </div>
-              <Link href="/pricing" onClick={() => setOpenMobile(false)} className="text-sm font-medium">Pricing</Link>
-              <Link href="/contact" onClick={() => setOpenMobile(false)} className="text-sm font-medium">Contact</Link>
-              <Link href="/portal/login" onClick={() => setOpenMobile(false)} className="text-sm font-semibold text-secondary-color">Student Portal</Link>
-              <Button style="link" href="/register">Register Now</Button>
             </ul>
           </div>
         )}
@@ -143,5 +254,3 @@ function Header() {
     </header>
   );
 }
-
-export default Header;

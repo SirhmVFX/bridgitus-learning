@@ -2,11 +2,107 @@
 
 @theme inline {
   --font-open-sans: var(--font-open-sans);
-  --font-sans: var(--font-jakarta), var(--font-open-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-sans-mkt), var(--font-jakarta), var(--font-open-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), ui-serif, Georgia, serif;
   --color-primary-color: #00c1ff;
   --color-secondary-color: #00369b;
   --color-portal-bg: #eef1f6;
   --color-portal-sidebar: #001233;
+  --color-mkt-ink: #001233;
+  --color-mkt-navy: #00369b;
+  --color-mkt-cyan: #00c1ff;
+  --color-mkt-mist: #e8eef8;
+}
+
+/* Marketing site utilities */
+.mkt-body {
+  font-family: var(--font-sans);
+  background: #f3f6fb;
+  color: #001233;
+}
+
+.mkt-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.mkt-container {
+  width: 100%;
+  max-width: 1250px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 768px) {
+  .mkt-container {
+    padding-inline: 1.5rem;
+  }
+}
+
+.mkt-section {
+  padding-block: 4rem;
+}
+
+@media (min-width: 768px) {
+  .mkt-section {
+    padding-block: 5.5rem;
+  }
+}
+
+.mkt-eyebrow {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #00369b;
+}
+
+.mkt-eyebrow-light {
+  color: #00c1ff;
+}
+
+.mkt-link {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #00369b;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.mkt-link:hover {
+  color: #00c1ff;
+  border-bottom-color: #00c1ff;
+}
+
+.mkt-prose h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+  color: #001233;
+}
+
+.mkt-prose h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+  color: #001233;
+}
+
+.mkt-prose p,
+.mkt-prose li {
+  color: rgba(0, 18, 51, 0.72);
+  line-height: 1.7;
+  margin-bottom: 0.9rem;
+}
+
+.mkt-prose ul {
+  list-style: disc;
+  padding-left: 1.25rem;
 }
 
 body {
