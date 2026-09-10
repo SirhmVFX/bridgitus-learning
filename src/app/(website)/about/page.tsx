@@ -1,10 +1,30 @@
-import Image from "next/image";
+import type { Metadata } from "next";
 import {
   getSiteContent,
   getPublishedTestimonials,
   getPublishedFaqs,
 } from "@/lib/firestore";
 import AboutClient from "./_AboutClient";
+import PageHero, {
+  IconCardGrid,
+  SplitShowcase,
+} from "@/components/marketing/PageHero";
+import MarketingCta from "@/components/marketing/MarketingCta";
+import HowItWorksStrip from "@/components/marketing/HowItWorksStrip";
+import {
+  IconParent,
+  IconPassport,
+  IconSpark,
+  IconStudents,
+  IconTarget,
+  IconTutor,
+} from "@/components/marketing/MarketingIcons";
+
+export const metadata: Metadata = {
+  title: "About Bridgitus",
+  description:
+    "Bridgitus Learning bridges curiosity and confidence with personalised online tutoring and the Smart Learning Passport — measurable progress for every student.",
+};
 
 const ABOUT_DEFAULTS = {
   heroHeading:
@@ -136,151 +156,101 @@ export default async function About() {
 
   return (
     <main>
-      {/* Hero */}
-      <section className="relative h-screen">
-        <div className="absolute inset-0 bg-gradient-to-r from-black to-black/5 z-10" />
-        <Image
-          src={c.heroImage || "/assets/i7.avif"}
-          alt="About"
-          fill
-          className="object-cover"
-        />
-        <div className="w-full max-w-[1250px] mx-auto px-4 md:px-6 absolute inset-0 flex items-center z-20">
-          <div className="md:w-2/3">
-            <h1 className="text-3xl sm:text-5xl xl:text-6xl text-white font-bold leading-tight">
-              {c.heroHeading}
-            </h1>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="About"
+        title={c.heroHeading}
+        subtitle="We bridge curiosity and confidence — with diagnostics, expert tutors, and evidence of mastery."
+        crumbs={[{ href: "/about", label: "About" }]}
+        image={c.heroImage || "/assets/i7.avif"}
+        badge="Pathway to excellence"
+      />
 
-      {/* Vision & Mission */}
-      <section className="w-full max-w-[1250px] mx-auto px-4 md:px-6 py-16 md:py-20">
-        <div className="grid lg:grid-cols-2 gap-10 lg:gap-14">
-          {[
-            { label: "The Vision", text: c.vision, icon: "👁" },
-            { label: "The Mission", text: c.mission, icon: "🛡" },
-          ].map((item) => (
-            <div key={item.label} className="flex items-start gap-4">
-              <div className="p-3 bg-yellow-500/10 shrink-0 text-2xl">
-                {item.icon}
-              </div>
-              <div>
-                <h3 className="text-xl md:text-2xl font-bold mb-3">
-                  {item.label}
-                </h3>
-                <p className="text-black/70 leading-relaxed text-lg md:text-xl italic">
-                  &ldquo;{item.text}&rdquo;
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Director's Desk */}
-      <section className="w-full max-w-[1250px] mx-auto px-4 md:px-6 py-10 flex flex-col gap-8">
-        <h2 className="text-3xl md:text-5xl font-bold">
-          From the Director&apos;s desk
-        </h2>
-        <div className="flex flex-col md:flex-row gap-8 md:gap-10">
-          {/* <div className="md:w-1/3">
-            {c.directorImage && (
-              <Image
-                src={c.directorImage}
-                alt={c.directorName}
-                width={400}
-                height={400}
-                className="w-full h-[350px] sm:h-[400px] object-cover bg-green-100"
-              />
-            )}
-            <div className="p-4">
-              <p className="font-semibold">{c.directorName}</p>
-              <p className="text-black/50 text-sm italic">{c.directorRole}</p>
-            </div>
-          </div> */}
-          <div className=" flex flex-col gap-5">
-            {c.directorBio
-              .split("\n\n")
-              .filter(Boolean)
-              .map((para, i) => (
-                <p
-                  key={i}
-                  className="text-base lg:text-lg text-black/70 leading-relaxed"
-                >
-                  {para}
-                </p>
-              ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Story */}
-      <section className="w-full max-w-[1250px] mx-auto px-4 md:px-6 py-14 flex flex-col md:flex-row items-center gap-8 md:gap-14">
-        <div className="w-full md:w-1/2 flex flex-col gap-5">
-          <h2 className="text-3xl md:text-5xl font-bold">{c.storyHeading}</h2>
-          <p className="text-base lg:text-lg text-black/70 leading-relaxed">
-            {c.storyBody}
-          </p>
-          {c.storyQuote && (
-            <p className="font-bold italic text-base lg:text-lg">
-              &ldquo;{c.storyQuote}&rdquo;
-            </p>
-          )}
-        </div>
-        {c.storyImage && (
-          <div className="w-full md:w-1/2 flex items-center justify-center">
-            <Image
-              src={c.storyImage}
-              alt="Story"
-              width={400}
-              height={500}
-              className="w-full max-w-sm h-72 md:h-96 object-cover"
-            />
-          </div>
-        )}
-      </section>
-
-      {/* Approach */}
-      <section className="w-full max-w-[1250px] mx-auto px-4 md:px-6 py-14">
-        <div className="flex flex-col gap-4 md:w-3/4">
-          <h2 className="text-3xl md:text-5xl font-bold">
-            {c.approachHeading}
+      <section className="mkt-section">
+        <div className="mkt-container">
+          <h2 className="text-3xl font-bold text-[#001233] md:text-4xl">
+            Why Bridgitus exists
           </h2>
-          <p className="text-base lg:text-lg text-black/70">{c.approachBody}</p>
+          <p className="mt-3 max-w-2xl text-[#64748b]">
+            A clear vision, a practical mission, and a system that proves
+            progress.
+          </p>
+          <div className="mt-10">
+            <IconCardGrid
+              items={[
+                {
+                  title: "The Vision",
+                  body: c.vision,
+                  icon: <IconSpark />,
+                },
+                {
+                  title: "The Mission",
+                  body: c.mission,
+                  icon: <IconTarget />,
+                },
+                {
+                  title: "For students",
+                  body: "Personalised agendas, live teaching, and a passport that shows what they’ve mastered.",
+                  icon: <IconStudents />,
+                },
+                {
+                  title: "For parents",
+                  body: "Plain-language reports and proof — not vague “they’re doing fine.”",
+                  icon: <IconParent />,
+                },
+                {
+                  title: "Expert tutors",
+                  body: "Human teaching guided by diagnostic data, not guesswork.",
+                  icon: <IconTutor />,
+                },
+                {
+                  title: "Smart Learning Passport",
+                  body: "Levels, gaps, and goals that update as mastery grows.",
+                  icon: <IconPassport />,
+                },
+              ]}
+            />
+          </div>
         </div>
-        {c.approachImageDesktop && (
-          <div className="py-10 hidden md:block">
-            <Image
-              src={c.approachImageDesktop}
-              alt="Process"
-              width={1000}
-              height={300}
-              className="w-full h-auto object-contain"
-            />
-          </div>
-        )}
-        {c.approachImageMobile && (
-          <div className="py-10 md:hidden">
-            <Image
-              src={c.approachImageMobile}
-              alt="Process"
-              width={600}
-              height={600}
-              className="w-full h-auto object-contain"
-            />
-          </div>
-        )}
       </section>
 
-      {/* Testimonials — client component for interactivity */}
-      <section className="py-16 sm:py-20 bg-background">
-        <div className="w-full max-w-[1250px] mx-auto px-4 md:px-6">
+      <HowItWorksStrip />
+
+      <SplitShowcase
+        eyebrow="From the Director's desk"
+        title={c.directorName}
+        body={c.directorBio}
+        bullets={[c.directorRole, "Bridge between potential and achievement"]}
+      />
+
+      <SplitShowcase
+        eyebrow="Our story"
+        title={c.storyHeading}
+        body={c.storyBody}
+        bullets={c.storyQuote ? [c.storyQuote] : undefined}
+        image={c.storyImage || "/assets/i8.jpg"}
+      />
+
+      <SplitShowcase
+        eyebrow="Our approach"
+        title={c.approachHeading}
+        body={c.approachBody}
+        bullets={[
+          "Assess — find the exact gaps",
+          "Personalise — build the agenda",
+          "Teach — live expert sessions",
+          "Track — passport proof of growth",
+        ]}
+        image={c.passionImage || "/assets/i11.jpg"}
+        imageLeft
+      />
+
+      <section className="py-16 sm:py-20 bg-[#f7f8fa]">
+        <div className="mkt-container">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-5xl font-bold mb-3">
+            <h2 className="text-3xl md:text-5xl font-bold text-[#001233] mb-3">
               {c.testimonialsHeading}
             </h2>
-            <p className="text-base lg:text-lg text-black/70">
+            <p className="text-base text-[#64748b]">
               Real testimonials from our satisfied students and parents
             </p>
           </div>
@@ -288,25 +258,25 @@ export default async function About() {
             {tList.map((t) => (
               <div
                 key={t.id}
-                className="p-6 sm:p-8 bg-white border border-black/10 flex flex-col gap-4"
+                className="p-6 sm:p-8 bg-white border border-[#001233]/8 rounded-2xl flex flex-col gap-4 shadow-[0_10px_30px_-18px_rgba(0,18,51,0.2)]"
               >
                 <div className="flex gap-0.5">
                   {[1, 2, 3, 4, 5].map((i) => (
                     <svg
                       key={i}
                       viewBox="0 0 24 24"
-                      className={`w-4 h-4 ${i <= t.rating ? "text-yellow-400 fill-current" : "text-gray-200 fill-current"}`}
+                      className={`w-4 h-4 ${i <= t.rating ? "text-[#C4A574] fill-current" : "text-gray-200 fill-current"}`}
                     >
                       <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" />
                     </svg>
                   ))}
                 </div>
-                <p className="text-black/70 leading-relaxed italic flex-1">
+                <p className="text-[#64748b] leading-relaxed italic flex-1">
                   &ldquo;{t.quote}&rdquo;
                 </p>
                 <div>
-                  <p className="font-semibold">{t.name}</p>
-                  <p className="text-sm text-black/50">{t.role}</p>
+                  <p className="font-semibold text-[#001233]">{t.name}</p>
+                  <p className="text-sm text-[#64748b]">{t.role}</p>
                 </div>
               </div>
             ))}
@@ -314,14 +284,17 @@ export default async function About() {
         </div>
       </section>
 
-      {/* FAQs — client component for accordion */}
-      <section className="w-full max-w-[1250px] mx-auto px-4 md:px-6 py-14">
-        <h2 className="text-3xl md:text-5xl font-bold mb-3">{c.faqHeading}</h2>
-        <p className="text-sm text-black/50 mb-10 max-w-2xl">
+      <section className="mkt-container py-14">
+        <h2 className="text-3xl md:text-5xl font-bold text-[#001233] mb-3">
+          {c.faqHeading}
+        </h2>
+        <p className="text-sm text-[#64748b] mb-10 max-w-2xl">
           Our team of experts is always ready to assist you with any questions.
         </p>
         <AboutClient faqs={faqList} />
       </section>
+
+      <MarketingCta image="/assets/i12.jpg" />
     </main>
   );
 }
