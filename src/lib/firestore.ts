@@ -25,6 +25,10 @@ export interface Student {
   paymentStatus: "pending" | "paid" | "failed" | "waived" | "expired";
   paymentReference?: string; paymentAmount?: number; paidAt?: Timestamp;
   planId?: string; planTitle?: string; planExpiresAt?: Timestamp;
+  /** 1-week free trial started at registration (cleared on paid/waive). */
+  trialStartedAt?: Timestamp;
+  trialEndsAt?: Timestamp;
+  trialUsed?: boolean;
   /** Usage quotas for Basic / Standard / Premium (Family uses time expiry only). */
   planQuota?: {
     classesAllowed: number;
