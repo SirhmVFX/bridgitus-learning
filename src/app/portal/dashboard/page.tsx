@@ -484,13 +484,13 @@ export default function DashboardPage() {
                         <div
                           className={`w-8 h-8 rounded-xl flex items-center justify-center text-white text-[10px] font-bold shrink-0 ${
                             a.type === "ixl"
-                              ? "bg-orange-500"
+                              ? "bg-[#5B2EFF]"
                               : a.type === "deltamath"
                                 ? "bg-blue-500"
                                 : "bg-slate-500"
                           }`}
                         >
-                          {a.type === "ixl" ? "IXL" : a.type === "deltamath" ? "Δ" : "✏"}
+                          {a.type === "ixl" ? "E" : a.type === "deltamath" ? "Δ" : "✏"}
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-slate-800 truncate max-w-[140px]">

@@ -4,12 +4,26 @@ import { getPublishedPartners } from "@/lib/firestore";
 const FALLBACK = [
   { id: "1", name: "DeltaMath", logo: "/assets/dm.png", url: "https://deltamath.com", published: true, order: 0 },
   { id: "2", name: "Education", logo: "/assets/edu.png", url: "", published: true, order: 1 },
-  { id: "3", name: "IXL", logo: "/assets/ixl.webp", url: "https://ixl.com", published: true, order: 2 },
+  { id: "3", name: "Edpuzzle", logo: "/assets/edpuzzle.svg", url: "https://www.edpuzzle.com", published: true, order: 2 },
   { id: "4", name: "Khan Academy", logo: "/assets/kah.png", url: "", published: true, order: 3 },
   { id: "5", name: "Khan", logo: "/assets/kh.png", url: "", published: true, order: 4 },
   { id: "6", name: "Quizlet", logo: "/assets/qz.png", url: "", published: true, order: 5 },
   { id: "7", name: "Slader", logo: "/assets/sl.jpg", url: "", published: true, order: 6 },
 ];
+
+function normalizePartner<T extends { name: string; logo: string; url: string }>(p: T): T {
+  const isIxl =
+    p.name.trim().toLowerCase() === "ixl" ||
+    /ixl\.com/i.test(p.url || "") ||
+    p.logo.includes("ixl");
+  if (!isIxl) return p;
+  return {
+    ...p,
+    name: "Edpuzzle",
+    logo: "/assets/edpuzzle.svg",
+    url: "https://www.edpuzzle.com",
+  };
+}
 
 async function Partners() {
   let partners = FALLBACK;
@@ -17,6 +31,8 @@ async function Partners() {
     const data = await getPublishedPartners();
     if (data.length > 0) partners = data as typeof FALLBACK;
   } catch { }
+
+  partners = partners.map(normalizePartner);
 
   return (
     <section className="py-4 border-b border-gray-100">
