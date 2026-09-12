@@ -9,9 +9,17 @@ import {
   query,
   where,
   serverTimestamp,
+  Timestamp,
 } from "firebase/firestore";
 import { sendEmail, isSesConfigured } from "@/lib/email";
 import { maxStudentsForPlan } from "@/lib/pricingPlans";
+import {
+  buildNewTrialFields,
+  getTrialEndDate,
+  isOnActiveTrial,
+  TRIAL_DAYS,
+} from "@/lib/trial";
+import type { Student } from "@/lib/firestore";
 
 // ── Helpers ────────────────────────────────────────────────
 
@@ -105,6 +113,12 @@ function credentialsEmail(
               <td style="padding:8px 12px;font-size:14px;color:#2c3e50;">${parentEmail}</td></tr>
         </table>
       </div>
+      <div style="background:#ecfdf5;border-left:4px solid #10b981;padding:12px 16px;margin:16px 0;">
+        <p style="margin:0;font-size:14px;color:#065f46;">
+          <strong>Free trial:</strong> Full portal access for ${TRIAL_DAYS} days from registration.
+          After the trial, choose a plan on the payment page to keep learning.
+        </p>
+      </div>
       <div style="background:#fff3cd;border-left:4px solid #f59e0b;padding:12px 16px;margin:16px 0;">
         <p style="margin:0;font-size:14px;color:#92400e;">
           <strong>Important:</strong> Use your Student ID + password to log in. Change your password after first login.
@@ -142,6 +156,9 @@ function parentConfirmationEmail(
     <div style="padding:40px;">
       <p>Dear <strong>${parentName}</strong>,</p>
       <p>Your registration has been processed. Each child logs in with their own <strong>Student ID</strong> and password:</p>
+      <p style="background:#ecfdf5;border-left:4px solid #10b981;padding:12px 16px;font-size:14px;color:#065f46;">
+        <strong>Free ${TRIAL_DAYS}-day trial</strong> included — after it ends, complete payment in the portal to continue.
+      </p>
       <table style="width:100%;border-collapse:collapse;border:1px solid #e2e8f0;">
         <thead><tr style="background:#f8fafc;">
           <th style="padding:10px 12px;text-align:left;font-size:12px;text-transform:uppercase;">Name</th>
@@ -233,6 +250,54 @@ export async function POST(request: Request) {
       );
     }
 
+    const existingStudents = existingSnap.docs.map(
+      (d) => ({ id: d.id, ...(d.data() as Student) })
+    );
+
+    /** Resolve trial fields for new students under this parent. */
+    function resolveTrialFields(): Record<string, unknown> {
+      const paidSibling = existingStudents.find(
+        (s) => s.paymentStatus === "paid" || s.paymentStatus === "waived"
+      );
+      if (paidSibling) {
+        // Family add-on while household is already paid — inherit access, no new trial
+        return {
+          paymentStatus: paidSibling.paymentStatus,
+          paidAt: paidSibling.paidAt ?? null,
+          planExpiresAt: paidSibling.planExpiresAt ?? null,
+          planQuota: paidSibling.planQuota ?? null,
+          trialUsed: true,
+          trialStartedAt: paidSibling.trialStartedAt ?? null,
+          trialEndsAt: paidSibling.trialEndsAt ?? null,
+        };
+      }
+
+      const activeTrialSibling = existingStudents.find((s) => isOnActiveTrial(s));
+      if (activeTrialSibling?.trialEndsAt) {
+        return {
+          paymentStatus: "pending",
+          trialUsed: true,
+          trialStartedAt: activeTrialSibling.trialStartedAt ?? Timestamp.now(),
+          trialEndsAt: activeTrialSibling.trialEndsAt,
+        };
+      }
+
+      const trialAlreadyUsed = existingStudents.some(
+        (s) => s.trialUsed || Boolean(getTrialEndDate(s))
+      );
+      if (trialAlreadyUsed) {
+        // No second free trial for the same household
+        return { paymentStatus: "pending", trialUsed: true };
+      }
+
+      return {
+        paymentStatus: "pending",
+        ...buildNewTrialFields(),
+      };
+    }
+
+    const trialOrPaymentFields = resolveTrialFields();
+
     const createdStudents: Array<{
       name: string; studentId: string; email: string;
       grade: string; password: string; firebaseUid: string;
@@ -322,7 +387,7 @@ export async function POST(request: Request) {
         planTitle: registerData.planTitle,
         issuedPassword: password,
         status: "active",
-        paymentStatus: "pending",
+        ...trialOrPaymentFields,
         credentialsSent: false,
         enrolledAt: serverTimestamp(),
         createdAt: serverTimestamp(),
