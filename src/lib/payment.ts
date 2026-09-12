@@ -1,6 +1,11 @@
 import type { Student } from "./firestore";
 import { Timestamp } from "firebase/firestore";
 import { isQuotaExhausted } from "./planEntitlements";
+import {
+  getTrialDaysRemaining,
+  hasTrialEnded,
+  isOnActiveTrial,
+} from "./trial";
 
 /** Parse plan expiry date from Firestore Timestamp or ISO string. */
 export function getPlanExpiryDate(student: Student): Date | null {
@@ -30,6 +35,7 @@ export function isPlanExpired(student: Student): boolean {
 
 export function isPaymentCurrent(student: Student): boolean {
   if (student.paymentStatus === "waived") return true;
+  if (isOnActiveTrial(student)) return true;
   if (student.paymentStatus !== "paid") return false;
   if (isPlanExpired(student)) return false;
   if (isQuotaExhausted(student)) return false;
@@ -37,6 +43,8 @@ export function isPaymentCurrent(student: Student): boolean {
 }
 
 export function getDaysRemaining(student: Student): number | null {
+  const trialDays = getTrialDaysRemaining(student);
+  if (trialDays !== null) return trialDays;
   const expiry = getPlanExpiryDate(student);
   if (!expiry || student.paymentStatus !== "paid") return null;
   const ms = expiry.getTime() - Date.now();
@@ -57,6 +65,8 @@ export function hasPortalAccess(student: Student): boolean {
   if (isAccountBlocked(student)) return false;
   return isPaymentCurrent(student);
 }
+
+export { isOnActiveTrial, hasTrialEnded, getTrialDaysRemaining };
 
 /** Infer plan duration from pricing plan `per` label when durationDays is unset. */
 export function inferDurationDays(per: string): number {
