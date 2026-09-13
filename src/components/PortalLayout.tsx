@@ -12,7 +12,8 @@ import {
   updateStudent,
   type Announcement,
 } from "@/lib/firestore";
-import { hasPortalAccess, isPlanExpired } from "@/lib/payment";
+import { hasPortalAccess, isPlanExpired, isOnActiveTrial, hasTrialEnded, getTrialDaysRemaining } from "@/lib/payment";
+import { formatTrialEndsLabel } from "@/lib/trial";
 import { formatAnnouncementWhen } from "@/lib/schedule";
 import {
   MdDashboard,
@@ -108,6 +109,9 @@ export default function PortalLayout({
   const notifRef = useRef<HTMLDivElement>(null);
 
   const isPaid = student ? hasPortalAccess(student) : false;
+  const onTrial = student ? isOnActiveTrial(student) : false;
+  const trialEnded = student ? hasTrialEnded(student) : false;
+  const trialDaysLeft = student ? getTrialDaysRemaining(student) : null;
   const isSuspended =
     student?.status === "suspended" || student?.status === "inactive";
 
@@ -320,14 +324,19 @@ export default function PortalLayout({
               Grade {student.grade}
             </span>
           )}
-          {isPaid ? (
+          {onTrial ? (
+            <span className="rounded-full bg-sky-500/20 text-sky-300 text-[11px] px-2.5 py-0.5 font-bold">
+              Free trial{trialDaysLeft !== null ? ` · ${trialDaysLeft}d` : ""}
+            </span>
+          ) : isPaid ? (
             <span className="rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] px-2.5 py-0.5 font-bold">
               Paid
             </span>
-          ) : student?.paymentStatus === "expired" ||
+          ) : trialEnded ||
+            student?.paymentStatus === "expired" ||
             (student && isPlanExpired(student)) ? (
             <span className="rounded-full bg-red-500/20 text-red-300 text-[11px] px-2.5 py-0.5 font-bold">
-              Expired
+              {trialEnded ? "Trial ended" : "Expired"}
             </span>
           ) : (
             <span className="rounded-full bg-amber-500/20 text-amber-300 text-[11px] px-2.5 py-0.5 font-bold">
@@ -412,14 +421,21 @@ export default function PortalLayout({
 
             <div className="flex-1" />
 
-            {!isPaid && (
+            {onTrial ? (
+              <Link
+                href="/portal/payment"
+                className="hidden md:inline-flex items-center gap-1.5 rounded-full bg-sky-50 border border-sky-200 text-sky-700 text-xs font-semibold px-3 py-1.5 hover:bg-sky-100 transition-colors"
+              >
+                Trial · {trialDaysLeft ?? "—"}d left
+              </Link>
+            ) : !isPaid ? (
               <Link
                 href="/portal/payment"
                 className="hidden md:inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold px-3 py-1.5 hover:bg-amber-100 transition-colors"
               >
-                <MdLock size={12} /> Unlock access
+                <MdLock size={12} /> {trialEnded ? "Trial ended — pay now" : "Unlock access"}
               </Link>
-            )}
+            ) : null}
 
             <div className="relative" ref={notifRef}>
               <button
@@ -503,10 +519,30 @@ export default function PortalLayout({
           </div>
         </header>
 
+        {onTrial && (
+          <div className="mx-4 lg:mx-6 mb-2 rounded-2xl bg-sky-50 border border-sky-200 px-4 py-2.5 flex items-center justify-between gap-4">
+            <p className="text-xs text-sky-900 font-medium">
+              Free trial active
+              {trialDaysLeft !== null ? ` — ${trialDaysLeft} day${trialDaysLeft === 1 ? "" : "s"} left` : ""}
+              {student ? ` (ends ${formatTrialEndsLabel(student) ?? "soon"})` : ""}.
+              After that you&apos;ll need to choose a plan to keep using the portal.
+            </p>
+            <Link
+              href="/portal/payment"
+              className="text-xs font-bold text-sky-800 hover:underline shrink-0"
+            >
+              View plans →
+            </Link>
+          </div>
+        )}
+
         {!isPaid && !FREE_PATHS.some((p) => pathname.startsWith(p)) && (
           <div className="mx-4 lg:mx-6 mb-2 rounded-2xl bg-amber-50 border border-amber-200 px-4 py-2.5 flex items-center justify-between gap-4">
             <p className="text-xs text-amber-800 font-medium flex items-center gap-1.5">
-              <MdLock size={13} /> Portal access is limited until payment is complete.
+              <MdLock size={13} />{" "}
+              {trialEnded
+                ? "Your free trial has ended. Choose a plan to restore full portal access."
+                : "Portal access is limited until payment is complete."}
             </p>
             <Link
               href="/portal/payment"
