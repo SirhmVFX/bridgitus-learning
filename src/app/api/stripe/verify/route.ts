@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, serverTimestamp, deleteField } from "firebase/firestore";
 import { applyPaymentToHousehold } from "@/lib/familyPayment";
 import {
   buildQuotaState,
@@ -109,6 +109,10 @@ export async function POST(request: Request) {
       paidAt: serverTimestamp(),
       planExpiresAt: planExpiresAt ?? null,
       planQuota: planQuota ?? null,
+      trialStartedAt: deleteField(),
+      trialEndsAt: deleteField(),
+      trialUsed: true,
+      status: "active",
       ...(customerId ? { stripeCustomerId: customerId } : {}),
       ...(paymentMethodId
         ? {

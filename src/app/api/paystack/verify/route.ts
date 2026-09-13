@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase";
-import { serverTimestamp } from "firebase/firestore";
+import { serverTimestamp, deleteField } from "firebase/firestore";
 
 /**
  * POST /api/paystack/verify
@@ -108,6 +108,10 @@ export async function POST(request: Request) {
       planTitle: planTitle || null,
       paidAt: serverTimestamp(),
       ...(planExpiresAt ? { planExpiresAt } : {}),
+      trialStartedAt: deleteField(),
+      trialEndsAt: deleteField(),
+      trialUsed: true,
+      status: "active",
       ...(customer.customer_code ? { paystackCustomerCode: customer.customer_code } : {}),
       ...(authorization.authorization_code && authorization.reusable !== false
         ? {
