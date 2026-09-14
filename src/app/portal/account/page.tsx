@@ -6,6 +6,12 @@ import { useStudentAuth } from "@/lib/studentAuth";
 import { updateStudent, getPricingPlanById, type SitePricingPlan } from "@/lib/firestore";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import {
+  getTrialDaysRemaining,
+  hasTrialEnded,
+  isOnActiveTrial,
+} from "@/lib/payment";
+import { formatTrialEndsLabel, TRIAL_DAYS } from "@/lib/trial";
+import {
   MdPerson, MdEdit, MdSave, MdLock, MdBadge,
   MdSchool, MdEmail, MdPhone, MdUpload, MdCheckCircle,
   MdPayment,
@@ -136,17 +142,24 @@ export default function AccountPage() {
   }
   const initials = `${student.firstName?.[0] ?? ""}${student.lastName?.[0] ?? ""}`.toUpperCase();
 
+  const onTrial = isOnActiveTrial(student);
+  const trialEnded = hasTrialEnded(student);
+  const trialDays = getTrialDaysRemaining(student);
+
   const paymentColor =
+    onTrial ? "bg-sky-100 text-sky-700" :
     student.paymentStatus === "paid" ? "bg-emerald-100 text-emerald-700" :
       student.paymentStatus === "waived" ? "bg-blue-100 text-blue-700" :
         student.paymentStatus === "failed" ? "bg-red-100 text-red-700" :
-          student.paymentStatus === "expired" ? "bg-red-100 text-red-700" :
+          student.paymentStatus === "expired" || trialEnded ? "bg-red-100 text-red-700" :
             "bg-amber-100 text-amber-700";
   const paymentLabel =
+    onTrial ? `Free trial · ${trialDays ?? "—"}d left` :
     student.paymentStatus === "paid" ? "✓ Paid" :
       student.paymentStatus === "waived" ? "Waived" :
         student.paymentStatus === "failed" ? "Failed" :
-          student.paymentStatus === "expired" ? "⚠ Expired" : "Pending Payment";
+          student.paymentStatus === "expired" ? "⚠ Expired" :
+            trialEnded ? "Trial ended" : "Pending Payment";
 
   const inputCls = "portal-input";
 
@@ -317,7 +330,15 @@ export default function AccountPage() {
         </div>
 
         {/* Payment status */}
-        <div className={`rounded-2xl border p-5 ${student.paymentStatus === "paid" || student.paymentStatus === "waived" ? "bg-emerald-50 border-emerald-200" : student.paymentStatus === "expired" ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"}`}>
+        <div className={`rounded-2xl border p-5 ${
+          student.paymentStatus === "paid" || student.paymentStatus === "waived"
+            ? "bg-emerald-50 border-emerald-200"
+            : onTrial
+              ? "bg-sky-50 border-sky-200"
+              : student.paymentStatus === "expired" || trialEnded
+                ? "bg-red-50 border-red-200"
+                : "bg-amber-50 border-amber-200"
+        }`}>
           <p className="text-xs font-semibold uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <MdPayment size={14} /> Payment & Plan Status
           </p>
@@ -326,6 +347,14 @@ export default function AccountPage() {
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div className="space-y-2">
               <span className={`text-sm font-bold px-3 py-1 rounded-full ${paymentColor}`}>{paymentLabel}</span>
+
+              {(onTrial || trialEnded) && (
+                <p className="text-xs text-gray-600 mt-2">
+                  {onTrial
+                    ? `Your ${TRIAL_DAYS}-day free trial ends on ${formatTrialEndsLabel(student) ?? "—"}. Pay anytime to keep uninterrupted access.`
+                    : `Your free trial ended on ${formatTrialEndsLabel(student) ?? "—"}. Choose a plan to restore portal access.`}
+                </p>
+              )}
 
               {currentPlan ? (
                 <>
@@ -434,10 +463,21 @@ export default function AccountPage() {
             </div>
 
             <div className="flex flex-col gap-2">
-              {(student.paymentStatus === "pending" || student.paymentStatus === "expired") && (
+              {(student.paymentStatus === "pending" ||
+                student.paymentStatus === "expired" ||
+                onTrial ||
+                trialEnded) &&
+                student.paymentStatus !== "paid" &&
+                student.paymentStatus !== "waived" && (
                 <a href="/portal/payment"
                   className="portal-btn-primary text-center inline-block">
-                  {student.paymentStatus === "expired" ? "Renew Plan →" : "Complete Payment →"}
+                  {trialEnded
+                    ? "Choose a plan →"
+                    : onTrial
+                      ? "Pay early →"
+                      : student.paymentStatus === "expired"
+                        ? "Renew Plan →"
+                        : "Complete Payment →"}
                 </a>
               )}
             </div>

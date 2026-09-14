@@ -12,7 +12,8 @@ import {
   findPlanMatch,
   getPlanAmountCents,
 } from "@/lib/pricingPlans";
-import { hasPortalAccess } from "@/lib/payment";
+import { hasPortalAccess, hasTrialEnded, isOnActiveTrial } from "@/lib/payment";
+import { TRIAL_DAYS, formatTrialEndsLabel } from "@/lib/trial";
 import {
   MdPayment, MdCheckCircle, MdLock, MdSchool, MdLogout,
   MdArrowBack,
@@ -277,13 +278,21 @@ function PaymentPageInner() {
                 className="object-contain h-10 w-auto" priority />
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
-              {lockedToRegisteredPlan ? "Your selected plan" : "Choose your plan"}
+              {hasTrialEnded(student)
+                ? "Your free trial has ended"
+                : lockedToRegisteredPlan
+                  ? "Your selected plan"
+                  : "Choose your plan"}
             </h1>
             <p className="text-base text-gray-500 max-w-xl mx-auto">
               Hi {student.firstName} —{" "}
-              {lockedToRegisteredPlan
-                ? "complete payment for the plan you chose at registration."
-                : "same plans as our pricing page."}{" "}
+              {hasTrialEnded(student)
+                ? `your ${TRIAL_DAYS}-day free trial is over. Complete payment below to unlock the portal again.`
+                : isOnActiveTrial(student)
+                  ? `you're on a free trial until ${formatTrialEndsLabel(student) ?? "soon"}. You can pay early anytime to keep uninterrupted access.`
+                  : lockedToRegisteredPlan
+                    ? "complete payment for the plan you chose at registration."
+                    : "same plans as our pricing page."}{" "}
               All prices are in AUD. Payment activates your full portal access immediately.
             </p>
             <div className="inline-flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 mt-5 text-sm text-gray-600">
