@@ -440,7 +440,7 @@ function Register() {
                   {credentialsEmailed
                     ? " A copy was also sent to your email."
                     : " Email delivery is temporarily unavailable, so this screen is the only place to get the passwords."}
-                  {" "}Then complete payment to unlock portal features.
+                  {" "}Enjoy a <strong>free 7-day trial</strong> with full portal access — then complete payment to continue.
                 </p>
               </div>
 
@@ -493,7 +493,9 @@ function Register() {
                 Choose your pricing plan
               </h1>
               <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] text-gray-600 max-w-xl">
-                Select a plan to continue registration. Non-family plans register one student;
+                Select a plan to continue registration. Every new account includes a{" "}
+                <strong>free 7-day trial</strong> with full portal access. After the trial,
+                complete payment to keep learning. Non-family plans register one student;
                 the Family Plan allows up to three students.
               </p>
               {selectedPlan && (
@@ -554,9 +556,9 @@ function Register() {
                 </p>
                 <p className="md:text-[10px] lg:text-[12px] xl:text-[13px] md:text-center">
                   <span className="font-bold">
-                    No payment details are required upfront -
-                  </span>
-                  this is all discussed after the first lesson.
+                    Free 7-day trial included —
+                  </span>{" "}
+                  no payment required upfront. After the trial, choose a plan in the portal to continue.
                 </p>
               </div>
 

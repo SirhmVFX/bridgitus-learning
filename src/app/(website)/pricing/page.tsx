@@ -32,10 +32,10 @@ export default async function Pricing() {
       <PageHero
         eyebrow="Pricing"
         title="Plans that prove progress"
-        subtitle="Flexible tutoring plans for every learner. Premium plans include the Smart Learning Passport at no extra cost."
+        subtitle="Start with a free 7-day trial, then pick a plan that proves progress. Premium includes the Smart Learning Passport at no extra cost."
         crumbs={[{ href: "/pricing", label: "Pricing" }]}
         image="/assets/i12.jpg"
-        badge="Passport free on Premium"
+        badge="7-day free trial"
       />
 
       <section className="mkt-section pb-0">
