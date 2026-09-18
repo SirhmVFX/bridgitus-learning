@@ -213,14 +213,14 @@ function AssignmentCard({
   };
 
   const platformColor = assignment.type === "ixl"
-    ? "bg-[#5B2EFF]"
+    ? "bg-orange-500"
     : assignment.type === "deltamath"
       ? "bg-blue-600"
       : "bg-secondary-color";
 
   return (
     <div className={`portal-card hover-lift !p-0 overflow-hidden transition-all ${!isUnlocked || scheduleBlocked ? "opacity-65" : pastDue && status === "not_started" ? "!border-red-200" : ""}`}>
-      <div className={`h-1 ${!isUnlocked || scheduleBlocked ? "bg-gray-200" : assignment.type === "ixl" ? "bg-[#5B2EFF]" : assignment.type === "deltamath" ? "bg-blue-600" : "bg-secondary-color"}`} />
+      <div className={`h-1 ${!isUnlocked || scheduleBlocked ? "bg-gray-200" : assignment.type === "ixl" ? "bg-orange-500" : assignment.type === "deltamath" ? "bg-blue-600" : "bg-secondary-color"}`} />
       <div className="p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
@@ -329,7 +329,7 @@ function AssignmentCard({
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={status === "not_started" && !hasQuiz ? markStarted : undefined}
-                      className={`inline-flex items-center gap-1.5 text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors ${assignment.type === "ixl" ? "bg-[#5B2EFF] hover:bg-[#4a24d6]" : "bg-blue-600 hover:bg-blue-700"}`}
+                      className={`inline-flex items-center gap-1.5 text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors ${assignment.type === "ixl" ? "bg-orange-500 hover:bg-orange-600" : "bg-blue-600 hover:bg-blue-700"}`}
                     >
                       <MdOpenInNew size={13} />
                       Open in {assignment.type === "ixl" ? "Edpuzzle" : "DeltaMath"}
@@ -1080,7 +1080,7 @@ export default function AssignmentsPage() {
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
-          <a href="https://www.edpuzzle.com" target="_blank" rel="noopener noreferrer" className="rounded-2xl bg-[#5B2EFF] text-white p-4 flex items-center justify-between hover:bg-[#4a24d6] transition-colors border border-[#4a24d6]">
+          <a href="https://www.edpuzzle.com" target="_blank" rel="noopener noreferrer" className="rounded-2xl bg-orange-500 text-white p-4 flex items-center justify-between hover:bg-orange-600 transition-colors border border-orange-600">
             <div>
               <p className="font-bold text-lg">Edpuzzle</p>
               <p className="text-white/80 text-sm">{ixlCount} assignment{ixlCount !== 1 ? "s" : ""} assigned</p>

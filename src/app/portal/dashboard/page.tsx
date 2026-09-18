@@ -484,7 +484,7 @@ export default function DashboardPage() {
                         <div
                           className={`w-8 h-8 rounded-xl flex items-center justify-center text-white text-[10px] font-bold shrink-0 ${
                             a.type === "ixl"
-                              ? "bg-[#5B2EFF]"
+                              ? "bg-orange-500"
                               : a.type === "deltamath"
                                 ? "bg-blue-500"
                                 : "bg-slate-500"
