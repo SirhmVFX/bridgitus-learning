@@ -14,6 +14,7 @@ import {
 } from "@/lib/pricingPlans";
 import { hasPortalAccess, hasTrialEnded, isOnActiveTrial } from "@/lib/payment";
 import { TRIAL_DAYS, formatTrialEndsLabel } from "@/lib/trial";
+import { formatGradeLabel } from "@/lib/grades";
 import {
   MdPayment, MdCheckCircle, MdLock, MdSchool, MdLogout,
   MdArrowBack,
@@ -299,7 +300,7 @@ function PaymentPageInner() {
               <div className="w-6 h-6 bg-secondary-color flex items-center justify-center shrink-0">
                 <span className="text-white text-xs font-bold">{student.firstName[0]}</span>
               </div>
-              {student.firstName} {student.lastName} · {student.studentId} · Grade {student.grade}
+              {student.firstName} {student.lastName} · {student.studentId} · {formatGradeLabel(student.grade)}
             </div>
           </div>
 

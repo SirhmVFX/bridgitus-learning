@@ -20,6 +20,7 @@ import {
   TRIAL_DAYS,
 } from "@/lib/trial";
 import type { Student } from "@/lib/firestore";
+import { formatGradeLabel } from "@/lib/grades";
 
 // ── Helpers ────────────────────────────────────────────────
 
@@ -108,7 +109,7 @@ function credentialsEmail(
           <tr><td style="padding:8px 12px;font-weight:600;color:#475569;text-align:left;">Password</td>
               <td style="padding:8px 12px;font-family:monospace;font-size:16px;font-weight:700;color:#00369b;letter-spacing:0.1em;">${password}</td></tr>
           <tr><td style="padding:8px 12px;font-weight:600;color:#475569;text-align:left;">Grade</td>
-              <td style="padding:8px 12px;">Grade ${grade}</td></tr>
+              <td style="padding:8px 12px;">${formatGradeLabel(grade)}</td></tr>
           <tr><td style="padding:8px 12px;font-weight:600;color:#475569;text-align:left;">Parent email</td>
               <td style="padding:8px 12px;font-size:14px;color:#2c3e50;">${parentEmail}</td></tr>
         </table>
@@ -144,7 +145,7 @@ function parentConfirmationEmail(
       <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">${s.name}</td>
       <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-family:monospace;color:#00369b;font-weight:700;">${s.studentId}</td>
       <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-family:monospace;">${s.password}</td>
-      <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">Grade ${s.grade}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">${formatGradeLabel(s.grade)}</td>
     </tr>`).join("");
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
@@ -460,7 +461,7 @@ export async function POST(request: Request) {
           subject: `New Registration — ${registerData.parentFirstName} ${registerData.parentLastName} (${createdStudents.length} student${createdStudents.length > 1 ? "s" : ""})`,
           html: `<p>New registration from <strong>${registerData.parentFirstName} ${registerData.parentLastName}</strong> (${parentEmail}).</p>
                  <p>${createdStudents.length} student account${createdStudents.length > 1 ? "s" : ""} created${existingCount ? ` (parent already had ${existingCount})` : ""}.</p>
-                 <ul>${createdStudents.map(s => `<li>${s.name} — ${s.studentId} — Grade ${s.grade} — password: ${s.password}</li>`).join("")}</ul>`,
+                 <ul>${createdStudents.map(s => `<li>${s.name} — ${s.studentId} — ${formatGradeLabel(s.grade)} — password: ${s.password}</li>`).join("")}</ul>`,
         });
         emailsSent++;
       } catch (mailErr) {

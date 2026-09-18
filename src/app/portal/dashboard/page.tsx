@@ -24,6 +24,7 @@ import {
   type StudySession,
   type OnlineSession,
 } from "@/lib/firestore";
+import { formatGradeLabel } from "@/lib/grades";
 import { formatAnnouncementWhen } from "@/lib/schedule";
 import {
   MdMenuBook, MdQuiz, MdAssignment, MdBarChart,
@@ -129,7 +130,7 @@ export default function DashboardPage() {
               {student?.firstName} {student?.lastName}
             </h2>
             <p className="text-white/70 text-sm">
-              Grade {student?.grade} · {student?.studentId}
+              {formatGradeLabel(student?.grade)} · {student?.studentId}
             </p>
             <div className="mt-5 flex flex-wrap gap-2.5">
               <Link

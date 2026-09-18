@@ -11,6 +11,7 @@ import {
   isOnActiveTrial,
 } from "@/lib/payment";
 import { formatTrialEndsLabel, TRIAL_DAYS } from "@/lib/trial";
+import { formatGradeLabel } from "@/lib/grades";
 import {
   MdPerson, MdEdit, MdSave, MdLock, MdBadge,
   MdSchool, MdEmail, MdPhone, MdUpload, MdCheckCircle,
@@ -207,7 +208,7 @@ export default function AccountPage() {
                   <MdBadge size={12} /> {student.studentId}
                 </span>
                 <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                  <MdSchool size={12} /> Grade {student.grade}
+                  <MdSchool size={12} /> {formatGradeLabel(student.grade)}
                 </span>
                 <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${student.status === "active" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-600"
                   }`}>{student.status}</span>

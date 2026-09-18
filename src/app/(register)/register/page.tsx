@@ -18,6 +18,7 @@ import {
   maxStudentsForPlan,
 } from "@/lib/pricingPlans";
 import PricingPlanCard from "@/components/PricingPlanCard";
+import { A_LEVEL_SUBJECTS, STUDENT_GRADES, formatGradeLabel } from "@/lib/grades";
 
 const emptyStudent = () => ({
   firstName: "",
@@ -115,10 +116,15 @@ function Register() {
     console.log(`Updating student ${index} field ${field} to`, value);
     setRegisterData((prev) => {
       const updatedStudents = [...prev.students];
-      updatedStudents[index] = {
+      const next = {
         ...updatedStudents[index],
         [field]: value,
       };
+      // Clear subjects when grade changes so the checklist matches the new band
+      if (field === "grade") {
+        next.subjectHelpNeeded = "";
+      }
+      updatedStudents[index] = next;
       console.log("Updated students:", updatedStudents);
       return {
         ...prev,
@@ -385,7 +391,7 @@ function Register() {
                   <div className="space-y-4">
                     {createdStudents.map((s, i) => (
                       <div key={i} className="border-2 border-secondary-color bg-secondary-color/5 p-4">
-                        <p className="font-semibold text-gray-900 mb-3">{s.name} — Grade {s.grade}</p>
+                        <p className="font-semibold text-gray-900 mb-3">{s.name} — {formatGradeLabel(s.grade)}</p>
                         <div className="space-y-2 text-sm">
                           <div className="flex items-start justify-between gap-3 bg-white border border-gray-200 px-3 py-2.5">
                             <div className="min-w-0">
@@ -1071,11 +1077,9 @@ function Register() {
                     className="w-full bg-transparent p-2 rounded-md border border-gray-300 md:text-[10px] lg:text-[12px] xl:text-[13px"
                   >
                     <option value="">Select grade</option>
-                    <option value="Pre-K">Pre-K</option>
-                    <option value="K">K</option>
-                    {[...Array(12)].map((_, i) => (
-                      <option key={i + 1} value={String(i + 1)}>
-                        {i + 1}
+                    {STUDENT_GRADES.map((g) => (
+                      <option key={g} value={g}>
+                        {g === "A/Level" ? "A/Level (University)" : g}
                       </option>
                     ))}
                   </select>
@@ -1421,6 +1425,57 @@ function Register() {
                         "HSC Legal Studies",
                         "HSC Economics",
                       ].map((subject) => (
+                        <label
+                          key={subject}
+                          className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${registerData.students[
+                            currentStudentIndex
+                          ].subjectHelpNeeded?.includes(subject)
+                            ? "bg-primary-color/20 border-primary-color"
+                            : "border-gray-300 hover:border-primary-color/50"
+                            }`}
+                        >
+                          <input
+                            type="checkbox"
+                            className="rounded border-gray-300 text-primary-color focus:ring-primary-color mr-2"
+                            checked={
+                              registerData.students[
+                                currentStudentIndex
+                              ].subjectHelpNeeded?.includes(subject) || false
+                            }
+                            onChange={(e) => {
+                              const currentSubjects =
+                                registerData.students[
+                                  currentStudentIndex
+                                ].subjectHelpNeeded
+                                  ?.split(",")
+                                  .filter(Boolean) || [];
+                              let newSubjects;
+
+                              if (e.target.checked) {
+                                newSubjects = [
+                                  ...new Set([...currentSubjects, subject]),
+                                ];
+                              } else {
+                                newSubjects = currentSubjects.filter(
+                                  (s) => s !== subject
+                                );
+                              }
+
+                              handleStudentChange(
+                                currentStudentIndex,
+                                "subjectHelpNeeded",
+                                newSubjects.join(",")
+                              );
+                            }}
+                          />
+                          <span className="md:text-[10px] lg:text-[12px] xl:text-[13px]">
+                            {subject}
+                          </span>
+                        </label>
+                      ))}
+
+                    {registerData.students[currentStudentIndex].grade === "A/Level" &&
+                      A_LEVEL_SUBJECTS.map((subject) => (
                         <label
                           key={subject}
                           className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${registerData.students[

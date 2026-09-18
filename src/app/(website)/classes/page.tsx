@@ -105,6 +105,16 @@ const FALLBACK: SiteClass[] = [
     published: true,
     order: 7,
   },
+  {
+    id: "9",
+    title: "A/Level University Class",
+    grades: "A/Level",
+    description: "College Prep and University Support for tertiary-bound students.",
+    subjects: ["College Prep", "University Support"],
+    type: "one-on-one",
+    published: true,
+    order: 8,
+  },
 ];
 
 const ANCHORS: Record<string, string> = {
@@ -116,6 +126,7 @@ const ANCHORS: Record<string, string> = {
   "VCE Class": "vce",
   "Scholarship Preparatory Class": "scholarship",
   "College Preparatory Class": "college",
+  "A/Level University Class": "a-level",
 };
 
 const CLASS_IMAGES = [
@@ -143,7 +154,7 @@ export default async function ClassesPage() {
       <PageHero
         eyebrow="Classes"
         title="Programs for every learning stage"
-        subtitle="From foundations to HSC, VCE, scholarship and college prep — with agendas driven by real diagnostic data."
+        subtitle="From foundations to HSC, VCE, scholarship, college prep and A/Level university pathways — with agendas driven by real diagnostic data."
         crumbs={[{ href: "/classes", label: "Classes" }]}
         image="/assets/i6.jpg"
         badge="1:1 & small groups"

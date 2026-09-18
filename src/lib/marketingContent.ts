@@ -164,6 +164,7 @@ export const CLASSES = [
   { href: "/classes/#vce", label: "VCE Class" },
   { href: "/classes/#scholarship", label: "Scholarship Preparatory" },
   { href: "/classes/#college", label: "College Preparatory" },
+  { href: "/classes/#a-level", label: "A/Level University" },
 ] as const;
 
 export const SEO_PAGES = [
@@ -201,6 +202,6 @@ export const HOME_FAQS = [
   },
   {
     q: "What year levels do you support?",
-    a: "Primary through early-secondary foundations in Maths, English, and Science, plus specialised pathways including NAPLAN, Selective Entry, HSC, and VCE classes.",
+    a: "Primary through early-secondary foundations in Maths, English, and Science, plus specialised pathways including NAPLAN, Selective Entry, HSC, VCE, and A/Level (College Prep & University Support).",
   },
 ] as const;

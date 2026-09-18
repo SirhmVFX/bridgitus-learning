@@ -21,6 +21,7 @@ import {
   MdTimer, MdFilterList, MdSearch,
 } from "react-icons/md";
 import { ReadAloudButton, gradeSupportsReadAloud } from "@/components/QuestionReadAloud";
+import { formatGradeLabel } from "@/lib/grades";
 
 const TYPE_ICONS: Record<string, React.ReactNode> = {
   text: <MdArticle size={18} />,
@@ -317,7 +318,7 @@ export default function MaterialsPage() {
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-1">Learn</p>
           <h1 className="text-2xl lg:text-[1.75rem] font-extrabold text-[#001233] tracking-tight">Learning Materials</h1>
           <p className="text-slate-500 text-sm mt-1">
-            Grade {student?.grade} · Complete each material in order to unlock the next
+            {formatGradeLabel(student?.grade)} · Complete each material in order to unlock the next
           </p>
         </div>
 

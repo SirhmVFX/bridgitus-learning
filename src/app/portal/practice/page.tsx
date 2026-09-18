@@ -16,6 +16,7 @@ import {
   MdPrint, MdRefresh,
 } from "react-icons/md";
 import { QuestionReadAloud } from "@/components/QuestionReadAloud";
+import { gradeToCurriculumYear } from "@/lib/grades";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -462,7 +463,7 @@ export default function PracticePage() {
         body: JSON.stringify({
           curriculum: "Victorian Curriculum 2.0",
           subject: gap.subject,
-          year: student.grade ? `Year ${student.grade}` : "Year 7",
+          year: gradeToCurriculumYear(student.grade),
           topic: gap.topic,
           subtopic: gap.subtopic ?? "",
           count: DEFAULT_PRACTICE_COUNT,

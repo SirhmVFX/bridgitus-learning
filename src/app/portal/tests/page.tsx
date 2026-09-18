@@ -34,6 +34,7 @@ import {
   isPastDue,
   effectiveDueAt,
 } from "@/lib/schedule";
+import { formatGradeLabel } from "@/lib/grades";
 import {
   MdQuiz,
   MdTimer,
@@ -472,7 +473,7 @@ function TestRunner({
         <div>
           <h2 className="font-bold text-lg">{test.title}</h2>
           <p className="text-white/70 text-sm">
-            {test.subject} · Grade {test.grade}
+            {test.subject} · {formatGradeLabel(test.grade)}
           </p>
         </div>
         <div className="flex items-center gap-3 text-sm">
@@ -781,7 +782,7 @@ export default function TestsPage() {
               {viewingResult.test.title}
             </h1>
             <p className="text-slate-500 text-sm mt-1">
-              {viewingResult.test.subject} · Grade {viewingResult.test.grade} ·
+              {viewingResult.test.subject} · {formatGradeLabel(viewingResult.test.grade)} ·
               Attempt #{viewingResult.attempt.attemptNumber}
             </p>
           </div>
@@ -802,7 +803,7 @@ export default function TestsPage() {
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 mb-1">Assess</p>
           <h1 className="text-2xl lg:text-[1.75rem] font-extrabold text-[#001233] tracking-tight">Assessments</h1>
           <p className="text-slate-500 text-sm mt-1">
-            Grade {student?.grade} assessments
+            {formatGradeLabel(student?.grade)} assessments
           </p>
         </div>
 

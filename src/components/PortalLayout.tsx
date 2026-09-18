@@ -14,6 +14,7 @@ import {
 } from "@/lib/firestore";
 import { hasPortalAccess, isPlanExpired, isOnActiveTrial, hasTrialEnded, getTrialDaysRemaining } from "@/lib/payment";
 import { formatTrialEndsLabel } from "@/lib/trial";
+import { formatGradeLabel } from "@/lib/grades";
 import { formatAnnouncementWhen } from "@/lib/schedule";
 import {
   MdDashboard,
@@ -321,7 +322,7 @@ export default function PortalLayout({
         <div className="flex items-center gap-2 px-2 flex-wrap">
           {student?.grade && (
             <span className="rounded-full bg-[#00c1ff]/15 text-[#00c1ff] px-2.5 py-0.5 text-[11px] font-bold">
-              Grade {student.grade}
+              {formatGradeLabel(student.grade)}
             </span>
           )}
           {onTrial ? (

@@ -21,6 +21,7 @@ import {
   type LearningGap,
   type AiPracticeAttempt,
 } from "@/lib/firestore";
+import { formatGradeLabel } from "@/lib/grades";
 import {
   MdBarChart,
   MdTrendingUp,
@@ -444,7 +445,7 @@ export default function ProgressPage() {
                     <div key={p.id}>
                       <div className="flex justify-between mb-1">
                         <p className="text-sm text-gray-700 font-medium">
-                          {p.subject} · Grade {p.grade}
+                          {p.subject} · {formatGradeLabel(p.grade)}
                         </p>
                         <p className="text-sm font-bold text-[#001233]">
                           {p.overallScore}%
